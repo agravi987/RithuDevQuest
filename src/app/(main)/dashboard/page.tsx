@@ -13,9 +13,12 @@ import {
 import { auth } from "@/lib/auth";
 import { getCareerBySlug } from "@/lib/curriculum/queries";
 import { getGamificationProfile } from "@/lib/gamification/queries";
+import { getUserSkillsMastery } from "@/lib/mastery/queries";
 import { LevelProgressCard } from "@/components/gamification/level-progress-card";
 import { StreakCounter } from "@/components/gamification/streak-counter";
 import { XPDisplay } from "@/components/gamification/xp-display";
+import { SkillBars } from "@/components/dashboard/skill-bars";
+import { RithuBubble } from "@/components/mentor/rithu-bubble";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -25,9 +28,10 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const [career, profile] = await Promise.all([
+  const [career, profile, skills] = await Promise.all([
     getCareerBySlug("devops"),
     getGamificationProfile(session.user.id),
+    getUserSkillsMastery(session.user.id),
   ]);
 
   const firstName = session.user.name?.split(" ")[0] ?? "Adventurer";
@@ -197,8 +201,19 @@ export default async function DashboardPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Skill Bars Overview */}
+          <SkillBars skills={skills} limit={4} />
         </div>
       </div>
+
+      {/* Rithu AI Mentor Pro-Tip */}
+      <RithuBubble
+        message="Mastering DevOps is about deliberate practice. Every command you run in the terminal and every question you answer builds real muscle memory."
+        topic="Mentor Wisdom"
+        actionHref="/practice"
+        actionLabel="Jump into Practice Arena"
+      />
     </div>
   );
 }
