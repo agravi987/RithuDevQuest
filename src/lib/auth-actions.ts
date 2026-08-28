@@ -1,6 +1,7 @@
 "use server";
 
 import bcrypt from "bcryptjs";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 
 import {
   loginCredentialsSchema,
@@ -55,13 +56,19 @@ export async function signupAction(
   }
 
   try {
+    // signIn with redirectTo throws NEXT_REDIRECT — re-throw it so Next.js handles navigation
     await signIn("credentials", {
       email: parsed.data.email,
       password: parsed.data.password,
       redirectTo: "/dashboard",
     });
-  } catch {
-    return { status: "success" };
+  } catch (err) {
+    // Re-throw redirect errors — they must propagate to Next.js
+    if (isRedirectError(err)) {
+      throw err;
+    }
+    // Any other error (bad credentials race condition, etc.) — still redirect to login
+    return { status: "error", message: "Account created! Please log in." };
   }
 
   return { status: "success" };
@@ -72,7 +79,7 @@ const loginSchema = loginCredentialsSchema;
 export type LoginState =
   | { status: "idle" }
   | { status: "error"; message: string }
-  | { status: "success"; callbackUrl?: string };
+  | { status: "success" };
 
 export async function loginAction(
   _prevState: LoginState,
@@ -90,26 +97,25 @@ export async function loginAction(
     };
   }
 
-  const callbackUrl = formData.get("callbackUrl");
+  const callbackUrl =
+    typeof formData.get("callbackUrl") === "string" &&
+    (formData.get("callbackUrl") as string).startsWith("/")
+      ? (formData.get("callbackUrl") as string)
+      : "/dashboard";
 
   try {
-    const signInResult = await signIn("credentials", {
+    await signIn("credentials", {
       email: parsed.data.email,
       password: parsed.data.password,
-      redirect: false,
+      redirectTo: callbackUrl,
     });
-
-    if (signInResult?.error) {
-      return { status: "error", message: "Invalid email or password." };
+  } catch (err) {
+    // Re-throw redirect so Next.js can handle navigation
+    if (isRedirectError(err)) {
+      throw err;
     }
-  } catch {
     return { status: "error", message: "Invalid email or password." };
   }
 
-  return {
-    status: "success",
-    ...(typeof callbackUrl === "string" && callbackUrl.startsWith("/")
-      ? { callbackUrl }
-      : {}),
-  };
+  return { status: "success" };
 }

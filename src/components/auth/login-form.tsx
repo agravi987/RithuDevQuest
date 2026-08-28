@@ -1,8 +1,7 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { useActionState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useActionState } from "react";
 
 import { loginAction, type LoginState } from "@/lib/auth-actions";
 import { Button } from "@/components/ui/button";
@@ -13,17 +12,11 @@ import { Label } from "@/components/ui/label";
 const initialState: LoginState = { status: "idle" };
 
 export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
-  const router = useRouter();
   const [state, formAction, pending] = useActionState(
     loginAction,
     initialState,
   );
 
-  useEffect(() => {
-    if (state.status === "success" && state.callbackUrl) {
-      router.replace(state.callbackUrl);
-    }
-  }, [state, router]);
 
   return (
     <form action={formAction}>
