@@ -1,0 +1,271 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id              String           @id @default(cuid())
+  name            String?
+  email           String?          @unique
+  emailVerified   DateTime?
+  image           String?
+  passwordHash    String?
+  role            String           @default("user")
+  xp              Int              @default(0)
+  level           Int              @default(1)
+  accounts        Account[]
+  sessions        Session[]
+  lessonAttempts  LessonAttempt[]
+  questionAttempts QuestionAttempt[]
+  progress        UserProgress[]
+  streak          Streak?
+  achievements    UserAchievement[]
+  skills          UserSkill[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Career {
+  id          String         @id @default(cuid())
+  title       String
+  description String?
+  slug        String         @unique
+  order       Int
+  paths       LearningPath[]
+  createdAt   DateTime       @default(now())
+}
+
+model LearningPath {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  slug        String
+  order       Int
+  careerId    String
+  career      Career   @relation(fields: [careerId], references: [id], onDelete: Cascade)
+  modules     Module[]
+  createdAt   DateTime @default(now())
+
+  @@unique([careerId, slug])
+}
+
+model Module {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  slug        String
+  icon        String?
+  order       Int
+  pathId      String
+  path        LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  units       Unit[]
+  createdAt   DateTime @default(now())
+
+  @@unique([pathId, slug])
+}
+
+model Unit {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  slug        String
+  order       Int
+  moduleId    String
+  module      Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  lessons     Lesson[]
+  createdAt   DateTime @default(now())
+
+  @@unique([moduleId, slug])
+}
+
+model Lesson {
+  id                 String           @id @default(cuid())
+  title              String
+  description        String?
+  slug               String
+  order              Int
+  estimatedMinutes   Int              @default(5)
+  learningObjectives String[]
+  unitId             String
+  unit               Unit             @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  skills             Skill[]
+  activities         Activity[]
+  questions          Question[]
+  attempts           LessonAttempt[]
+  progress           UserProgress[]
+  createdAt          DateTime         @default(now())
+
+  @@unique([unitId, slug])
+}
+
+model Skill {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  lessonId    String
+  lesson      Lesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  questions   Question[]
+  userSkills  UserSkill[]
+  createdAt   DateTime   @default(now())
+
+  @@unique([lessonId, name])
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  type      String // "learn", "example", "question", "practice", "review"
+  content   Json
+  order     Int
+  lessonId  String
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([lessonId, order])
+}
+
+model Question {
+  id            String            @id @default(cuid())
+  type          String // "mcq", "true_false", "command", "scenario"
+  difficulty    String // "beginner", "intermediate", "advanced"
+  question      String
+  options       Json? // for mcq: array of option strings
+  parts         Json? // for scenario: [{ prompt, correctAnswer }]
+  correctAnswer String
+  explanation   String
+  hint          String?
+  lessonId      String
+  lesson        Lesson            @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  skillId       String?
+  skill         Skill?            @relation(fields: [skillId], references: [id], onDelete: SetNull)
+  source        String            @default("curriculum") // "curriculum", "ai_generated"
+  attempts      QuestionAttempt[]
+  createdAt     DateTime          @default(now())
+}
+
+model LessonAttempt {
+  id               String            @id @default(cuid())
+  userId           String
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId         String
+  lesson           Lesson            @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  score            Int               @default(0) // percentage 0-100
+  xpEarned         Int
+  completed        Boolean           @default(false)
+  startedAt        DateTime          @default(now())
+  completedAt      DateTime?
+  questionAttempts QuestionAttempt[]
+}
+
+model QuestionAttempt {
+  id              String        @id @default(cuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionId      String
+  question        Question      @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  lessonAttemptId String
+  lessonAttempt   LessonAttempt @relation(fields: [lessonAttemptId], references: [id], onDelete: Cascade)
+  isCorrect       Boolean
+  userAnswer      String
+  attemptNumber   Int           @default(1) // first try, retry, etc.
+  partIndex       Int?          // 0-based part for scenario questions
+  xpEarned        Int
+  answeredAt      DateTime      @default(now())
+}
+
+model UserProgress {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId     String
+  lesson       Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completed    Boolean  @default(false)
+  score        Int      @default(0)
+  lastAccessed DateTime @default(now())
+
+  @@unique([userId, lessonId])
+}
+
+model Achievement {
+  id          String            @id @default(cuid())
+  title       String
+  description String
+  icon        String            // "Flame", "Zap", "Target", "Award", "Terminal", "Shield", "Crown", "Star", "BookOpen"
+  category    String            @default("general") // "streak", "learning", "mastery", "special"
+  condition   String            @unique // "first_lesson", "streak_3", "streak_7", "level_3", "level_5", "perfect_lesson", "lessons_5", "lessons_10"
+  threshold   Int?              // numeric threshold if applicable
+  xpReward    Int               @default(50)
+  users       UserAchievement[]
+  createdAt   DateTime          @default(now())
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  unlockedAt    DateTime    @default(now())
+
+  @@unique([userId, achievementId])
+}
+
+model UserSkill {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skillId   String
+  skill     Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  mastery   Float    @default(0) // 0-100 percentage
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, skillId])
+}
+
+model Streak {
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentStreak  Int       @default(0)
+  longestStreak  Int       @default(0)
+  lastActiveDate DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
