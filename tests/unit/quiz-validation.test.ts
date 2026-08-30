@@ -82,6 +82,50 @@ describe("validateQuestionAnswer", () => {
       ),
     ).toBe(true);
   });
+
+  it("validates fill_blank as a set of answers (all required, order free)", () => {
+    const correct = "useradd|chmod";
+    expect(validateQuestionAnswer({ type: "fill_blank", correctAnswer: correct }, "chmod|useradd")).toBe(true);
+    expect(validateQuestionAnswer({ type: "fill_blank", correctAnswer: correct }, "useradd")).toBe(false);
+    expect(validateQuestionAnswer({ type: "fill_blank", correctAnswer: correct }, "chmod|rm")).toBe(false);
+  });
+
+  it("validates multi_select as an exact set (no partial credit)", () => {
+    const correct = "tf|docker";
+    expect(validateQuestionAnswer({ type: "multi_select", correctAnswer: correct }, "docker|tf")).toBe(true);
+    expect(validateQuestionAnswer({ type: "multi_select", correctAnswer: correct }, "tf|docker|k8s")).toBe(false);
+    expect(validateQuestionAnswer({ type: "multi_select", correctAnswer: correct }, "tf")).toBe(false);
+  });
+
+  it("validates match as a set of the correct right-hand values", () => {
+    const correct = "3000|3001|3306";
+    expect(validateQuestionAnswer({ type: "match", correctAnswer: correct }, "3306|3000|3001")).toBe(true);
+    expect(validateQuestionAnswer({ type: "match", correctAnswer: correct }, "3000|3001")).toBe(false);
+    expect(validateQuestionAnswer({ type: "match", correctAnswer: correct }, "3000|3001|8080")).toBe(false);
+  });
+
+  it("validates sequence in the exact correct order", () => {
+    const correct = "install|configure|build";
+    expect(validateQuestionAnswer({ type: "sequence", correctAnswer: correct }, "install|configure|build")).toBe(true);
+    expect(validateQuestionAnswer({ type: "sequence", correctAnswer: correct }, "install|build|configure")).toBe(false);
+  });
+
+  it("validates code_completion as a set of answers (all required)", () => {
+    const correct = "git add .|git commit";
+    expect(validateQuestionAnswer({ type: "code_completion", correctAnswer: correct }, "git commit|git add .")).toBe(true);
+    expect(validateQuestionAnswer({ type: "code_completion", correctAnswer: correct }, "git add .")).toBe(false);
+  });
+
+  it("validates word_scramble by exact match", () => {
+    expect(validateQuestionAnswer({ type: "word_scramble", correctAnswer: "eks" }, "eks")).toBe(true);
+    expect(validateQuestionAnswer({ type: "word_scramble", correctAnswer: "eks" }, "kse")).toBe(false);
+  });
+
+  it("validates flip_cards by the pipe-joined answer set", () => {
+    const backs = "front|back";
+    expect(validateQuestionAnswer({ type: "flip_cards", correctAnswer: backs }, "front|back")).toBe(true);
+    expect(validateQuestionAnswer({ type: "flip_cards", correctAnswer: backs }, "front|side")).toBe(false);
+  });
 });
 
 describe("parseQuestionDifficulty", () => {

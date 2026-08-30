@@ -25,7 +25,18 @@ export type SeedSkill = {
   description?: string;
 };
 
-export type SeedQuestionType = "mcq" | "true_false" | "command" | "scenario";
+export type SeedQuestionType =
+  | "mcq"
+  | "true_false"
+  | "command"
+  | "scenario"
+  | "fill_blank"
+  | "multi_select"
+  | "match"
+  | "sequence"
+  | "code_completion"
+  | "word_scramble"
+  | "flip_cards";
 
 export type SeedQuestionDifficulty =
   | "beginner"
@@ -37,6 +48,39 @@ export type SeedQuestionPart = {
   correctAnswer: string;
 };
 
+export type SeedFillBlank = {
+  answer: string;
+  hint?: string;
+};
+
+export type SeedMultiSelectOption = {
+  text: string;
+  isCorrect: boolean;
+};
+
+export type SeedMatchPair = {
+  left: string;
+  right: string;
+};
+
+export type SeedSequenceItem = {
+  id: string;
+  text: string;
+};
+
+export type SeedCodeBlank = {
+  id: string;
+  answer: string;
+  hint?: string;
+  placeholder?: string;
+};
+
+export type SeedFlipCard = {
+  front: string;
+  back: string;
+  category?: string;
+};
+
 export type SeedQuestion = {
   question: string;
   correctAnswer?: string;
@@ -46,6 +90,15 @@ export type SeedQuestion = {
   options?: string[];
   parts?: SeedQuestionPart[];
   hint?: string;
+  fillBlanks?: SeedFillBlank[];
+  multiSelectOptions?: SeedMultiSelectOption[];
+  matchPairs?: SeedMatchPair[];
+  sequenceItems?: SeedSequenceItem[];
+  sequenceCorrectOrder?: string[];
+  codeBlanks?: SeedCodeBlank[];
+  codeLanguage?: string;
+  scrambledWord?: string;
+  flipCards?: SeedFlipCard[];
 };
 
 export type SeedLesson = {

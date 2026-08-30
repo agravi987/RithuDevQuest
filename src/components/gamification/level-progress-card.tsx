@@ -61,11 +61,20 @@ export function LevelProgressCard({
 
           <div className="relative h-3 w-full overflow-hidden rounded-full bg-muted border border-border/60">
             <motion.div
-              className="h-full bg-gradient-to-r from-primary to-emerald-400 rounded-full"
+              className="h-full bg-gradient-to-r from-primary to-emerald-400 rounded-full progress-animated"
               initial={{ width: 0 }}
               animate={{ width: `${levelInfo.progressPercentage}%` }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
+              transition={{ duration: 1, ease: "easeOut" }}
             />
+            {/* Sparkle at tip */}
+            {levelInfo.progressPercentage > 0 && (
+              <motion.div
+                animate={{ opacity: [0.4, 1, 0.4] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className="absolute top-0 h-3 w-1 rounded-full bg-white/50"
+                style={{ left: `calc(${levelInfo.progressPercentage}% - 2px)` }}
+              />
+            )}
           </div>
         </div>
 

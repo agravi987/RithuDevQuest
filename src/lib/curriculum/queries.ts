@@ -130,6 +130,30 @@ export async function getPathBySlug(
   });
 }
 
+export async function getPathBySlugAcrossCareers(
+  slug: string,
+): Promise<PathWithModules | null> {
+  return prisma.learningPath.findFirst({
+    where: { slug },
+    include: {
+      modules: {
+        orderBy: { order: "asc" },
+        include: {
+          units: {
+            orderBy: { order: "asc" },
+            include: {
+              lessons: {
+                orderBy: { order: "asc" },
+                include: { skills: true },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
 export async function getModuleBySlug(
   pathSlug: string,
   slug: string,

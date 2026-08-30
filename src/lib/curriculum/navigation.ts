@@ -1,6 +1,9 @@
 export type NavigableLesson = {
   id: string;
   order: number;
+  title?: string;
+  slug?: string;
+  estimatedMinutes?: number;
 };
 
 export type NavigableUnit = {
@@ -22,9 +25,7 @@ export type LessonStatus = {
 export function flattenLessons(units: NavigableUnit[]): NavigableLesson[] {
   return [...units]
     .sort((a, b) => a.order - b.order)
-    .flatMap((unit) =>
-      [...unit.lessons].sort((a, b) => a.order - b.order),
-    );
+    .flatMap((unit) => [...unit.lessons].sort((a, b) => a.order - b.order));
 }
 
 /**

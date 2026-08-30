@@ -64,13 +64,13 @@ describe("QuestionSection", () => {
         partIndex={null}
       />,
     );
-    expect(screen.getByRole("button", { name: "Shell" })).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Terminal" }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Kernel" })).toBeInTheDocument();
+    // Options are now rendered as buttons with letter labels (A, B, C)
+    expect(screen.getByText("Shell")).toBeInTheDocument();
+    expect(screen.getByText("Terminal")).toBeInTheDocument();
+    expect(screen.getByText("Kernel")).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Shell" }));
+    // Click the option button (the parent button element)
+    await user.click(screen.getByText("Shell").closest("button")!);
     expect(onValueChange).toHaveBeenCalledWith("Shell");
   });
 
@@ -85,7 +85,7 @@ describe("QuestionSection", () => {
         partIndex={null}
       />,
     );
-    expect(screen.getByRole("button", { name: "Check answer" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /check answer/i })).toBeDisabled();
   });
 
   it("enables the check button once an answer is selected", () => {
@@ -99,7 +99,7 @@ describe("QuestionSection", () => {
         partIndex={null}
       />,
     );
-    expect(screen.getByRole("button", { name: "Check answer" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /check answer/i })).toBeEnabled();
   });
 
   it("submits the selected answer", async () => {
@@ -115,7 +115,7 @@ describe("QuestionSection", () => {
         partIndex={null}
       />,
     );
-    await user.click(screen.getByRole("button", { name: "Check answer" }));
+    await user.click(screen.getByRole("button", { name: /check answer/i }));
     expect(onSubmit).toHaveBeenCalledTimes(1);
   });
 
@@ -130,8 +130,8 @@ describe("QuestionSection", () => {
         partIndex={null}
       />,
     );
-    expect(screen.getByRole("button", { name: "True" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "False" })).toBeInTheDocument();
+    expect(screen.getByText("True")).toBeInTheDocument();
+    expect(screen.getByText("False")).toBeInTheDocument();
   });
 
   it("collects raw input for a command question", async () => {
@@ -172,7 +172,8 @@ describe("QuestionSection", () => {
         partIndex={1}
       />,
     );
-    expect(screen.getByText("Part 2 of 3")).toBeInTheDocument();
+    // Updated format: "Part 2/3" instead of "Part 2 of 3"
+    expect(screen.getByText("Part 2/3")).toBeInTheDocument();
     expect(
       screen.getByText("Find your current directory."),
     ).toBeInTheDocument();
@@ -190,8 +191,8 @@ describe("QuestionSection", () => {
         partIndex={null}
       />,
     );
-    await user.click(screen.getByRole("button", { name: "Show hint" }));
-    expect(screen.getByText(/Hint: Try the echo command./)).toBeInTheDocument();
+    await user.click(screen.getByText("Show hint"));
+    expect(screen.getByText(/Try the echo command/)).toBeInTheDocument();
   });
 });
 
@@ -224,8 +225,8 @@ describe("FeedbackSection", () => {
         onRetry={vi.fn()}
       />,
     );
-    expect(screen.getByText("Correct!")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Continue" }));
+    expect(screen.getByText(/nailed it|perfect answer|you got it|brilliant|spot on|excellent|crushed/i)).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /continue/i }));
     expect(onContinue).toHaveBeenCalledTimes(1);
   });
 
@@ -243,11 +244,13 @@ describe("FeedbackSection", () => {
         onRetry={onRetry}
       />,
     );
-    expect(screen.getByText("Not quite")).toBeInTheDocument();
+    expect(
+      screen.getByText(/almost|good effort|good try|not quite|close/i),
+    ).toBeInTheDocument();
     expect(
       screen.getByText("The shell interprets your commands."),
     ).toBeInTheDocument();
-    expect(screen.getByText(/Correct answer: Shell/)).toBeInTheDocument();
+    expect(screen.getByText(/Shell/)).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Try again" }));
     expect(onRetry).toHaveBeenCalledTimes(1);
   });
@@ -264,7 +267,7 @@ describe("FeedbackSection", () => {
         onRetry={vi.fn()}
       />,
     );
-    expect(screen.getByText("Part 1 correct")).toBeInTheDocument();
+    expect(screen.getByText(/Part 1 correct/i)).toBeInTheDocument();
     expect(
       screen.queryByText("The shell interprets your commands."),
     ).not.toBeInTheDocument();
@@ -282,7 +285,7 @@ describe("FeedbackSection", () => {
         onRetry={vi.fn()}
       />,
     );
-    expect(screen.getByText("Scenario complete!")).toBeInTheDocument();
+    expect(screen.getByText(/Scenario complete/i)).toBeInTheDocument();
     expect(
       screen.getByText("The shell interprets your commands."),
     ).toBeInTheDocument();

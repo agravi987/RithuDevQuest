@@ -6,8 +6,8 @@ const globalForGroq = globalThis as unknown as {
   groq: Groq | undefined;
 };
 
-export const GROQ_DEFAULT_MODEL = "llama-3.3-70b-versatile";
-export const GROQ_FAST_MODEL = "llama-3.1-8b-instant";
+export const GROQ_DEFAULT_MODEL = "openai/gpt-oss-120b";
+export const GROQ_FAST_MODEL = "openai/gpt-oss-20b";
 
 function createGroqClient(): Groq {
   return new Groq({

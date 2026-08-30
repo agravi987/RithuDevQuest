@@ -1,13 +1,8 @@
 import { Suspense } from "react";
 import Link from "next/link";
 
+import { AuthStage } from "@/components/auth/auth-stage";
 import { LoginForm } from "@/components/auth/login-form";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 export default async function LoginPage({
   searchParams,
@@ -17,28 +12,29 @@ export default async function LoginPage({
   const { callbackUrl } = await searchParams;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-2xl">Welcome back</CardTitle>
-        <CardDescription>
-          Log in to continue your quest with Rithu.
-        </CardDescription>
-      </CardHeader>
+    <AuthStage
+      title="Welcome back"
+      description="Log in to continue your quest with Rithu."
+      mascotMessage="Your streak is waiting! 🔥"
+    >
       <Suspense
         fallback={
-          <p className="px-(--card-spacing) pb-4 text-sm text-muted-foreground">
+          <p className="text-center text-sm text-muted-foreground">
             Loading…
           </p>
         }
       >
         <LoginForm callbackUrl={callbackUrl} />
       </Suspense>
-      <p className="px-(--card-spacing) pb-(--card-spacing) text-sm text-muted-foreground">
+      <p className="mt-5 text-center text-sm text-muted-foreground">
         New to RithuDevQuest?{" "}
-        <Link href="/signup" className="font-medium text-primary hover:underline">
+        <Link
+          href="/signup"
+          className="font-semibold text-primary transition-colors hover:text-primary/80 hover:underline"
+        >
           Create an account
         </Link>
       </p>
-    </Card>
+    </AuthStage>
   );
 }

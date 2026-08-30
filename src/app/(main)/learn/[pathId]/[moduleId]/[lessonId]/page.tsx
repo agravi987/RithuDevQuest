@@ -15,7 +15,9 @@ import { canAccessLesson, getNextLesson } from "@/lib/curriculum/navigation";
 import type { LessonPlayerData } from "@/lib/lesson/types";
 import { getCompletedLessonIds, getRecentQuestionIds } from "@/lib/progress/queries";
 import { parseQuestionDifficulty } from "@/lib/quiz/validation";
+import { buildRichPayload } from "@/lib/quiz/types";
 import { selectQuestionRun } from "@/lib/quiz/selection";
+import { getHeartsInfo } from "@/lib/hearts";
 
 type LessonPageProps = {
   params: Promise<{ pathId: string; moduleId: string; lessonId: string }>;
@@ -53,13 +55,14 @@ export default async function LessonPage({ params }: LessonPageProps) {
     redirect(`/learn/${pathId}/${moduleId}`);
   }
 
-  const [questions, user, recentQuestionIds] = await Promise.all([
+  const [questions, user, recentQuestionIds, heartsInfo] = await Promise.all([
     getLessonQuestions(lesson.id),
     prisma.user.findUnique({
       where: { id: session.user.id },
       select: { xp: true },
     }),
     getRecentQuestionIds(session.user.id, lesson.id),
+    getHeartsInfo(session.user.id),
   ]);
 
   const selected = selectQuestionRun(
@@ -109,6 +112,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
       };
     }),
     questions: selected.map((question) => {
+      const rich = buildRichPayload(question);
       const scenarioParts = Array.isArray(question.parts)
         ? (question.parts as { prompt: string; correctAnswer: string }[])
         : [];
@@ -117,14 +121,18 @@ export default async function LessonPage({ params }: LessonPageProps) {
         type: question.type as LessonPlayerData["questions"][number]["type"],
         difficulty: parseQuestionDifficulty(question.difficulty),
         question: question.question,
-        options: Array.isArray(question.options)
-          ? (question.options as string[])
-          : null,
+        options:
+          question.type === "scenario" || question.type === "true_false"
+            ? null
+            : Array.isArray(question.options)
+              ? (question.options as string[])
+              : null,
         parts:
           question.type === "scenario"
             ? scenarioParts.map((part) => ({ prompt: part.prompt }))
             : null,
         hint: question.hint,
+        payload: rich?.payload,
       };
     }),
     moduleHref: `/learn/${pathId}/${moduleId}`,
@@ -144,7 +152,10 @@ export default async function LessonPage({ params }: LessonPageProps) {
         <ChevronLeft className="size-4" />
         {mod.title}
       </Link>
-      <LessonPlayer data={data} />
+      <LessonPlayer
+        data={data}
+        heartsInfo={heartsInfo}
+      />
     </div>
   );
 }

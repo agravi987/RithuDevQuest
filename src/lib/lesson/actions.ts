@@ -21,9 +21,11 @@ import type {
 import { getCompletedLessonIds } from "@/lib/progress/queries";
 import {
   parseQuestionDifficulty,
-  validateAcceptedAnswer,
+  validateQuestionAnswer,
 } from "@/lib/quiz/validation";
 import { processLessonGamification } from "@/lib/gamification/actions";
+import { updateQuestProgress } from "@/lib/quests/daily";
+import { loseHeart } from "@/lib/hearts";
 
 type ScenarioPart = { prompt: string; correctAnswer: string };
 
@@ -191,7 +193,10 @@ export async function submitAnswer(
     questionId,
     resolvedPartIndex,
   )) + 1;
-  const isCorrect = validateAcceptedAnswer(correctAnswerTarget, answer);
+  const isCorrect = validateQuestionAnswer(
+    { type: question.type as Parameters<typeof validateQuestionAnswer>[0]["type"], correctAnswer: correctAnswerTarget },
+    answer,
+  );
   const difficulty = parseQuestionDifficulty(question.difficulty);
 
   await prisma.questionAttempt.create({
@@ -233,6 +238,19 @@ export async function submitAnswer(
 
   const scenarioComplete =
     isScenario && isCorrect && earnedXp > 0 ? true : null;
+
+  // Lose heart on wrong answer
+  if (!isCorrect) {
+    await loseHeart(userId);
+  }
+
+  // Update daily quest progress
+  if (isCorrect) {
+    await updateQuestProgress(userId, "answer_questions", 1);
+  }
+  if (earnedXp > 0) {
+    await updateQuestProgress(userId, "earn_xp", earnedXp);
+  }
 
   return {
     questionId,
@@ -355,6 +373,10 @@ export async function completeLesson(
     summary.score,
     summary.xpEarned,
   );
+
+  // Update daily quest progress for lesson completion
+  await updateQuestProgress(userId, "complete_lessons", 1);
+  await updateQuestProgress(userId, "earn_xp", summary.xpEarned);
 
   return {
     lessonId,

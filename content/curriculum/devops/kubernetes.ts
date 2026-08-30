@@ -41,6 +41,30 @@ export const kubernetesPath: SeedPath = {
                   body: "Every tool in Kubernetes (kubectl included) is a client of the API server. Nothing else touches the nodes directly.",
                 },
               ],
+              questions: [
+                {
+                  type: "mcq",
+                  difficulty: "beginner",
+                  question: "Which is the single entry point for all API requests?",
+                  options: ["etcd","kube-apiserver","kubelet","scheduler"],
+                  correctAnswer: "kube-apiserver",
+                  explanation: "kube-apiserver is the front door for everything.",
+                },
+                {
+                  type: "true_false",
+                  difficulty: "beginner",
+                  question: "etcd stores the cluster's desired and actual state.",
+                  correctAnswer: "true",
+                  explanation: "etcd is the distributed key-value store holding all cluster data.",
+                },
+                {
+                  type: "command",
+                  difficulty: "beginner",
+                  question: "Type the command that lists all cluster nodes.",
+                  correctAnswer: "kubectl get nodes",
+                  explanation: "kubectl get nodes shows all nodes with status.",
+                },
+              ],
             },
             {
               title: "Declarative Desired State",
@@ -64,6 +88,30 @@ export const kubernetesPath: SeedPath = {
                 {
                   title: "The Feedback Loop",
                   body: "Self-healing, rollout, and scaling all fall out of the same reconcile loop — once you internalize it, Kubernetes stops being mysterious.",
+                },
+              ],
+              questions: [
+                {
+                  type: "mcq",
+                  difficulty: "beginner",
+                  question: "What is reconciliation in Kubernetes?",
+                  options: ["Manual admin intervention","Controllers continuously comparing desired to actual state","Deleting old resources","Scaling pods"],
+                  correctAnswer: "Controllers continuously comparing desired to actual state",
+                  explanation: "Controllers watch the API server and take action to match declared YAML.",
+                },
+                {
+                  type: "true_false",
+                  difficulty: "beginner",
+                  question: "You declare desired state and the system makes it so.",
+                  correctAnswer: "true",
+                  explanation: "You apply YAML manifests, controllers reconcile to match.",
+                },
+                {
+                  type: "command",
+                  difficulty: "beginner",
+                  question: "Type the command that applies a manifest file.",
+                  correctAnswer: "kubectl apply -f manifest.yaml",
+                  explanation: "kubectl apply declares desired state from YAML.",
                 },
               ],
             },
@@ -97,6 +145,30 @@ export const kubernetesPath: SeedPath = {
                   body: "`kubectl get pods -w` streams updates — the fastest way to feel the reconciliation loop in action.",
                 },
               ],
+              questions: [
+                {
+                  type: "mcq",
+                  difficulty: "beginner",
+                  question: "Which command shows detailed events for a resource?",
+                  options: ["kubectl get","kubectl describe","kubectl delete","kubectl exec"],
+                  correctAnswer: "kubectl describe",
+                  explanation: "describe shows detailed info including events.",
+                },
+                {
+                  type: "command",
+                  difficulty: "beginner",
+                  question: "Type the command that watches pods in real time.",
+                  correctAnswer: "kubectl get pods -w",
+                  explanation: "-w streams updates for the reconciliation loop.",
+                },
+                {
+                  type: "true_false",
+                  difficulty: "beginner",
+                  question: "kubectl apply is idempotent.",
+                  correctAnswer: "true",
+                  explanation: "Applying the same manifest twice is safe — creates or updates.",
+                },
+              ],
             },
             {
               title: "Namespaces",
@@ -118,6 +190,30 @@ export const kubernetesPath: SeedPath = {
                 {
                   title: "Boundaries",
                   body: "Namespaces are organizational, not security boundaries on their own — RBAC and network policies do the real isolation.",
+                },
+              ],
+              questions: [
+                {
+                  type: "mcq",
+                  difficulty: "beginner",
+                  question: "What is a Kubernetes namespace?",
+                  options: ["Physical machine","Logical partition of a cluster","Docker image","Storage class"],
+                  correctAnswer: "Logical partition of a cluster",
+                  explanation: "Namespaces scope resource names and policies.",
+                },
+                {
+                  type: "command",
+                  difficulty: "beginner",
+                  question: "Type the command that lists all namespaces.",
+                  correctAnswer: "kubectl get namespaces|kubectl get ns",
+                  explanation: "kubectl get namespaces shows all namespaces.",
+                },
+                {
+                  type: "true_false",
+                  difficulty: "intermediate",
+                  question: "Namespaces alone provide strong security isolation.",
+                  correctAnswer: "false",
+                  explanation: "Namespaces are organizational. RBAC provides real isolation.",
                 },
               ],
             },
@@ -159,6 +255,30 @@ export const kubernetesPath: SeedPath = {
                   body: "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: web\nspec:\n  containers:\n    - name: web\n      image: nginx:stable\n```"
                 },
               ],
+              questions: [
+                {
+                  type: "mcq",
+                  difficulty: "beginner",
+                  question: "What is the smallest deployable unit in Kubernetes?",
+                  options: ["Node","Container","Pod","Deployment"],
+                  correctAnswer: "Pod",
+                  explanation: "A pod is the atomic unit — containers share an IP and volumes.",
+                },
+                {
+                  type: "true_false",
+                  difficulty: "beginner",
+                  question: "Containers in a pod share the same network namespace.",
+                  correctAnswer: "true",
+                  explanation: "All containers in a pod share the pod's IP.",
+                },
+                {
+                  type: "command",
+                  difficulty: "beginner",
+                  question: "Type the command that lists all pods.",
+                  correctAnswer: "kubectl get pods",
+                  explanation: "kubectl get pods shows running pods with status.",
+                },
+              ],
             },
             {
               title: "Running and Inspecting",
@@ -181,6 +301,30 @@ export const kubernetesPath: SeedPath = {
                 {
                   title: "Troubleshooting",
                   body: "For failures, `kubectl describe pod` reveals ImagePullBackOff, CrashLoopBackOff, and the exit code — read events before executing blind.",
+                },
+              ],
+              questions: [
+                {
+                  type: "mcq",
+                  difficulty: "beginner",
+                  question: "Which command opens a shell inside a running pod?",
+                  options: ["kubectl logs","kubectl exec -it pod-name -- bash","kubectl describe","kubectl port-forward"],
+                  correctAnswer: "kubectl exec -it pod-name -- bash",
+                  explanation: "kubectl exec runs a command inside a container interactively.",
+                },
+                {
+                  type: "command",
+                  difficulty: "beginner",
+                  question: "Type the command that streams logs from pod web.",
+                  correctAnswer: "kubectl logs web -f",
+                  explanation: "-f follows new log lines.",
+                },
+                {
+                  type: "true_false",
+                  difficulty: "intermediate",
+                  question: "kubectl logs --previous shows logs from a crashed container.",
+                  correctAnswer: "true",
+                  explanation: "--previous retrieves the terminated container's logs.",
                 },
               ],
             },
@@ -222,6 +366,30 @@ export const kubernetesPath: SeedPath = {
                   body: "```yaml\napiVersion: apps/v1\nkind: Deployment\nspec:\n  replicas: 3\n  selector:\n    matchLabels: { app: web }\n  template:\n    metadata:\n      labels: { app: web }\n    spec:\n      containers:\n        - name: web\n          image: myapp:v2\n```"
                 },
               ],
+              questions: [
+                {
+                  type: "mcq",
+                  difficulty: "beginner",
+                  question: "What does a Deployment manage?",
+                  options: ["Nodes","ReplicaSets which manage Pods","Containers","Network policies"],
+                  correctAnswer: "ReplicaSets which manage Pods",
+                  explanation: "Deployment creates ReplicaSets, ReplicaSets ensure pod count.",
+                },
+                {
+                  type: "true_false",
+                  difficulty: "beginner",
+                  question: "Deployments provide zero-downtime rolling updates.",
+                  correctAnswer: "true",
+                  explanation: "New ReplicaScale out while old one scales down.",
+                },
+                {
+                  type: "command",
+                  difficulty: "beginner",
+                  question: "Type the command that checks rollout status of web.",
+                  correctAnswer: "kubectl rollout status deploy/web",
+                  explanation: "rollout status watches update progress.",
+                },
+              ],
             },
             {
               title: "Scaling",
@@ -244,6 +412,30 @@ export const kubernetesPath: SeedPath = {
                 {
                   title: "Rollout Mastery",
                   body: "`kubectl rollout status deploy/web` watches an update to completion; `kubectl rollout undo deploy/web` reverts fast when the new version misbehaves.",
+                },
+              ],
+              questions: [
+                {
+                  type: "mcq",
+                  difficulty: "beginner",
+                  question: "Which command scales deployment to 5 replicas?",
+                  options: ["kubectl scale deploy web --replicas=5","kubectl replicas deploy web 5","kubectl set replicas web 5","kubectl resize deploy web 5"],
+                  correctAnswer: "kubectl scale deploy web --replicas=5",
+                  explanation: "kubectl scale sets the desired replica count.",
+                },
+                {
+                  type: "command",
+                  difficulty: "intermediate",
+                  question: "Type the command that reverts the last web rollout.",
+                  correctAnswer: "kubectl rollout undo deploy/web",
+                  explanation: "rollout undo rolls back to the previous ReplicaSet.",
+                },
+                {
+                  type: "true_false",
+                  difficulty: "beginner",
+                  question: "HPA automatically scales based on metrics like CPU.",
+                  correctAnswer: "true",
+                  explanation: "HPA measures metrics and adjusts replica count.",
                 },
               ],
             },
@@ -285,6 +477,30 @@ export const kubernetesPath: SeedPath = {
                   body: "```yaml\napiVersion: v1\nkind: Service\nspec:\n  selector: { app: web }\n  ports:\n    - port: 80\n      targetPort: 8080\n```"
                 },
               ],
+              questions: [
+                {
+                  type: "mcq",
+                  difficulty: "beginner",
+                  question: "Why do pods need a Service?",
+                  options: ["To store data","To have a stable network endpoint","To run commands","To manage secrets"],
+                  correctAnswer: "To have a stable network endpoint",
+                  explanation: "Pod IPs are ephemeral. Services provide stable ClusterIP and DNS.",
+                },
+                {
+                  type: "command",
+                  difficulty: "beginner",
+                  question: "Type the command that lists all services.",
+                  correctAnswer: "kubectl get services|kubectl get svc",
+                  explanation: "kubectl get services shows all Services with type and ports.",
+                },
+                {
+                  type: "true_false",
+                  difficulty: "beginner",
+                  question: "A Service uses label selectors to find pods.",
+                  correctAnswer: "true",
+                  explanation: "The selector matches pod labels for traffic routing.",
+                },
+              ],
             },
             {
               title: "Exposing to the World",
@@ -306,6 +522,30 @@ export const kubernetesPath: SeedPath = {
                 {
                   title: "Reachability Guide",
                   body: "Internal API → ClusterIP. Quick tests → NodePort. Production exposure → LoadBalancer + Ingress with TLS.",
+                },
+              ],
+              questions: [
+                {
+                  type: "mcq",
+                  difficulty: "intermediate",
+                  question: "Which Service type asks the cloud provider for an external IP?",
+                  options: ["ClusterIP","NodePort","LoadBalancer","ExternalName"],
+                  correctAnswer: "LoadBalancer",
+                  explanation: "LoadBalancer provisions an external IP via cloud provider.",
+                },
+                {
+                  type: "command",
+                  difficulty: "beginner",
+                  question: "Type the command that describes service web.",
+                  correctAnswer: "kubectl describe svc web",
+                  explanation: "describe shows selectors, endpoints, and events.",
+                },
+                {
+                  type: "true_false",
+                  difficulty: "intermediate",
+                  question: "An Ingress routes HTTP by hostname and path at Layer 7.",
+                  correctAnswer: "true",
+                  explanation: "Ingress provides HTTP routing unlike L4 Services.",
                 },
               ],
             },
@@ -347,6 +587,30 @@ export const kubernetesPath: SeedPath = {
                   body: "ConfigMaps are not encrypted and are wide-open in the cluster. Never put credentials here — that is what Secrets are for.",
                 },
               ],
+              questions: [
+                {
+                  type: "mcq",
+                  difficulty: "beginner",
+                  question: "What is a ConfigMap used for?",
+                  options: ["Passwords","Non-sensitive configuration","Container images","Network policies"],
+                  correctAnswer: "Non-sensitive configuration",
+                  explanation: "ConfigMaps hold key-value pairs for non-sensitive config.",
+                },
+                {
+                  type: "command",
+                  difficulty: "beginner",
+                  question: "Type the command that creates ConfigMap app-config.",
+                  correctAnswer: "kubectl create cm app-config --from-literal=LOG_LEVEL=info",
+                  explanation: "kubectl create configmap creates from literal key-value pairs.",
+                },
+                {
+                  type: "true_false",
+                  difficulty: "beginner",
+                  question: "ConfigMaps are encrypted at rest by default.",
+                  correctAnswer: "false",
+                  explanation: "ConfigMaps are plain text. Use Secrets for sensitive data.",
+                },
+              ],
             },
             {
               title: "Secrets",
@@ -369,6 +633,30 @@ export const kubernetesPath: SeedPath = {
                 {
                   title: "Usage",
                   body: "Create with `kubectl create secret generic db-creds --from-literal=password=...` or from files, then mount or inject via `envFrom`. Rotate by recreating the Secret and rolling the workload.",
+                },
+              ],
+              questions: [
+                {
+                  type: "mcq",
+                  difficulty: "intermediate",
+                  question: "How are Secret values stored?",
+                  options: ["AES encrypted","Base64-encoded (not encrypted)","Plaintext","SHA-256 hashed"],
+                  correctAnswer: "Base64-encoded (not encrypted)",
+                  explanation: "Secrets use base64 encoding, which is obfuscation not encryption.",
+                },
+                {
+                  type: "command",
+                  difficulty: "intermediate",
+                  question: "Type the command that creates secret db-creds.",
+                  correctAnswer: "kubectl create secret generic db-creds --from-literal=password=mysecret",
+                  explanation: "kubectl create secret generic creates from literal pairs.",
+                },
+                {
+                  type: "true_false",
+                  difficulty: "intermediate",
+                  question: "Kubernetes supports encryption at rest for Secrets via KMS.",
+                  correctAnswer: "true",
+                  explanation: "With KMS provider, Secrets can be encrypted in etcd.",
                 },
               ],
             },

@@ -43,9 +43,9 @@ export function AchievementCard({
   return (
     <div
       className={cn(
-        "relative flex items-start gap-4 p-4 rounded-2xl border-2 transition-all duration-200",
+        "relative flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-2xl border-2 transition-all duration-200",
         isUnlocked
-          ? "bg-card border-border hover:border-primary/40 hover:shadow-md shadow-sm"
+          ? "bg-card border-border hover:border-primary/40 hover:shadow-md hover:scale-[1.01] shadow-sm"
           : "bg-muted/40 border-dashed border-border/70 opacity-70 hover:opacity-90",
         className,
       )}
@@ -53,14 +53,14 @@ export function AchievementCard({
       {/* Badge Icon Circle */}
       <div
         className={cn(
-          "size-14 shrink-0 rounded-2xl flex items-center justify-center border-2 transition-transform duration-200 group-hover:scale-105",
+          "size-12 sm:size-14 shrink-0 rounded-2xl flex items-center justify-center border-2 transition-all duration-200",
           isUnlocked
-            ? "bg-gradient-to-br from-amber-400/20 to-orange-500/20 border-amber-500/30 text-amber-500 shadow-sm"
+            ? "bg-gradient-to-br from-achievement/20 to-achievement/10 border-achievement/30 text-achievement shadow-sm hover:scale-110 hover:rotate-3"
             : "bg-muted border-border text-muted-foreground",
         )}
       >
         {isUnlocked ? (
-          <IconComponent className="size-7 text-amber-500 fill-amber-500/30" />
+          <IconComponent className="size-7 text-achievement fill-achievement/30" />
         ) : (
           <Lock className="size-6 text-muted-foreground/60" />
         )}
@@ -83,7 +83,7 @@ export function AchievementCard({
             className={cn(
               "text-xs font-bold px-2 py-0.5 rounded-full shrink-0 border",
               isUnlocked
-                ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30"
+                ? "bg-achievement/15 text-achievement border-achievement/30"
                 : "bg-muted text-muted-foreground border-border",
             )}
           >

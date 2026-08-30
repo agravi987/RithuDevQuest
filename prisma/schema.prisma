@@ -17,6 +17,8 @@ model User {
   role            String           @default("user")
   xp              Int              @default(0)
   level           Int              @default(1)
+  hearts          Int              @default(5)
+  heartsResetAt   DateTime?
   accounts        Account[]
   sessions        Session[]
   lessonAttempts  LessonAttempt[]
@@ -25,6 +27,9 @@ model User {
   streak          Streak?
   achievements    UserAchievement[]
   skills          UserSkill[]
+  dailyQuests     DailyQuest[]
+  leagueMembers   LeagueMember[]
+  practiceSessions PracticeSession[]
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 }
@@ -259,6 +264,29 @@ model UserSkill {
   @@unique([userId, skillId])
 }
 
+model League {
+  id          String   @id @default(cuid())
+  name        String
+  tier        Int      // 1=Bronze, 2=Silver, 3=Gold, 4=Platinum, 5=Diamond
+  maxMembers  Int      @default(30)
+  startDate   DateTime @db.Date
+  endDate     DateTime @db.Date
+  createdAt   DateTime @default(now())
+  members     LeagueMember[]
+}
+
+model LeagueMember {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  leagueId    String
+  league      League   @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  weeklyXp    Int      @default(0)
+  joinedAt    DateTime @default(now())
+
+  @@unique([userId, leagueId])
+}
+
 model Streak {
   id             String    @id @default(cuid())
   userId         String    @unique
@@ -268,4 +296,37 @@ model Streak {
   lastActiveDate DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+}
+
+model DailyQuest {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questDate   DateTime @db.Date
+  type        String   // "complete_lessons", "answer_questions", "earn_xp", "practice"
+  title       String
+  description String
+  target      Int      // e.g. 3 lessons, 10 questions, 50 XP
+  current     Int      @default(0)
+  completed   Boolean  @default(false)
+  xpReward    Int      @default(50)
+  icon        String   @default("Quest")
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, questDate, type, target])
+}
+
+model PracticeSession {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic       String
+  difficulty  String   // "beginner", "intermediate", "advanced"
+  questionType String  // "mcq", "true_false", "command"
+  question    String
+  correctAnswer String
+  userAnswer  String?
+  isCorrect   Boolean  @default(false)
+  xpEarned    Int      @default(0)
+  createdAt   DateTime @default(now())
 }

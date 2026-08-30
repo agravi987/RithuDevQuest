@@ -2,8 +2,9 @@ import "dotenv/config";
 import { PrismaClient, Prisma } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
-import { devopsCareer } from "../content/curriculum/devops/index";
+import { allCareers } from "../content/curriculum/index";
 import { activityTypeOf } from "../src/lib/curriculum/seed";
+import { encodeRichQuestion } from "../src/lib/quiz/types";
 import type {
   SeedCareer,
   SeedPath,
@@ -60,13 +61,27 @@ function assertLesson(lesson: SeedLesson): void {
   }
 }
 
+const RICH_TYPES = new Set([
+  "fill_blank",
+  "multi_select",
+  "match",
+  "sequence",
+  "code_completion",
+  "word_scramble",
+  "flip_cards",
+]);
+
 function assertQuestion(lesson: SeedLesson, question: SeedQuestion): void {
   if (!question.question || !question.explanation) {
     throw new Error(
       `Question in lesson ${lesson.slug} requires question and explanation`,
     );
   }
-  if (question.type !== "scenario" && !question.correctAnswer) {
+  if (
+    question.type !== "scenario" &&
+    !RICH_TYPES.has(question.type) &&
+    !question.correctAnswer
+  ) {
     throw new Error(
       `Question in lesson ${lesson.slug} requires a correctAnswer`,
     );
@@ -94,6 +109,69 @@ function assertQuestion(lesson: SeedLesson, question: SeedQuestion): void {
           `Scenario part in lesson ${lesson.slug} requires prompt and correctAnswer`,
         );
       }
+    }
+  }
+  if (question.type === "fill_blank") {
+    if (!question.fillBlanks || question.fillBlanks.length < 1) {
+      throw new Error(
+        `Fill-blank in lesson ${lesson.slug} requires fillBlanks`,
+      );
+    }
+  }
+  if (question.type === "multi_select") {
+    if (!question.multiSelectOptions || question.multiSelectOptions.length < 2) {
+      throw new Error(
+        `Multi-select in lesson ${lesson.slug} requires at least two options`,
+      );
+    }
+    if (!question.multiSelectOptions.some((option) => option.isCorrect)) {
+      throw new Error(
+        `Multi-select in lesson ${lesson.slug} requires at least one correct option`,
+      );
+    }
+  }
+  if (question.type === "match") {
+    if (!question.matchPairs || question.matchPairs.length < 2) {
+      throw new Error(
+        `Match in lesson ${lesson.slug} requires at least two pairs`,
+      );
+    }
+  }
+  if (question.type === "sequence") {
+    if (!question.sequenceItems || question.sequenceItems.length < 2) {
+      throw new Error(
+        `Sequence in lesson ${lesson.slug} requires at least two items`,
+      );
+    }
+    const ids = new Set(question.sequenceItems.map((item) => item.id));
+    if (
+      question.sequenceCorrectOrder &&
+      !question.sequenceCorrectOrder.every((id) => ids.has(id))
+    ) {
+      throw new Error(
+        `Sequence in lesson ${lesson.slug} has unknown ids in the correct order`,
+      );
+    }
+  }
+  if (question.type === "code_completion") {
+    if (!question.codeBlanks || question.codeBlanks.length < 1) {
+      throw new Error(
+        `Code-completion in lesson ${lesson.slug} requires codeBlanks`,
+      );
+    }
+  }
+  if (question.type === "word_scramble") {
+    if (!question.scrambledWord) {
+      throw new Error(
+        `Word-scramble in lesson ${lesson.slug} requires scrambledWord`,
+      );
+    }
+  }
+  if (question.type === "flip_cards") {
+    if (!question.flipCards || question.flipCards.length < 1) {
+      throw new Error(
+        `Flip-cards in lesson ${lesson.slug} requires flipCards`,
+      );
     }
   }
 }
@@ -227,24 +305,22 @@ async function upsertLesson(
   await prisma.question.deleteMany({ where: { lessonId: lessonRecord.id } });
   if (lesson.questions && lesson.questions.length > 0) {
     await prisma.question.createMany({
-      data: lesson.questions.map((question) => ({
-        type: question.type,
-        difficulty: question.difficulty ?? "beginner",
-        question: question.question,
-        options:
-          (question.options as unknown as Prisma.InputJsonValue) ?? Prisma.JsonNull,
-        parts:
-          (question.parts as unknown as Prisma.InputJsonValue) ?? Prisma.JsonNull,
-        correctAnswer:
-          question.correctAnswer ??
-          (question.parts?.map((part) => part.correctAnswer).join("|") ??
-            "true"),
-        explanation: question.explanation,
-        hint: question.hint,
-        lessonId: lessonRecord.id,
-        skillId: skills[0]?.id ?? null,
-        source: "curriculum",
-      })),
+      data: lesson.questions.map((question) => {
+        const encoded = encodeRichQuestion(question);
+        return {
+          type: question.type,
+          difficulty: question.difficulty ?? "beginner",
+          question: question.question,
+          options: (encoded.options as unknown as Prisma.InputJsonValue) ?? Prisma.JsonNull,
+          parts: (encoded.parts as unknown as Prisma.InputJsonValue) ?? Prisma.JsonNull,
+          correctAnswer: encoded.correctAnswer,
+          explanation: question.explanation,
+          hint: question.hint,
+          lessonId: lessonRecord.id,
+          skillId: skills[0]?.id ?? null,
+          source: "curriculum",
+        };
+      }),
     });
   }
 
@@ -399,20 +475,28 @@ async function main() {
   });
 
   try {
-    await prisma.$transaction(async (tx) => {
-      await seedCareer(tx as unknown as PrismaClient, devopsCareer);
-      await seedAchievements(tx as unknown as PrismaClient);
-    });
+    await prisma.$transaction(
+      async (tx) => {
+        for (const career of allCareers) {
+          await seedCareer(tx as unknown as PrismaClient, career);
+        }
+        await seedAchievements(tx as unknown as PrismaClient);
+      },
+      { timeout: 60_000 },
+    );
 
     console.log("Seeded curriculum:");
-    console.log(`- Career: ${devopsCareer.title}`);
 
-    for (const path of devopsCareer.paths) {
-      const lessonCount = path.modules.reduce(
-        (sum, m) => sum + m.units.reduce((s, u) => s + u.lessons.length, 0),
-        0,
-      );
-      console.log(`  - ${path.title}: ${lessonCount} lessons`);
+    for (const career of allCareers) {
+      console.log(`- Career: ${career.title}`);
+
+      for (const path of career.paths) {
+        const lessonCount = path.modules.reduce(
+          (sum, m) => sum + m.units.reduce((s, u) => s + u.lessons.length, 0),
+          0,
+        );
+        console.log(`  - ${path.title}: ${lessonCount} lessons`);
+      }
     }
   } finally {
     await prisma.$disconnect();

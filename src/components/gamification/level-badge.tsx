@@ -60,13 +60,13 @@ export function LevelBadge({
     <div
       className={cn(
         "inline-flex items-center font-bold tracking-tight rounded-full",
-        "bg-primary/10 text-primary border border-primary/20 shadow-sm",
-        "transition-all duration-200 hover:scale-105 hover:bg-primary/15",
+        "bg-level/10 text-level border border-level/20 shadow-sm",
+        "transition-all duration-200 hover:scale-105 hover:bg-level/15",
         sizeClasses[size],
         className,
       )}
     >
-      <IconComponent className={cn("text-primary", iconSizes[size])} />
+      <IconComponent className={cn("text-level", iconSizes[size])} />
       <span>Lvl {level}</span>
       {showTitle && title && (
         <span className="text-muted-foreground font-normal">· {title}</span>

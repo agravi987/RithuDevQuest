@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { AnimatePresence, motion } from "motion/react";
 
 import { LearnSection } from "@/components/lesson/learn-section";
 import { ExampleSection } from "@/components/lesson/example-section";
@@ -8,7 +9,19 @@ import { QuestionSection } from "@/components/lesson/question-section";
 import { FeedbackSection } from "@/components/lesson/feedback-section";
 import { LessonComplete } from "@/components/lesson/lesson-complete";
 import { LessonHeader } from "@/components/lesson/lesson-header";
+import { SpaceshipPlayer } from "@/components/galaxy/spaceship-player";
 import { completeLesson, submitAnswer } from "@/lib/lesson/actions";
+import { correctAnswerConfetti, lessonCompleteConfetti } from "@/lib/confetti";
+import {
+  playCorrectSound,
+  playWrongSound,
+  playLessonCompleteSound,
+  playXpGainSound,
+  resumeAudio,
+} from "@/lib/sounds";
+import { useSound } from "@/lib/sound-context";
+import { XpFly } from "@/components/gamification/xp-fly";
+import { HeartsDisplay } from "@/components/gamification/hearts-display";
 import type {
   CompleteLessonResult,
   LessonActivityData,
@@ -20,6 +33,12 @@ import type {
 type ActivityStep = LessonActivityData & { kind: "activity" };
 type QuestionStep = LessonQuestionData & { kind: "question" };
 type Step = ActivityStep | QuestionStep;
+
+export type LessonPlayerHearts = {
+  hearts: number;
+  maxHearts: number;
+  nextRegen: Date | null;
+};
 
 function buildSteps(data: LessonPlayerData): Step[] {
   return [
@@ -34,7 +53,22 @@ function buildSteps(data: LessonPlayerData): Step[] {
   ];
 }
 
-export function LessonPlayer({ data }: { data: LessonPlayerData }) {
+const TYPED_TYPES = new Set(["command", "scenario"]);
+
+function isTypedQuestion(step: Step): boolean {
+  return step.kind === "question" && TYPED_TYPES.has(step.type);
+}
+
+export function LessonPlayer({
+  data,
+  heartsInfo,
+  onLoseHeart,
+}: {
+  data: LessonPlayerData;
+  heartsInfo?: LessonPlayerHearts;
+  onLoseHeart?: () => void;
+}) {
+  const { soundEnabled } = useSound();
   const steps = buildSteps(data);
 
   const [index, setIndex] = useState(0);
@@ -46,9 +80,71 @@ export function LessonPlayer({ data }: { data: LessonPlayerData }) {
   const [xpEarned, setXpEarned] = useState(0);
   const [result, setResult] = useState<CompleteLessonResult | null>(null);
   const [completing, setCompleting] = useState(false);
+  const [xpTrigger, setXpTrigger] = useState(0);
 
   const step = steps[index];
   const isLastStep = index === steps.length - 1;
+
+  function canSubmitValue(): boolean {
+    if (!step || step.kind !== "question") return false;
+    const isTyped = step.type === "command" || step.type === "scenario";
+    return isTyped ? (value ?? "").trim().length > 0 : value !== null;
+  }
+
+  // Keyboard shortcuts: Enter to submit/continue, R to retry, number keys for MCQ
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      // Don't intercept if user is typing in an input
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      ) {
+        if (e.key === "Enter" && !submitting && canSubmitValue()) {
+          e.preventDefault();
+          handleSubmit();
+        }
+        return;
+      }
+
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        if (feedback) {
+          if (!feedback.isCorrect) {
+            handleRetry();
+          } else {
+            handleContinue();
+          }
+        } else if (step?.kind === "activity") {
+          handleContinue();
+        } else if (canSubmitValue()) {
+          handleSubmit();
+        }
+      }
+
+      if (e.key === "r" || e.key === "R") {
+        if (feedback && !feedback.isCorrect) {
+          handleRetry();
+        }
+      }
+
+      // Number keys 1-6 for MCQ options
+      if (!feedback && step?.kind === "question" && !isTypedQuestion(step)) {
+        const num = parseInt(e.key, 10);
+        if (num >= 1 && num <= 6 && step.options) {
+          const optionIndex = num - 1;
+          if (optionIndex < (step.options?.length ?? 0)) {
+            setValue(String(step.options[optionIndex]));
+          }
+        }
+      }
+    },
+    [feedback, submitting, step, handleSubmit, handleContinue, handleRetry, setValue],
+  );
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
 
   function resetQuestionState() {
     setValue(null);
@@ -56,8 +152,11 @@ export function LessonPlayer({ data }: { data: LessonPlayerData }) {
     setPartIndex(0);
   }
 
-  async function handleSubmit() {
-    if (!step || step.kind !== "question" || !value) return;
+  async function handleSubmit(answerOverride?: string) {
+    if (!step || step.kind !== "question") return;
+    const answer = answerOverride ?? value;
+    if (!answer) return;
+    if (soundEnabled) resumeAudio();
 
     setSubmitting(true);
     setError(null);
@@ -65,12 +164,21 @@ export function LessonPlayer({ data }: { data: LessonPlayerData }) {
       const response = await submitAnswer({
         lessonId: data.lesson.id,
         questionId: step.id,
-        answer: value,
+        answer,
         partIndex: step.type === "scenario" ? partIndex : undefined,
       });
       setFeedback(response);
       if (response.xpEarned > 0) {
         setXpEarned((previous) => previous + response.xpEarned);
+        setXpTrigger((previous) => previous + 1);
+        if (soundEnabled) playXpGainSound();
+      }
+      if (response.isCorrect) {
+        correctAnswerConfetti();
+        if (soundEnabled) playCorrectSound();
+      } else {
+        if (soundEnabled) playWrongSound();
+        onLoseHeart?.();
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -91,6 +199,8 @@ export function LessonPlayer({ data }: { data: LessonPlayerData }) {
           questionIds: data.questions.map((question) => question.id),
         });
         setResult(response);
+        lessonCompleteConfetti();
+        if (soundEnabled) playLessonCompleteSound();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Something went wrong");
         setCompleting(false);
@@ -134,6 +244,20 @@ export function LessonPlayer({ data }: { data: LessonPlayerData }) {
 
   return (
     <div className="flex flex-col gap-8">
+      <XpFly amount={xpEarned} triggerKey={xpTrigger} />
+
+      {/* Hearts display */}
+      {heartsInfo && (
+        <div className="flex items-center justify-center">
+          <HeartsDisplay
+            hearts={heartsInfo.hearts}
+            maxHearts={heartsInfo.maxHearts}
+            nextRegen={heartsInfo.nextRegen}
+            size="md"
+          />
+        </div>
+      )}
+
       <LessonHeader
         title={data.lesson.title}
         completedSteps={index}
@@ -142,49 +266,95 @@ export function LessonPlayer({ data }: { data: LessonPlayerData }) {
       />
 
       {error && (
-        <p className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-          {error}
-        </p>
+        <div role="alert" aria-live="assertive">
+          <p className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            {error}
+          </p>
+        </div>
       )}
 
-      {step?.kind === "activity" &&
-        (step.type === "learn" ? (
-          <LearnSection
-            title={step.title}
-            body={step.body}
-            onContinue={handleContinue}
+      {/* Live mission step — warp between destinations */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={
+            completing
+              ? "finishing"
+              : step
+                ? `${step.kind}-${step.id}-${step.type}-${partIndex}`
+                : "idle"
+          }
+          initial={{ opacity: 0, x: 64, scale: 0.96 }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
+          exit={{ opacity: 0, x: -64, scale: 0.96 }}
+          transition={{ duration: 0.35, ease: "easeOut" }}
+          className="relative"
+        >
+          {/* Warp trail behind the incoming step */}
+          <motion.div
+            aria-hidden
+            initial={{ opacity: 0, x: 90 }}
+            animate={{ opacity: [0, 0.35, 0], x: [90, 0, -90] }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+            className="pointer-events-none absolute -inset-x-4 top-1/2 h-px"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent, oklch(0.8 0.15 200 / 0.6), transparent)",
+            }}
           />
-        ) : (
-          <ExampleSection
-            title={step.title}
-            body={step.body}
-            code={step.code}
-            onContinue={handleContinue}
-          />
-        ))}
 
-      {step?.kind === "question" && !feedback && (
-        <QuestionSection
-          question={step}
-          value={value}
-          onValueChange={setValue}
-          onSubmit={handleSubmit}
-          submitting={submitting}
-          partIndex={partIndex}
-        />
-      )}
+          {completing && (
+            <div className="flex items-center justify-center gap-3 py-10">
+              <SpaceshipPlayer size={40} state="current" />
+              <p className="text-sm text-muted-foreground">
+                Engaging warp drive — finishing lesson…
+              </p>
+            </div>
+          )}
 
-      {step?.kind === "question" && feedback && (
-        <FeedbackSection
-          feedback={feedback}
-          onContinue={handleContinue}
-          onRetry={handleRetry}
-        />
-      )}
+          {!completing &&
+            step?.kind === "activity" &&
+            (step.type === "learn" ? (
+              <LearnSection
+                title={step.title}
+                body={step.body}
+                onContinue={handleContinue}
+              />
+            ) : (
+              <ExampleSection
+                title={step.title}
+                body={step.body}
+                code={step.code}
+                onContinue={handleContinue}
+              />
+            ))}
 
-      {completing && (
-        <p className="text-sm text-muted-foreground">Finishing lesson…</p>
-      )}
+          {!completing && step?.kind === "question" && !feedback && (
+            <QuestionSection
+              question={step}
+              value={value}
+              onValueChange={setValue}
+              onSubmit={handleSubmit}
+              submitting={submitting}
+              partIndex={partIndex}
+            />
+          )}
+
+          {!completing && step?.kind === "question" && feedback && (
+            <FeedbackSection
+              feedback={feedback}
+              onContinue={handleContinue}
+              onRetry={handleRetry}
+            />
+          )}
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Keyboard shortcuts reference */}
+      <div className="hidden md:flex items-center justify-center gap-4 text-[10px] text-muted-foreground/50 pt-2">
+        <span className="flex items-center gap-1"><kbd className="kbd">1</kbd>-<kbd className="kbd">6</kbd> Select</span>
+        <span className="flex items-center gap-1"><kbd className="kbd">Enter</kbd> Submit</span>
+        <span className="flex items-center gap-1"><kbd className="kbd">R</kbd> Retry</span>
+      </div>
     </div>
   );
 }

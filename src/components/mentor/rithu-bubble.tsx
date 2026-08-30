@@ -31,15 +31,19 @@ export function RithuBubble({
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 8 }}
-        className={`relative flex items-start gap-4 p-5 rounded-3xl border-2 border-primary/30 bg-gradient-to-br from-primary/10 via-card to-background shadow-md ${className}`}
+        className={`relative flex items-start gap-3 sm:gap-4 p-4 sm:p-5 rounded-3xl border-2 border-primary/30 bg-gradient-to-br from-primary/10 via-card to-background shadow-md glass-shimmer ${className}`}
       >
         {/* Rithu Mascot Avatar */}
-        <div className="relative size-12 shrink-0 rounded-2xl bg-gradient-to-tr from-primary via-emerald-400 to-teal-300 flex items-center justify-center text-white font-black text-xl shadow-md border-2 border-white/40">
+        <motion.div
+          animate={{ scale: [1, 1.05, 1] }}
+          transition={{ duration: 3, repeat: Infinity }}
+          className="relative size-10 sm:size-12 shrink-0 rounded-2xl bg-gradient-to-tr from-primary via-emerald-400 to-teal-300 flex items-center justify-center text-white font-black text-lg sm:text-xl shadow-lg shadow-primary/20 border-2 border-white/40"
+        >
           R
-          <span className="absolute -bottom-1 -right-1 size-4 rounded-full bg-emerald-500 border-2 border-background flex items-center justify-center">
+          <span className="absolute -bottom-1 -right-1 size-4 rounded-full bg-emerald-500 border-2 border-background flex items-center justify-center animate-badge-pop">
             <Sparkles className="size-2.5 text-white" />
           </span>
-        </div>
+        </motion.div>
 
         {/* Message Bubble */}
         <div className="flex-1 min-w-0 flex flex-col gap-1.5">
