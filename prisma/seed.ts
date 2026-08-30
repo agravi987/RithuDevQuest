@@ -475,15 +475,10 @@ async function main() {
   });
 
   try {
-    await prisma.$transaction(
-      async (tx) => {
-        for (const career of allCareers) {
-          await seedCareer(tx as unknown as PrismaClient, career);
-        }
-        await seedAchievements(tx as unknown as PrismaClient);
-      },
-      { timeout: 60_000 },
-    );
+    for (const career of allCareers) {
+      await seedCareer(prisma, career);
+    }
+    await seedAchievements(prisma);
 
     console.log("Seeded curriculum:");
 
