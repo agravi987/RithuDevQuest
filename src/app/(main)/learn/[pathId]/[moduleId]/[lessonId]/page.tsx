@@ -135,7 +135,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
         payload: rich?.payload,
       };
     }),
-    moduleHref: `/learn/${pathId}/${moduleId}`,
+    moduleHref: `/learn/${pathId}`,
     nextLessonHref: nextLesson
       ? `/learn/${pathId}/${moduleId}/${nextLesson.slug}`
       : null,
@@ -145,13 +145,22 @@ export default async function LessonPage({ params }: LessonPageProps) {
 
   return (
     <div className="flex flex-col gap-8">
-      <Link
-        href={data.moduleHref}
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ChevronLeft className="size-4" />
-        {mod.title}
-      </Link>
+      <div className="flex items-center gap-3">
+        <Link
+          href={`/learn/${pathId}`}
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ChevronLeft className="size-4" />
+          Galaxy Map
+        </Link>
+        <span className="text-muted-foreground/30">/</span>
+        <Link
+          href={`/learn/${pathId}/${moduleId}`}
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground/60 hover:text-foreground transition-colors"
+        >
+          {mod.title}
+        </Link>
+      </div>
       <LessonPlayer
         data={data}
         heartsInfo={heartsInfo}

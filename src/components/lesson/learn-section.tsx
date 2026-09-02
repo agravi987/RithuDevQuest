@@ -32,7 +32,7 @@ export function LearnSection({ title, body, onContinue }: LearnSectionProps) {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.1 }}
-        className="rounded-2xl border-2 border-border bg-card p-6 sm:p-8 shadow-sm glass-shimmer relative overflow-hidden"
+        className="rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-sm relative overflow-hidden"
       >
         <h2 className="text-xl font-bold tracking-tight mb-4">{title}</h2>
         <div className="prose-sm max-w-none text-muted-foreground leading-relaxed">

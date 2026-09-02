@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -96,21 +97,33 @@ export function NoHeartsOverlay({
   nextRegen?: Date | null;
   onDismiss: () => void;
 }) {
+  const router = useRouter();
+
+  useEffect(() => {
+    if (hearts > 0) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onDismiss();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [hearts, onDismiss]);
+
   if (hearts > 0) return null;
 
   return (
     <div className="fixed inset-0 z-[90] flex items-center justify-center bg-background/80 backdrop-blur-md" role="dialog" aria-modal="true" aria-label="Out of hearts">
-      <div className="mx-4 flex flex-col items-center gap-6 rounded-3xl border-2 border-destructive/20 bg-card p-6 sm:p-8 text-center shadow-2xl max-w-sm w-full">
+      <div className="mx-4 flex flex-col items-center gap-6 rounded-3xl border border-destructive/20 bg-card p-6 sm:p-8 text-center shadow-xl max-w-sm w-full">
         {/* Broken heart animation */}
         <div className="relative">
-          <div className="grid size-20 place-items-center rounded-full bg-destructive/10">
+          <div className="absolute -inset-4 rounded-full bg-destructive/10 blur-xl" />
+          <div className="relative grid size-20 place-items-center rounded-full bg-destructive/10 animate-pulse-ring">
             <span className="text-5xl">💔</span>
           </div>
         </div>
 
         <div>
           <h2 className="text-2xl font-black">Out of Hearts!</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
             You&apos;ve used all your hearts. Wait for them to regenerate or practice to earn more.
           </p>
         </div>
@@ -127,14 +140,19 @@ export function NoHeartsOverlay({
 
         <div className="flex flex-col gap-2 w-full">
           <button
-            onClick={onDismiss}
+            type="button"
+            onClick={() => {
+              onDismiss();
+              router.push("/practice");
+            }}
             className="w-full rounded-xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-md hover:brightness-110 transition-all"
           >
             Go to Practice Arena
           </button>
           <button
+            type="button"
             onClick={onDismiss}
-            className="w-full rounded-xl border-2 border-border px-6 py-2 text-sm font-semibold text-muted-foreground hover:bg-muted transition-all"
+            className="w-full rounded-xl border border-border px-6 py-2 text-sm font-semibold text-muted-foreground hover:bg-muted transition-all"
           >
             Wait for Hearts
           </button>

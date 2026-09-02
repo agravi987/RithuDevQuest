@@ -68,6 +68,7 @@ export default async function ModulePage({
     description: unit.description,
     slug: unit.slug,
     icon: "",
+    completedCount: unit.lessons.filter((l) => completedLessonIds.includes(l.id)).length,
     lessons: unit.lessons.map((lesson) => ({
       id: lesson.id,
       title: lesson.title ?? `Lesson ${lesson.order + 1}`,

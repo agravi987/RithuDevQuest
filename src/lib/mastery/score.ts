@@ -97,17 +97,21 @@ export function calculateMasteryScore(
   const correctnessScore = (correctCount / total) * 100;
 
   // 2. Recency Score (0-100) - Exponential decay based on days since answered
+  // The attempts are already sorted most-recent-first; age alone (time-based
+  // decay) captures recency. Applying an additional positional penalty here
+  // would double-count age for users with many attempts, unfairly suppressing
+  // their recency even when answers are recent in calendar terms.
   let weightedRecencySum = 0;
   let recencyWeightSum = 0;
   const nowMs = now.getTime();
 
-  sorted.forEach((attempt, index) => {
+  sorted.forEach((attempt) => {
     const daysAgo = Math.max(
       0,
       (nowMs - new Date(attempt.answeredAt).getTime()) / (1000 * 60 * 60 * 24),
     );
-    // Weight decreases with age and index
-    const weight = Math.exp(-0.1 * daysAgo) / (index + 1);
+    // Weight decreases with age only
+    const weight = Math.exp(-0.1 * daysAgo);
     weightedRecencySum += (attempt.isCorrect ? 100 : 0) * weight;
     recencyWeightSum += weight;
   });

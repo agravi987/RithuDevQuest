@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Check,
@@ -113,9 +113,11 @@ export function RichQuestion({
   const matchPairs = payload?.match ?? [];
   const [matchSelectedLeft, setMatchSelectedLeft] = useState<number | null>(null);
   const [matchMatches, setMatchMatches] = useState<Map<number, number>>(new Map());
-  const [matchShuffledRight, setMatchShuffledRight] = useState<number[]>(() =>
-    shuffle(matchPairs.map((_, i) => i)),
-  );
+  const matchShuffledRightRef = useRef<number[] | null>(null);
+  if (!matchShuffledRightRef.current) {
+    matchShuffledRightRef.current = shuffle(matchPairs.map((_, i) => i));
+  }
+  const matchShuffledRight = matchShuffledRightRef.current;
   const [matchWrong, setMatchWrong] = useState<{ left: number; right: number } | null>(null);
 
   function clickMatchLeft(left: number) {
@@ -348,6 +350,7 @@ export function RichQuestion({
                       <span className="inline-flex items-center rounded-lg border-2 border-dashed border-primary/40 bg-primary/5 px-3 py-1">
                         <input
                           type="text"
+                          aria-label={`Fill in blank ${i + 1}`}
                           autoFocus
                           value={fillInputs[i] ?? ""}
                           onChange={(e) =>
@@ -478,7 +481,10 @@ export function RichQuestion({
       {type === "match" && (
         <div className="flex flex-col gap-5">
           {/* Instruction banner */}
-          <div className={cn(
+          <div
+            role="status"
+            aria-live="polite"
+            className={cn(
             "rounded-xl border px-4 py-2.5 text-center text-sm font-semibold transition-all",
             matchSelectedLeft !== null
               ? "border-primary/30 bg-primary/5 text-primary"
@@ -504,6 +510,7 @@ export function RichQuestion({
                   {/* Left item */}
                   <motion.button
                     type="button"
+                    aria-pressed={isLeftSelected}
                     onClick={() => clickMatchLeft(i)}
                     disabled={isLeftMatched}
                     animate={isLeftWrong ? { x: [-4, 4, -4, 4, 0] } : {}}
@@ -553,18 +560,7 @@ export function RichQuestion({
                       <span className="flex-1">{matchedRightText}</span>
                     </div>
                   ) : (
-                    <motion.button
-                      type="button"
-                      onClick={() => clickMatchRight(matchShuffledRight.findIndex((_, ri) => {
-                        // Find the shuffled index for the right item at position i's row
-                        // We need to find which shuffled index corresponds to the unmatched right item we want to highlight
-                        return false; // placeholder - will be handled by the grid approach below
-                      }))}
-                      disabled
-                      className="rounded-2xl border-2 border-dashed border-border/50 bg-muted/30 px-4 py-3 text-sm font-semibold text-muted-foreground/40 sm:text-center"
-                    >
-                      ?
-                    </motion.button>
+                    <span aria-hidden />
                   )}
                 </div>
               );
@@ -630,7 +626,7 @@ export function RichQuestion({
       {/* ---------- SEQUENCE ---------- */}
       {type === "sequence" && (
         <div className="flex flex-col gap-4">
-          <p className="text-xs text-muted-foreground">
+          <p role="status" aria-live="polite" className="text-xs text-muted-foreground">
             {seqChecked
               ? seqWasCorrect
                 ? "Perfect order!"
@@ -673,6 +669,8 @@ export function RichQuestion({
                       <>
                         <div className="flex flex-col gap-0.5">
                           <button
+                            type="button"
+                            aria-label="Move up in order"
                             onClick={() => moveSeq(position, Math.max(0, position - 1))}
                             disabled={position === 0}
                             className="size-6 rounded-lg bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground hover:bg-primary/10 disabled:opacity-30"
@@ -680,6 +678,8 @@ export function RichQuestion({
                             ↑
                           </button>
                           <button
+                            type="button"
+                            aria-label="Move down in order"
                             onClick={() => moveSeq(position, Math.min(seqOrder.length - 1, position + 1))}
                             disabled={position === seqOrder.length - 1}
                             className="size-6 rounded-lg bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground hover:bg-primary/10 disabled:opacity-30"
@@ -760,6 +760,7 @@ export function RichQuestion({
                           <span className="inline-flex items-center rounded-lg border-2 border-dashed border-primary/50 bg-primary/10">
                             <input
                               type="text"
+                              aria-label={`Code blank ${blank.id}`}
                               value={codeInputs[blank.id] ?? ""}
                               onChange={(e) =>
                                 setCodeInputs((prev) => ({ ...prev, [blank.id]: e.target.value }))
@@ -820,7 +821,11 @@ export function RichQuestion({
             Unscramble to reveal the answer:
           </p>
           {scrambleResult !== null && (
-            <p className={cn("text-sm font-bold", scrambleResult ? "text-emerald-600" : "text-red-500")}>
+            <p
+              role="status"
+              aria-live="polite"
+              className={cn("text-sm font-bold", scrambleResult ? "text-emerald-600" : "text-red-500")}
+            >
               {scrambleResult ? "Correct!" : `Not quite — the answer was ${scrambledWord}`}
             </p>
           )}
@@ -856,6 +861,11 @@ export function RichQuestion({
                 <motion.button
                   key={`${i}-${letter}`}
                   type="button"
+                  aria-label={
+                    isUsed
+                      ? `Letter ${letter} already placed`
+                      : `Add letter ${letter}`
+                  }
                   onClick={() => clickScrambleLetter(i)}
                   disabled={isUsed || scrambleResult !== null}
                   whileTap={!isUsed ? { scale: 0.9 } : {}}
@@ -910,8 +920,17 @@ export function RichQuestion({
           </p>
           <div className="perspective-1000 w-full max-w-md cursor-pointer">
             <div
+              role="button"
+              tabIndex={0}
+              aria-label={`Card ${flipIndex + 1}: ${flipCards[flipIndex]?.front ?? ""}. Press Enter or Space to flip`}
               className={cn("flip-card-inner", flipFlipped && "flipped")}
               onClick={() => setFlipFlipped(!flipFlipped)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setFlipFlipped((v) => !v);
+                }
+              }}
             >
               <div className="flip-card-front w-full">
                 <div className="h-full min-h-[180px] rounded-3xl border-2 border-primary/20 bg-gradient-to-br from-card via-card to-primary/5 p-5 sm:p-8 flex flex-col items-center justify-center text-center shadow-lg">
@@ -942,6 +961,7 @@ export function RichQuestion({
               className="flex gap-4"
             >
               <button
+                type="button"
                 onClick={() => markFlip(false)}
                 className="flex items-center gap-2 rounded-xl border-2 border-red-500/30 bg-red-500/10 px-6 py-3 text-sm font-bold text-red-600 hover:bg-red-500/20 transition-all"
               >
@@ -949,6 +969,7 @@ export function RichQuestion({
                 Still Learning
               </button>
               <button
+                type="button"
                 onClick={() => markFlip(true)}
                 className="flex items-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-bold text-white shadow-md shadow-emerald-500/20 transition-all"
               >

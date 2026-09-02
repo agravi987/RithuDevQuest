@@ -70,8 +70,10 @@ export function FeedbackSection({
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: -10 }}
         transition={{ type: "spring", stiffness: 200, damping: 20 }}
+        role="status"
+        aria-live="polite"
         className={cn(
-          "rounded-2xl border-2 p-5 transition-all",
+          "rounded-2xl border p-5 transition-all shadow-lg shadow-black/5",
           correct
             ? "border-primary/30 bg-primary/5 animate-correct-flash"
             : "border-destructive/30 bg-destructive/5 animate-shake",

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { Trophy, Flame, Zap, Sparkles } from "lucide-react";
+import { Trophy, Flame, Zap, Sparkles, Clock } from "lucide-react";
 import { Starfield } from "@/components/ui/starfield";
 
 export async function generateMetadata({
@@ -24,6 +24,8 @@ import {
 } from "@/lib/progress/queries";
 import { getLessonStatuses } from "@/lib/curriculum/navigation";
 import { getGamificationProfile } from "@/lib/gamification/queries";
+import { PlanetVisual } from "@/components/galaxy/planet-visual";
+import { getPlanetForCareer } from "@/lib/galaxy-assets";
 
 const pathPlanets: Record<
   string,
@@ -155,15 +157,26 @@ export default async function PathPage({
   );
 
   const completedSet = new Set(completedLessonIds);
-  const totalLessons = path.modules.reduce(
-    (sum, mod) => sum + mod.units.reduce((s, u) => s + u.lessons.length, 0),
-    0,
+  const pathLessons = path.modules.flatMap((mod) =>
+    mod.units.flatMap((u) => u.lessons),
   );
-  const completedCount = completedLessonIds.length;
+  const totalLessons = pathLessons.length;
+  const completedCount = pathLessons.filter((l) => completedSet.has(l.id))
+    .length;
   const progress =
     totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
 
+  // Calculate total estimated time
+  const totalMinutes = pathLessons.reduce(
+    (sum, l) => sum + ((l as { estimatedMinutes?: number }).estimatedMinutes ?? 5),
+    0,
+  );
+  const hours = Math.floor(totalMinutes / 60);
+  const mins = totalMinutes % 60;
+  const estimatedTime = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+
   const planet = pathPlanets[path.slug] ?? pathPlanets.linux;
+  const careerPlanet = getPlanetForCareer(path.careerId ? path.slug : "fallback");
 
   // Build module zones with lesson states
   const moduleZones = path.modules.map((mod) => {
@@ -195,7 +208,7 @@ export default async function PathPage({
   });
 
   return (
-    <div className="relative min-h-0 -mx-4 px-4 -mt-8 pt-8 pb-12 bg-gradient-to-b from-sky-50 via-indigo-50/40 to-background dark:from-[#0a0e1a] dark:via-[#0d1225] dark:to-background">
+    <div className="relative min-h-0 -mx-4 px-4 -mt-8 pt-8 pb-16 bg-gradient-to-b from-[#060a14] via-[#0a0f1f] to-[#080c18]">
       {/* Starfield background */}
       <Starfield starCount={100} speed={0.2} className="opacity-60" />
 
@@ -205,68 +218,65 @@ export default async function PathPage({
 
       <div className="relative z-10 max-w-6xl mx-auto">
         {/* Breadcrumbs */}
-        <Breadcrumbs
-          items={[{ label: "Learn", href: "/learn" }, { label: path.title }]}
-        />
+        <div className="[&_.text-muted-foreground]:text-white/40 [&_.text-foreground]:text-white">
+          <Breadcrumbs
+            items={[{ label: "Learn", href: "/learn" }, { label: path.title }]}
+          />
+        </div>
 
         {/* Galaxy Header */}
-        <div className="relative mt-6 mb-8 overflow-hidden rounded-3xl border border-border bg-card/80 p-5 sm:p-8 backdrop-blur-sm">
+        <div className="relative mt-6 mb-10 overflow-hidden rounded-3xl border border-white/[0.06] p-5 sm:p-8 backdrop-blur-md" style={{background: "linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)"}}>
           <div className="absolute -right-16 -top-16 size-48 rounded-full bg-primary/5 blur-3xl" />
 
           <div className="relative z-10 flex items-start sm:items-center gap-4 sm:gap-6">
             {/* Planet */}
             <div className="relative shrink-0 mt-1">
-              <div
-                className={`grid size-14 sm:size-20 place-items-center rounded-full bg-gradient-to-br ${planet.color} shadow-2xl`}
-              >
-                <span className="text-2xl sm:text-4xl drop-shadow-lg">
-                  {planet.emoji}
-                </span>
-              </div>
-              {/* Orbital ring */}
-              <div
-                className="absolute -inset-3 rounded-full border border-dashed border-foreground/10 animate-spin"
-                style={{ animationDuration: "15s" }}
-              />
-              <div
-                className="absolute -inset-6 rounded-full border border-dashed border-foreground/5 animate-spin"
-                style={{
-                  animationDuration: "25s",
-                  animationDirection: "reverse",
-                }}
+              <PlanetVisual
+                src={careerPlanet.src}
+                alt={careerPlanet.alt}
+                size={80}
+                orbit
+                orbitDouble
+                glow
+                float
+                priority
               />
             </div>
 
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-white/30 mb-1">
                 {planet.subtitle}
               </p>
-              <h1 className="text-xl sm:text-3xl font-black tracking-tight text-foreground truncate">
+              <h1 className="text-xl sm:text-3xl font-black tracking-tight text-white truncate">
                 {path.title}
               </h1>
               {path.description && (
-                <p className="mt-1 text-xs sm:text-sm text-muted-foreground line-clamp-2">
+                <p className="mt-1 text-xs sm:text-sm text-white/40 line-clamp-2">
                   {path.description}
                 </p>
               )}
 
               {/* Stats */}
               <div className="flex flex-wrap items-center gap-2 mt-3">
-                <span className="flex items-center gap-1 rounded-full bg-foreground/5 border border-foreground/10 px-2.5 py-1 text-[10px] font-bold text-muted-foreground">
-                  <Sparkles className="size-2.5" />
+                <span className="flex items-center gap-1 rounded-full bg-white/5 border border-white/10 px-2.5 py-1 text-[10px] font-bold text-white/50">
+                  <Sparkles className="size-2.5 text-amber-400" />
                   {completedCount}/{totalLessons} stars
+                </span>
+                <span className="flex items-center gap-1 rounded-full bg-white/5 border border-white/10 px-2.5 py-1 text-[10px] font-bold text-white/50">
+                  <Clock className="size-2.5" />
+                  ~{estimatedTime}
                 </span>
                 {profile && (
                   <>
-                    <span className="flex items-center gap-1 rounded-full bg-foreground/5 border border-foreground/10 px-2.5 py-1 text-[10px] font-bold text-streak">
+                    <span className="flex items-center gap-1 rounded-full bg-white/5 border border-white/10 px-2.5 py-1 text-[10px] font-bold text-orange-400">
                       <Flame className="size-2.5" />
                       {profile.streak.currentStreak} streak
                     </span>
-                    <span className="flex items-center gap-1 rounded-full bg-foreground/5 border border-foreground/10 px-2.5 py-1 text-[10px] font-bold text-xp">
+                    <span className="flex items-center gap-1 rounded-full bg-white/5 border border-white/10 px-2.5 py-1 text-[10px] font-bold text-amber-400">
                       <Zap className="size-2.5" />
                       {profile.user.xp} XP
                     </span>
-                    <span className="flex items-center gap-1 rounded-full bg-foreground/5 border border-foreground/10 px-2.5 py-1 text-[10px] font-bold text-level">
+                    <span className="flex items-center gap-1 rounded-full bg-white/5 border border-white/10 px-2.5 py-1 text-[10px] font-bold text-purple-400">
                       <Trophy className="size-2.5" />
                       Lv.{profile.levelInfo.level}
                     </span>
@@ -276,13 +286,13 @@ export default async function PathPage({
 
               {/* Mobile progress ring - compact */}
               <div className="mt-3 sm:hidden flex items-center gap-2">
-                <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                <div className="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-amber-400 transition-all duration-1000"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
-                <span className="text-xs font-black text-foreground shrink-0">
+                <span className="text-xs font-black text-white shrink-0">
                   {progress}%
                 </span>
               </div>
@@ -303,7 +313,7 @@ export default async function PathPage({
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="5"
-                  className="text-muted-foreground/30"
+                  className="text-white/10"
                 />
                 <circle
                   cx="40"
@@ -331,7 +341,7 @@ export default async function PathPage({
                 </defs>
               </svg>
               <div className="absolute flex flex-col items-center justify-center">
-                <span className="text-lg font-black text-foreground">
+                <span className="text-lg font-black text-white">
                   {progress}%
                 </span>
               </div>
@@ -340,7 +350,11 @@ export default async function PathPage({
         </div>
 
         {/* Galaxy Winding Path */}
-        <GalaxyPath modules={moduleZones} />
+        <GalaxyPath
+          modules={moduleZones}
+          careerSlug={path.slug}
+          streak={profile?.streak.currentStreak}
+        />
       </div>
     </div>
   );

@@ -16,6 +16,8 @@ type QuestionSectionProps = {
   submitting: boolean;
   /** Current part index for scenario questions; null otherwise. */
   partIndex: number | null;
+  /** Optional server-side error to associate with the answer input. */
+  error?: string;
 };
 
 const LETTERS = ["A", "B", "C", "D", "E", "F"];
@@ -37,6 +39,7 @@ export function QuestionSection({
   onSubmit,
   submitting,
   partIndex,
+  error,
 }: QuestionSectionProps) {
   const [showHint, setShowHint] = useState(false);
 
@@ -104,8 +107,7 @@ export function QuestionSection({
   return (
     <section className="flex flex-col gap-6">
       {/* Scenario context */}
-      {isScenario && (
-        <div className="rounded-2xl border-2 border-achievement/15 bg-achievement/5 p-4">
+      {isScenario && (          <div className="rounded-2xl border border-achievement/15 bg-achievement/5 p-4">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-[10px] font-bold uppercase tracking-wider text-achievement">
               Scenario Context
@@ -153,6 +155,8 @@ export function QuestionSection({
                       ? "Command answer"
                       : "Your answer"
                 }
+                aria-invalid={error ? true : undefined}
+                aria-describedby={error ? "question-error" : undefined}
                 placeholder={
                   question.type === "command"
                     ? "Type a command…"
@@ -171,6 +175,15 @@ export function QuestionSection({
                 </button>
               )}
             </div>
+            {error && (
+              <p
+                id="question-error"
+                role="alert"
+                className="text-sm font-medium text-destructive"
+              >
+                {error}
+              </p>
+            )}
             <Button
               type="submit"
               disabled={!canSubmit || submitting}
@@ -182,7 +195,7 @@ export function QuestionSection({
         ) : (
           <>
             {/* MCQ Options - Duolingo style */}
-            <div className="grid gap-2.5">
+            <div className="grid gap-2.5" role="radiogroup" aria-label="Answer options">
               {options.map((option, index) => {
                 const isSelected = value === option.value;
                 const letter = LETTERS[index] ?? "?";
@@ -191,10 +204,12 @@ export function QuestionSection({
                   <button
                     key={option.value}
                     type="button"
+                    role="radio"
+                    aria-checked={isSelected}
                     onClick={() => onValueChange(option.value)}
                     disabled={submitting}
                     className={cn(
-                      "group flex items-center gap-2 sm:gap-3 rounded-2xl border-2 px-3 sm:px-4 py-3 sm:py-3.5 text-left transition-all duration-200",
+                      "group flex items-center gap-2 sm:gap-3 rounded-2xl border px-3 sm:px-4 py-3 sm:py-3.5 text-left transition-all duration-200",
                       isSelected
                         ? "border-primary bg-primary/5 shadow-md shadow-primary/10 scale-[1.01] animate-correct-flash"
                         : "border-border bg-card hover:border-primary/30 hover:bg-primary/[0.02] hover:shadow-sm hover:scale-[1.005] active:scale-[0.98]"
@@ -225,7 +240,7 @@ export function QuestionSection({
                     {/* Selection indicator */}
                     <div
                       className={cn(
-                        "size-5 shrink-0 rounded-full border-2 transition-all",
+                        "size-5 shrink-0 rounded-full border transition-all",
                         isSelected
                           ? "border-primary bg-primary scale-110"
                           : "border-border group-hover:border-primary/40"
@@ -241,6 +256,10 @@ export function QuestionSection({
                 );
               })}
             </div>
+
+            <span className="sr-only" role="status" aria-live="polite">
+              {value ? `Selected option ${value}` : ""}
+            </span>
 
             {/* Check button */}
             <Button

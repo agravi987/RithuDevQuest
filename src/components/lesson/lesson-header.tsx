@@ -9,6 +9,8 @@ type LessonHeaderProps = {
   completedSteps: number;
   totalSteps: number;
   xpEarned: number;
+  stepType?: string;
+  estimatedMinutes?: number;
   onBack?: () => void;
 };
 
@@ -17,12 +19,14 @@ export function LessonHeader({
   completedSteps,
   totalSteps,
   xpEarned,
+  stepType,
+  estimatedMinutes,
 }: LessonHeaderProps) {
   const progress =
     totalSteps === 0 ? 100 : Math.round((completedSteps / totalSteps) * 100);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 rounded-2xl border border-border/50 bg-card/50 p-4 shadow-sm">
       {/* Top row: title + XP */}
       <div className="flex items-center justify-between gap-3">
         <motion.div
@@ -30,7 +34,7 @@ export function LessonHeader({
           animate={{ opacity: 1, x: 0 }}
           className="flex items-center gap-2 min-w-0"
         >
-          <h1 className="min-w-0 truncate text-lg font-bold tracking-tight">
+          <h1 className="min-w-0 truncate text-base sm:text-lg font-bold tracking-tight">
             {title}
           </h1>
         </motion.div>
@@ -72,14 +76,28 @@ export function LessonHeader({
         })}
       </div>
 
-      {/* Bottom row: step count */}
+      {/* Bottom row: step count + type + time */}
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold text-muted-foreground">
-          Step {Math.min(completedSteps + 1, totalSteps)} of {totalSteps}
-        </p>
-        <p className="text-xs font-semibold text-muted-foreground">
-          {progress}% complete
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="text-xs font-semibold text-muted-foreground">
+            Step {Math.min(completedSteps + 1, totalSteps)} of {totalSteps}
+          </p>
+          {stepType && (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+              {stepType}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {estimatedMinutes && (
+            <span className="text-[10px] text-muted-foreground">
+              ~{Math.max(1, Math.ceil(estimatedMinutes * (1 - progress / 100)))} min left
+            </span>
+          )}
+          <p className="text-xs font-semibold text-muted-foreground">
+            {progress}% complete
+          </p>
+        </div>
       </div>
     </div>
   );

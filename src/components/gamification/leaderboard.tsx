@@ -49,7 +49,7 @@ export function Leaderboard({
   return (
     <div className="flex flex-col gap-4">
       {/* League Header */}
-      <div className={cn("relative overflow-hidden rounded-2xl border-2 bg-gradient-to-r p-5", colors.bg, colors.border)}>
+      <div className={cn("relative overflow-hidden rounded-2xl border bg-gradient-to-r p-5", colors.bg, colors.border)}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className={cn("grid size-12 place-items-center rounded-2xl text-2xl", colors.badge)}>
@@ -79,7 +79,7 @@ export function Leaderboard({
       </div>
 
       {/* Rankings List */}
-      <div className="rounded-2xl border-2 border-border bg-card overflow-hidden">
+      <div className="rounded-2xl border border-border bg-card overflow-hidden">
         {/* Promotion Zone Label with glow */}
         <div className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-primary/5 border-b border-primary/10">
           <TrendingUp className="size-3.5 text-primary animate-float-sparkle shrink-0" />
@@ -88,6 +88,21 @@ export function Leaderboard({
           </span>
         </div>
 
+        {members.length === 0 ? (
+          <div className="flex flex-col items-center justify-center gap-2 px-6 py-12 text-center">
+            <div className="grid size-12 place-items-center rounded-2xl bg-muted text-2xl">
+              🏆
+            </div>
+            <p className="text-sm font-bold text-foreground">
+              No league members yet
+            </p>
+            <p className="text-xs text-muted-foreground max-w-xs">
+              Complete lessons and practice to join your league and start
+              climbing the ranks.
+            </p>
+          </div>
+        ) : (
+          <>
         {/* Members */}
         <div className="divide-y divide-border/50">
           {members.map((member) => {
@@ -99,7 +114,7 @@ export function Leaderboard({
                 {/* Member Row */}
                 <div
                   className={cn(
-                    "flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 transition-all",
+                    "flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 transition-all hover:bg-muted/30",
                     member.isCurrentUser && "bg-primary/5 border-l-2 border-l-primary",
                     member.isPromotion && !member.isCurrentUser && "bg-primary/[0.02]",
                     member.isDemotion && "bg-destructive/[0.02]"
@@ -176,6 +191,8 @@ export function Leaderboard({
             Demotion Zone — Bottom {demoteCount} drop
           </span>
         </div>
+          </>
+        )}
       </div>
     </div>
   );

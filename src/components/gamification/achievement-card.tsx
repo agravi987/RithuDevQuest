@@ -43,9 +43,9 @@ export function AchievementCard({
   return (
     <div
       className={cn(
-        "relative flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-2xl border-2 transition-all duration-200",
+        "relative flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-2xl border transition-all duration-200",
         isUnlocked
-          ? "bg-card border-border hover:border-primary/40 hover:shadow-md hover:scale-[1.01] shadow-sm"
+          ? "bg-card border-border hover:border-primary/40 hover:shadow-md hover:scale-[1.01] shadow-sm card-game-glow"
           : "bg-muted/40 border-dashed border-border/70 opacity-70 hover:opacity-90",
         className,
       )}
@@ -53,7 +53,7 @@ export function AchievementCard({
       {/* Badge Icon Circle */}
       <div
         className={cn(
-          "size-12 sm:size-14 shrink-0 rounded-2xl flex items-center justify-center border-2 transition-all duration-200",
+          "size-12 sm:size-14 shrink-0 rounded-2xl flex items-center justify-center border transition-all duration-200",
           isUnlocked
             ? "bg-gradient-to-br from-achievement/20 to-achievement/10 border-achievement/30 text-achievement shadow-sm hover:scale-110 hover:rotate-3"
             : "bg-muted border-border text-muted-foreground",
@@ -103,7 +103,9 @@ export function AchievementCard({
           {isUnlocked ? (
             <span className="inline-flex items-center gap-1 font-semibold text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="size-3.5" />
-              Unlocked
+              {achievement.unlockedAt
+                ? new Date(achievement.unlockedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+                : "Unlocked"}
             </span>
           ) : (
             <span className="text-muted-foreground/70 font-medium">

@@ -29,11 +29,11 @@ export default async function LeaderboardPage() {
           </div>
         </div>
         <div className="text-center space-y-3">
-          <h1 className="text-2xl font-black tracking-tight text-glow-gold">
+          <h1 className="text-2xl font-black tracking-tight">
             No Active League
           </h1>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Complete lessons to join a weekly league and compete with others!
+          <p className="text-sm text-muted-foreground">
+            Complete lessons to join a weekly league.
           </p>
           <Link
             href="/learn"
@@ -54,10 +54,11 @@ export default async function LeaderboardPage() {
 
   return (
     <div className="flex flex-col gap-6 max-w-2xl mx-auto pb-12">
-      {/* Header */}
+      {/* Header — Galaxy League */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight">Weekly Leaderboard</h1>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/60 mb-0.5">Galaxy League</p>
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight gradient-text-animated">Weekly Leaderboard</h1>
           <div className="flex items-center gap-2 mt-1">
             <Calendar className="size-3.5 text-muted-foreground" />
             <p className="text-xs text-muted-foreground">{weekLabel}</p>
@@ -81,13 +82,10 @@ export default async function LeaderboardPage() {
         currentUser={league.currentUser}
       />
 
-      {/* Info */}
-      <div className="rounded-2xl border-2 border-border bg-card p-5 text-center glass-shimmer relative overflow-hidden">
-        <p className="text-xs text-muted-foreground leading-relaxed relative z-10">
-          Earn XP by completing lessons and answering questions correctly.
-          Top {league.promoteCount} members advance to the next league tier.
-          Bottom {league.demoteCount} members drop to the lower tier.
-          Leagues reset every Monday.
+      {/* Info — League Rules */}
+      <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-card to-card/95 p-4 text-center shadow-lg shadow-black/5">
+        <p className="text-xs text-muted-foreground">
+          Top {league.promoteCount} advance · Bottom {league.demoteCount} drop · Resets Monday
         </p>
       </div>
     </div>

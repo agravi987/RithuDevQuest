@@ -1,6 +1,8 @@
 import "server-only";
 
 import { prisma } from "@/lib/db";
+import { calculateLevel } from "@/lib/gamification/levels";
+import { updateLeagueXp } from "@/lib/league/queries";
 
 type QuestTemplate = {
   type: string;
@@ -83,12 +85,26 @@ function seededRandom(seed: number): () => number {
   };
 }
 
+function hashString(value: string): number {
+  let hash = 0;
+  for (let i = 0; i < value.length; i++) {
+    hash = (hash * 31 + value.charCodeAt(i)) >>> 0;
+  }
+  return hash;
+}
+
 function generateQuestsForDay(userId: string, date: Date): QuestTemplate[] {
-  const seed = date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate() + userId.charCodeAt(0);
+  const dayKey =
+    date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
+  const seed = dayKey + hashString(userId);
   const rng = seededRandom(seed);
 
-  // Pick 3 unique quests
-  const shuffled = [...QUEST_TEMPLATES].sort(() => rng() - 0.5);
+  // Fisher-Yates shuffle for a uniform distribution.
+  const shuffled = [...QUEST_TEMPLATES];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
+  }
   return shuffled.slice(0, 3);
 }
 
@@ -134,35 +150,76 @@ export async function getDailyQuests(userId: string) {
 
 /**
  * Update quest progress when a user completes an action.
+ * Returns the total XP awarded from newly completed quests (0 when none).
+ *
+ * Runs inside a transaction to prevent the lost-update / double-award race
+ * across concurrent requests. Any quest XP is applied to the user through the
+ * level-aware gamification path (level and league XP are updated too), rather
+ * than bare increments that would leave the stored level stale.
  */
 export async function updateQuestProgress(
   userId: string,
   type: string,
   amount: number = 1
-) {
+): Promise<number> {
   const today = getTodayDate();
+  const safeAmount = Math.max(0, amount);
 
   const quests = await prisma.dailyQuest.findMany({
     where: { userId, questDate: today, type, completed: false },
   });
 
-  for (const quest of quests) {
-    const newCurrent = Math.min(quest.current + amount, quest.target);
-    const isCompleted = newCurrent >= quest.target;
+  if (quests.length === 0) return 0;
 
-    await prisma.dailyQuest.update({
-      where: { id: quest.id },
-      data: { current: newCurrent, completed: isCompleted },
-    });
+  let totalBonusXp = 0;
 
-    // Award XP bonus when quest is completed
-    if (isCompleted && !quest.completed) {
-      await prisma.user.update({
+  await prisma.$transaction(async (tx) => {
+    for (const quest of quests) {
+      // Re-read inside the transaction to guard against concurrent updates.
+      const fresh = await tx.dailyQuest.findUnique({
+        where: { id: quest.id },
+      });
+      if (!fresh || fresh.completed) continue;
+
+      const newCurrent = Math.min(fresh.current + safeAmount, fresh.target);
+      const isCompleted = newCurrent >= fresh.target;
+
+      await tx.dailyQuest.update({
+        where: { id: fresh.id },
+        data: { current: newCurrent, completed: isCompleted },
+      });
+
+      if (isCompleted) {
+        totalBonusXp += fresh.xpReward;
+      }
+    }
+
+    if (totalBonusXp > 0) {
+      // Recompute the user's level from their total XP so the stored level
+      // stays in sync (quest XP used to bypass the gamification layer).
+      const user = await tx.user.findUniqueOrThrow({
         where: { id: userId },
-        data: { xp: { increment: quest.xpReward } },
+        select: { xp: true },
+      });
+      const newLevel = calculateLevel(user.xp + totalBonusXp).level;
+
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          xp: { increment: totalBonusXp },
+          level: newLevel,
+        },
       });
     }
+  });
+
+  // Credit the quest XP to the league (outside the transaction; it is a
+  // separate membership increment and safe to apply once per completion).
+  if (totalBonusXp > 0) {
+    await updateLeagueXp(userId, totalBonusXp);
   }
+
+  return totalBonusXp;
 }
 
 /**

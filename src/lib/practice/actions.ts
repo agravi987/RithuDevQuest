@@ -4,10 +4,11 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { processLessonGamification } from "@/lib/gamification/actions";
 import { updateQuestProgress } from "@/lib/quests/daily";
-import { updateLeagueXp } from "@/lib/league/queries";
+import { validateAcceptedAnswer } from "@/lib/quiz/validation";
 
 export type PracticeResult = {
   success: boolean;
+  isCorrect: boolean;
   xpEarned: number;
   totalXp: number;
   level: number;
@@ -30,6 +31,22 @@ export type PracticeResult = {
   error?: string;
 };
 
+/**
+ * Validate a practice answer server-side. The client only sends the raw
+ * answer — correctness is computed here so users cannot claim XP for answers
+ * they didn't actually give. Comparison is case-insensitive to match the
+ * previous client-side behavior.
+ */
+function isPracticeAnswerCorrect(
+  correctAnswer: string,
+  userAnswer: string,
+): boolean {
+  return validateAcceptedAnswer(
+    correctAnswer.toLowerCase(),
+    (userAnswer ?? "").trim().toLowerCase(),
+  );
+}
+
 export async function submitPracticeAnswer(
   topic: string,
   difficulty: "beginner" | "intermediate" | "advanced",
@@ -37,14 +54,13 @@ export async function submitPracticeAnswer(
   question: string,
   correctAnswer: string,
   userAnswer: string,
-  explanation: string,
-  isCorrect: boolean,
 ): Promise<PracticeResult> {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return {
         success: false,
+        isCorrect: false,
         xpEarned: 0,
         totalXp: 0,
         level: 1,
@@ -58,6 +74,24 @@ export async function submitPracticeAnswer(
       };
     }
 
+    if (!(userAnswer ?? "").trim()) {
+      return {
+        success: false,
+        isCorrect: false,
+        xpEarned: 0,
+        totalXp: 0,
+        level: 1,
+        levelTitle: "Newcomer",
+        progressPercentage: 0,
+        xpToNextLevel: 100,
+        didLevelUp: false,
+        newAchievements: [],
+        streak: { currentStreak: 0, longestStreak: 0, status: "reset" },
+        error: "Please enter an answer",
+      };
+    }
+
+    const isCorrect = isPracticeAnswerCorrect(correctAnswer, userAnswer);
     const xpEarned = isCorrect ? 15 : 0;
 
     await prisma.practiceSession.create({
@@ -75,18 +109,23 @@ export async function submitPracticeAnswer(
     });
 
     if (xpEarned > 0) {
+      // A single practice answer must not count as a "perfect lesson" for the
+      // achievement system — only an actual lesson completed with a 100% score
+      // should unlock `perfect_lesson`. Pass a score of 0 (never 100).
       const gamification = await processLessonGamification(
         session.user.id,
-        100,
+        0,
         xpEarned,
       );
 
       await updateQuestProgress(session.user.id, "practice", 1);
       await updateQuestProgress(session.user.id, "earn_xp", xpEarned);
-      await updateLeagueXp(session.user.id, xpEarned);
+      // League XP is already credited inside processLessonGamification; do not
+      // call updateLeagueXp again here or weekly XP gets double counted.
 
       return {
         success: true,
+        isCorrect: true,
         xpEarned: gamification.earnedXp,
         totalXp: gamification.totalXp,
         level: gamification.currentLevel.level,
@@ -107,6 +146,7 @@ export async function submitPracticeAnswer(
 
     return {
       success: true,
+      isCorrect: false,
       xpEarned: 0,
       totalXp: 0,
       level: 1,
@@ -123,6 +163,7 @@ export async function submitPracticeAnswer(
     console.error("[Practice Action Error]", err);
     return {
       success: false,
+      isCorrect: false,
       xpEarned: 0,
       totalXp: 0,
       level: 1,

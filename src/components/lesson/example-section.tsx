@@ -25,21 +25,39 @@ export function ExampleSection({
         className="flex flex-col gap-3"
       >
         <div className="flex items-center gap-2">
-          <Terminal className="size-4 text-primary" />
-          <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
+          <div className="grid size-8 place-items-center rounded-xl bg-primary/10 text-primary">
+            <Terminal className="size-4" />
+          </div>
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-primary block">
+              Example
+            </span>
+            <h2 className="text-xl font-bold tracking-tight">{title}</h2>
+          </div>
         </div>
         <div className="text-sm text-muted-foreground leading-relaxed">
           <MarkdownText text={body} />
         </div>
         {code && (
-          <motion.pre
+          <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, delay: 0.15 }}
-            className="overflow-x-auto rounded-xl border-2 bg-muted/40 p-4 text-sm code-block-glow transition-all duration-300"
+            className="overflow-hidden rounded-xl border border-border"
           >
-            <code className="font-mono leading-relaxed text-foreground">{code}</code>
-          </motion.pre>
+            {/* Terminal header */}
+            <div className="flex items-center gap-2 bg-muted/80 px-4 py-2 border-b border-border">
+              <div className="flex gap-1.5">
+                <div className="size-2.5 rounded-full bg-red-400/60" />
+                <div className="size-2.5 rounded-full bg-amber-400/60" />
+                <div className="size-2.5 rounded-full bg-emerald-400/60" />
+              </div>
+              <span className="text-[10px] font-mono text-muted-foreground ml-1">terminal</span>
+            </div>
+            <pre className="overflow-x-auto bg-muted/40 p-4 text-sm">
+              <code className="font-mono leading-relaxed text-foreground">{code}</code>
+            </pre>
+          </motion.div>
         )}
       </motion.div>
       <motion.div

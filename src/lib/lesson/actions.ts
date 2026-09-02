@@ -199,7 +199,7 @@ export async function submitAnswer(
   );
   const difficulty = parseQuestionDifficulty(question.difficulty);
 
-  await prisma.questionAttempt.create({
+  const createdAttempt = await prisma.questionAttempt.create({
     data: {
       userId,
       questionId,
@@ -230,26 +230,34 @@ export async function submitAnswer(
   }
 
   if (earnedXp > 0) {
-    await prisma.lessonAttempt.update({
-      where: { id: openAttempt.id },
-      data: { xpEarned: { increment: earnedXp } },
-    });
+    await prisma.$transaction([
+      prisma.questionAttempt.update({
+        where: { id: createdAttempt.id },
+        data: { xpEarned: earnedXp },
+      }),
+      prisma.lessonAttempt.update({
+        where: { id: openAttempt.id },
+        data: { xpEarned: { increment: earnedXp } },
+      }),
+    ]);
   }
 
+  // For scenario questions: `false` means this part was answered correctly but
+  // the whole scenario isn't solved yet (the client advances to the next part);
+  // `true` means every part is now correct; `null` means not applicable.
   const scenarioComplete =
-    isScenario && isCorrect && earnedXp > 0 ? true : null;
+    isScenario && isCorrect ? earnedXp > 0 : null;
 
   // Lose heart on wrong answer
   if (!isCorrect) {
     await loseHeart(userId);
   }
 
-  // Update daily quest progress
+  // Update daily quest progress. Note: XP is only granted to the user (and to
+  // the "earn XP" quest) when the lesson is completed in completeLesson(), so
+  // we must not credit the earn_xp quest here — that would double count it.
   if (isCorrect) {
     await updateQuestProgress(userId, "answer_questions", 1);
-  }
-  if (earnedXp > 0) {
-    await updateQuestProgress(userId, "earn_xp", earnedXp);
   }
 
   return {

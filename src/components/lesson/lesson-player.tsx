@@ -94,6 +94,9 @@ export function LessonPlayer({
   // Keyboard shortcuts: Enter to submit/continue, R to retry, number keys for MCQ
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      if (e.repeat) return;
+      if (submitting) return;
+
       // Don't intercept if user is typing in an input
       if (
         e.target instanceof HTMLInputElement ||
@@ -103,6 +106,15 @@ export function LessonPlayer({
           e.preventDefault();
           handleSubmit();
         }
+        return;
+      }
+
+      // Let native activation handle Space/Enter on interactive controls
+      if (
+        e.target instanceof HTMLButtonElement ||
+        e.target instanceof HTMLAnchorElement ||
+        e.target instanceof HTMLSelectElement
+      ) {
         return;
       }
 
@@ -263,6 +275,8 @@ export function LessonPlayer({
         completedSteps={index}
         totalSteps={steps.length}
         xpEarned={xpEarned}
+        stepType={step?.kind === "activity" ? (step.type === "learn" ? "📖 Learning" : "💻 Example") : step?.kind === "question" ? "❓ Question" : undefined}
+        estimatedMinutes={data.lesson.estimatedMinutes}
       />
 
       {error && (
@@ -303,11 +317,19 @@ export function LessonPlayer({
           />
 
           {completing && (
-            <div className="flex items-center justify-center gap-3 py-10">
-              <SpaceshipPlayer size={40} state="current" />
-              <p className="text-sm text-muted-foreground">
-                Engaging warp drive — finishing lesson…
-              </p>
+            <div className="flex flex-col items-center justify-center gap-4 py-10">
+              <SpaceshipPlayer size={48} state="current" />
+              <div className="flex flex-col items-center gap-2">
+                <p className="text-sm font-bold text-foreground">
+                  Engaging warp drive...
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Finishing lesson and calculating rewards
+                </p>
+              </div>
+              <div className="w-48 h-1.5 rounded-full bg-muted overflow-hidden">
+                <div className="h-full rounded-full bg-gradient-to-r from-primary to-emerald-400 animate-shimmer" style={{ width: "60%" }} />
+              </div>
             </div>
           )}
 
@@ -336,6 +358,7 @@ export function LessonPlayer({
               onSubmit={handleSubmit}
               submitting={submitting}
               partIndex={partIndex}
+              error={error ?? undefined}
             />
           )}
 

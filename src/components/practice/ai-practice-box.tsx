@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { GeneratedQuestion } from "@/lib/ai/schemas/question";
-import { normalizeAnswer } from "@/lib/quiz/validation";
 import {
   submitPracticeAnswer,
   type PracticeResult,
@@ -33,7 +32,6 @@ export function AIPracticeBox() {
   const [question, setQuestion] = useState<GeneratedQuestion | null>(null);
   const [userAnswer, setUserAnswer] = useState<string>("");
   const [submitted, setSubmitted] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [xpResult, setXpResult] = useState<{
     xpEarned: number;
@@ -48,7 +46,6 @@ export function AIPracticeBox() {
     setQuestion(null);
     setUserAnswer("");
     setSubmitted(false);
-    setIsCorrect(false);
     setXpResult(null);
 
     try {
@@ -82,6 +79,7 @@ export function AIPracticeBox() {
 
   const initialState: PracticeResult = {
     success: false,
+    isCorrect: false,
     xpEarned: 0,
     totalXp: 0,
     level: 1,
@@ -102,6 +100,7 @@ export function AIPracticeBox() {
       if (!question)
         return {
           success: false,
+          isCorrect: false,
           xpEarned: 0,
           totalXp: 0,
           level: 1,
@@ -120,43 +119,28 @@ export function AIPracticeBox() {
         question.question,
         question.correctAnswer,
         formData.get("userAnswer") as string,
-        question.explanation,
-        isCorrect,
       );
     },
     initialState,
   );
 
   useEffect(() => {
-    if (
-      submitted &&
-      submitState.success &&
-      submitState.xpEarned > 0 &&
-      !xpResult
-    ) {
-      setXpResult({
-        xpEarned: submitState.xpEarned,
-        totalXp: submitState.totalXp,
-        level: submitState.level,
-        levelTitle: submitState.levelTitle,
-      });
+    if (submitted && submitState.success) {
+      // The server is the source of truth for correctness.
+      if (submitState.xpEarned > 0 && !xpResult) {
+        setXpResult({
+          xpEarned: submitState.xpEarned,
+          totalXp: submitState.totalXp,
+          level: submitState.level,
+          levelTitle: submitState.levelTitle,
+        });
+      }
     }
   }, [submitState, submitted, xpResult]);
 
   const handleCheckAnswer = () => {
     if (!question) return;
 
-    let correct = false;
-    if (question.type === "command") {
-      const accepted = question.correctAnswer.split("|").map(normalizeAnswer);
-      correct = accepted.includes(normalizeAnswer(userAnswer));
-    } else {
-      correct =
-        userAnswer.trim().toLowerCase() ===
-        question.correctAnswer.trim().toLowerCase();
-    }
-
-    setIsCorrect(correct);
     setSubmitted(true);
 
     const formData = new FormData();
@@ -165,7 +149,7 @@ export function AIPracticeBox() {
   };
 
   return (
-    <Card className="border-2 border-primary/40 shadow-lg bg-gradient-to-br from-card via-card to-primary/5 overflow-hidden">
+    <Card className="border border-primary/40 shadow-lg bg-gradient-to-br from-card via-card to-primary/5 overflow-hidden">
       <CardHeader className="p-4 sm:p-6 pb-4 border-b border-border/60">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -190,23 +174,43 @@ export function AIPracticeBox() {
 
       <CardContent className="p-4 sm:p-6 flex flex-col gap-5">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
-            <label className="text-xs font-bold text-muted-foreground block mb-1">
+          <div className="sm:col-span-1">
+            <label
+              htmlFor="ai-topic"
+              className="text-xs font-bold text-muted-foreground block mb-1"
+            >
               Topic
             </label>
             <Input
+              id="ai-topic"
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               placeholder="e.g. Kubernetes Services"
               className="text-sm font-medium"
             />
+            <div className="flex flex-wrap gap-1 mt-2">
+              {["Linux Commands", "Docker Containers", "Git Branching", "Kubernetes Pods", "AWS EC2", "React Hooks", "Node.js APIs"].map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => setTopic(preset)}
+                  className="text-[9px] font-semibold px-2 py-0.5 rounded-full border border-border/60 bg-background/60 text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-primary/5 transition-all"
+                >
+                  {preset}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div>
-            <label className="text-xs font-bold text-muted-foreground block mb-1">
+            <label
+              htmlFor="ai-difficulty"
+              className="text-xs font-bold text-muted-foreground block mb-1"
+            >
               Difficulty
             </label>
             <select
+              id="ai-difficulty"
               value={difficulty}
               onChange={(e) =>
                 setDifficulty(
@@ -222,10 +226,14 @@ export function AIPracticeBox() {
           </div>
 
           <div>
-            <label className="text-xs font-bold text-muted-foreground block mb-1">
+            <label
+              htmlFor="ai-format"
+              className="text-xs font-bold text-muted-foreground block mb-1"
+            >
               Format
             </label>
             <select
+              id="ai-format"
               value={questionType}
               onChange={(e) =>
                 setQuestionType(
@@ -270,7 +278,7 @@ export function AIPracticeBox() {
             initial={{ opacity: 0, y: 16, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ type: "spring", stiffness: 200, damping: 20 }}
-            className="mt-2 p-5 rounded-2xl border-2 border-border bg-card/80 flex flex-col gap-4 shadow-sm"
+            className="mt-2 p-5 rounded-2xl border border-border bg-card/80 flex flex-col gap-4 shadow-sm"
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-extrabold uppercase tracking-wider text-primary">
@@ -294,6 +302,7 @@ export function AIPracticeBox() {
                     key={opt}
                     type="button"
                     variant={userAnswer === opt ? "default" : "outline"}
+                    aria-pressed={userAnswer === opt}
                     disabled={submitted}
                     onClick={() => setUserAnswer(opt)}
                     className="justify-start text-left h-auto py-2.5 px-4 font-medium"
@@ -311,6 +320,7 @@ export function AIPracticeBox() {
                     key={opt}
                     type="button"
                     variant={userAnswer === opt ? "default" : "outline"}
+                    aria-pressed={userAnswer === opt}
                     disabled={submitted}
                     onClick={() => setUserAnswer(opt)}
                     className="flex-1 py-3 font-bold capitalize"
@@ -327,6 +337,7 @@ export function AIPracticeBox() {
                 onChange={(e) => setUserAnswer(e.target.value)}
                 disabled={submitted}
                 placeholder="Type command..."
+                aria-label="Command answer"
                 className="font-mono text-sm input-focus-glow"
               />
             )}
@@ -346,18 +357,45 @@ export function AIPracticeBox() {
                   "Submit Answer"
                 )}
               </Button>
+            ) : submitPending ? (
+              <div
+                role="status"
+                aria-live="polite"
+                className="p-4 rounded-xl border bg-muted/40 border-border text-muted-foreground flex items-center gap-2 font-bold text-sm"
+              >
+                <RefreshCw className="size-4 animate-spin" />
+                Checking your answer...
+              </div>
+            ) : submitState.error ? (
+              <div
+                role="alert"
+                aria-live="assertive"
+                className="p-4 rounded-xl border bg-destructive/10 border-destructive/30 text-destructive flex flex-col gap-3 font-bold text-sm"
+              >
+                <div className="flex items-start gap-2">
+                  <XCircle className="size-5 shrink-0" />
+                  <span>{submitState.error}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSubmitted(false)}
+                  className="self-end rounded-lg bg-destructive px-4 py-1.5 text-xs font-bold text-destructive-foreground hover:brightness-110 transition-all"
+                >
+                  Try again
+                </button>
+              </div>
             ) : (
               <div
                 role="status"
                 aria-live="polite"
                 className={`p-4 rounded-xl border flex flex-col gap-2 ${
-                  isCorrect
+                  submitState.isCorrect
                     ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
                     : "bg-destructive/10 border-destructive/30 text-destructive"
                 }`}
               >
                 <div className="flex items-center gap-2 font-extrabold text-sm">
-                  {isCorrect ? (
+                  {submitState.isCorrect ? (
                     <>
                       <CheckCircle2 className="size-5 text-emerald-500" />
                       Correct!{" "}

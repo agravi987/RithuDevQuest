@@ -76,7 +76,7 @@ export function LessonComplete({
           transition={{ duration: 2, repeat: Infinity }}
           className="absolute -inset-4 rounded-full bg-primary/20 blur-xl"
         />
-        <div className="relative size-20 rounded-3xl bg-gradient-to-tr from-emerald-500 to-primary flex items-center justify-center text-white shadow-xl shadow-primary/20 border-2 border-white/40">
+        <div className="relative size-20 rounded-3xl bg-gradient-to-tr from-emerald-500 to-primary flex items-center justify-center text-white shadow-xl shadow-primary/20 border border-white/40">
           <CheckCircle2 className="size-10 fill-white/20 text-white" />
         </div>
       </motion.div>
@@ -141,7 +141,7 @@ export function LessonComplete({
           initial={{ opacity: 0, scale: 0.9, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ type: "spring", stiffness: 200 }}
-          className="w-full rounded-2xl bg-gradient-to-r from-primary/20 via-emerald-500/20 to-primary/20 border-2 border-primary/40 p-4 flex items-center justify-center gap-3 shadow-md"
+          className="w-full rounded-2xl bg-gradient-to-r from-primary/20 via-emerald-500/20 to-primary/20 border border-primary/40 p-4 flex items-center justify-center gap-3 shadow-md"
         >
           <motion.div
             animate={{ rotate: [0, -10, 10, -10, 0] }}
@@ -166,7 +166,7 @@ export function LessonComplete({
           initial={{ opacity: 0, y: 15, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ delay: 0.6, type: "spring", stiffness: 200 }}
-          className="flex flex-col items-center gap-2 rounded-2xl border-2 border-xp/20 bg-xp/5 p-3 sm:p-4 hover-lift"
+          className="flex flex-col items-center gap-2 rounded-2xl border border-xp/20 bg-xp/5 p-3 sm:p-4 hover-lift"
         >
           <div className="grid size-10 place-items-center rounded-xl bg-xp/15 animate-pulse-ring">
             <Zap className="size-5 text-xp fill-xp/30" />
@@ -183,7 +183,7 @@ export function LessonComplete({
           initial={{ opacity: 0, y: 15, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ delay: 0.7, type: "spring", stiffness: 200 }}
-          className="flex flex-col items-center gap-2 rounded-2xl border-2 border-streak/20 bg-streak/5 p-3 sm:p-4 hover-lift"
+          className="flex flex-col items-center gap-2 rounded-2xl border border-streak/20 bg-streak/5 p-3 sm:p-4 hover-lift"
         >
           <div className="grid size-10 place-items-center rounded-xl bg-streak/15">
             <motion.div
@@ -205,7 +205,7 @@ export function LessonComplete({
           initial={{ opacity: 0, y: 15, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ delay: 0.8, type: "spring", stiffness: 200 }}
-          className="flex flex-col items-center gap-2 rounded-2xl border-2 border-primary/20 bg-primary/5 p-3 sm:p-4 hover-lift"
+          className="flex flex-col items-center gap-2 rounded-2xl border border-primary/20 bg-primary/5 p-3 sm:p-4 hover-lift"
         >
           <div className="grid size-10 place-items-center rounded-xl bg-primary/15">
             <Target className="size-5 text-primary" />
@@ -224,13 +224,13 @@ export function LessonComplete({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1 }}
-        className="flex flex-col sm:flex-row w-full justify-center gap-2 sm:gap-3 pt-2"
+        className="flex flex-col w-full justify-center gap-3 pt-2"
       >
         {nextLessonHref && (
           <Button
             asChild
             size="lg"
-            className="rounded-2xl font-bold py-4 sm:py-6 text-sm sm:text-base bg-primary shadow-md hover:bg-primary/90 transition-all flex-1 btn-glow"
+            className="rounded-2xl font-bold py-4 sm:py-6 text-sm sm:text-base bg-primary shadow-md hover:bg-primary/90 transition-all btn-glow"
           >
             <Link href={nextLessonHref} className="inline-flex items-center justify-center gap-2">
               Next Quest
@@ -239,12 +239,15 @@ export function LessonComplete({
           </Button>
         )}
         <Button
-          variant="outline"
+          variant="ghost"
           size="lg"
           asChild
-          className="rounded-2xl font-bold py-4 sm:py-6 text-sm sm:text-base border-2 hover:bg-muted transition-all flex-1"
+          className="rounded-2xl font-bold py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
         >
-          <Link href={moduleHref}>Back to Module</Link>
+          <Link href={moduleHref} className="inline-flex items-center justify-center gap-2">
+            <Sparkles className="size-4" />
+            Back to Galaxy Map
+          </Link>
         </Button>
       </motion.div>
 
