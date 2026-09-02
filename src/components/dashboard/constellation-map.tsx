@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "motion/react";
 
 type PathData = {
   name: string;
+  slug?: string;
   emoji: string;
   color: string;
   progress: number; // 0-100
@@ -46,9 +48,26 @@ function getConstellationLines(count: number): [number, number][] {
 export function ConstellationMap({ paths }: ConstellationMapProps) {
   const positions = getPathPositions(paths.length);
   const lines = getConstellationLines(paths.length);
+
+  if (paths.length === 0) {
+    return (
+      <div className="relative w-full overflow-hidden rounded-2xl border border-white/8 bg-gradient-to-br from-[oklch(0.12_0.03_260)] via-[oklch(0.1_0.02_280)] to-[oklch(0.08_0.04_300)] p-6 shadow-xl shadow-black/20">
+        <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
+          <span className="text-3xl">🌌</span>
+          <h3 className="text-sm font-bold text-white/80">
+            Learning Constellation
+          </h3>
+          <p className="text-xs text-white/40 max-w-[260px]">
+            Choose a learning path to light up your constellation.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="relative w-full overflow-hidden rounded-2xl border border-white/5 bg-gradient-to-br from-[oklch(0.12_0.03_260)] via-[oklch(0.1_0.02_280)] to-[oklch(0.08_0.04_300)] p-6">
-      {/* Background grid */}
+    <div className="relative w-full overflow-hidden rounded-2xl border border-white/8 bg-gradient-to-br from-[oklch(0.12_0.03_260)] via-[oklch(0.1_0.02_280)] to-[oklch(0.08_0.04_300)] p-6 shadow-xl shadow-black/20">
+      {/* Background grid + nebula */}
       <div
         className="absolute inset-0 opacity-[0.03]"
         style={{
@@ -57,6 +76,8 @@ export function ConstellationMap({ paths }: ConstellationMapProps) {
           backgroundSize: "40px 40px",
         }}
       />
+      <div className="absolute -left-10 -top-10 size-40 rounded-full bg-purple-500/10 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-10 -right-10 size-40 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
       {/* Header */}
       <div className="relative mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -71,7 +92,7 @@ export function ConstellationMap({ paths }: ConstellationMapProps) {
         </span>
       </div>
       {/* SVG constellation */}{" "}
-      <div className="relative mx-auto" style={{ height: 180 }}>
+      <div className="relative mx-auto w-full aspect-[5/3] min-h-[150px] max-h-[220px]">
         <svg
           className="absolute inset-0 h-full w-full"
           viewBox="0 0 100 100"
@@ -157,7 +178,7 @@ export function ConstellationMap({ paths }: ConstellationMapProps) {
               <motion.div
                 animate={isActive ? { scale: [1, 1.08, 1] } : {}}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="relative flex size-10 items-center justify-center rounded-full border"
+                className="relative flex size-10 items-center justify-center rounded-full border cursor-pointer hover:scale-110 transition-transform"
                 style={{
                   borderColor: isComplete
                     ? `${path.color}80`
@@ -172,7 +193,13 @@ export function ConstellationMap({ paths }: ConstellationMapProps) {
                   boxShadow: isComplete ? `0 0 20px ${path.color}30` : "none",
                 }}
               >
-                <span className="text-base">{path.emoji}</span>
+                {path.slug ? (
+                  <Link href={`/learn/${path.slug}`} className="flex items-center justify-center size-full">
+                    <span className="text-base">{path.emoji}</span>
+                  </Link>
+                ) : (
+                  <span className="text-base">{path.emoji}</span>
+                )}
 
                 {/* Completion check */}
                 {isComplete && (
