@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, GraduationCap, Target, Trophy, Award } from "lucide-react";
+import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
+import { BookOpen, GraduationCap, Target, Trophy, Award } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", label: "Home", icon: BookOpen, activeColor: "text-primary", glowColor: "shadow-primary/30" },
@@ -17,7 +18,9 @@ export function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/40 bg-background/95 backdrop-blur-2xl md:hidden pb-safe" role="navigation" aria-label="Main navigation">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-primary/10 bg-background/95 backdrop-blur-2xl lg:hidden pb-safe" role="navigation" aria-label="Main navigation">
+      {/* Cosmic top edge glow */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
       <div className="flex items-center justify-around h-16 px-2">
         {navItems.map((item) => {
           const isActive =
@@ -35,9 +38,13 @@ export function MobileNav() {
               )}
               aria-current={isActive ? "page" : undefined}
             >
-              {/* Active indicator bar with glow */}
+              {/* Active indicator dot */}
               {isActive && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-0.5 rounded-full bg-current shadow-sm" style={{ boxShadow: `0 0 4px currentColor` }} />
+                <motion.div
+                  layoutId="mobile-nav-active"
+                  className="absolute top-1 left-1/2 -translate-x-1/2 size-1 rounded-full bg-current"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
               )}
               <div
                 className={cn(

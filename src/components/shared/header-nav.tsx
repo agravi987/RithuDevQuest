@@ -27,7 +27,11 @@ export function HeaderNav() {
             asChild
             variant="ghost"
             size="sm"
-            className="rounded-lg px-3 text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-primary/5 transition-all duration-200 hover:scale-[1.03] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className={
+              isActive
+                ? "rounded-lg px-3 text-sm font-bold text-primary bg-primary/10 hover:text-primary hover:bg-primary/15 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                : "rounded-lg px-3 text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-primary/5 transition-all duration-200 hover:scale-[1.03] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            }
             aria-current={isActive ? "page" : undefined}
           >
             <Link href={item.href}>

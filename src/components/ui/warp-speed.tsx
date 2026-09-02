@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "motion/react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 
 let globalTriggerWarp: (() => void) | null = null;
@@ -14,13 +14,16 @@ export function useWarpSpeed() {
 
 export function WarpSpeedOverlay() {
   const [active, setActive] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   useEffect(() => {
     globalTriggerWarp = () => {
       setActive(true);
-      setTimeout(() => setActive(false), 800);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => setActive(false), 800);
     };
     return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
       globalTriggerWarp = null;
     };
   }, []);

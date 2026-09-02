@@ -1,41 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  RITHU_MOOD_EMOJIS,
+  RITHU_MOOD_COLORS,
+  RITHU_MOOD_ANIMATIONS,
+  type RithuMood,
+} from "@/components/mentor/rithu-moods";
 
 type RithuFloatProps = {
   className?: string;
-};
-
-type RithuMood = "happy" | "thinking" | "excited" | "sad" | "strong" | "idle";
-
-const moodEmojis: Record<RithuMood, string> = {
-  happy: "😊",
-  thinking: "🤔",
-  excited: "🎉",
-  sad: "😢",
-  strong: "💪",
-  idle: "👋",
-};
-
-const moodColors: Record<RithuMood, string> = {
-  happy: "from-emerald-400 to-primary",
-  thinking: "from-blue-400 to-cyan-400",
-  excited: "from-amber-400 to-orange-500",
-  sad: "from-slate-400 to-slate-500",
-  strong: "from-red-400 to-pink-500",
-  idle: "from-primary to-emerald-400",
-};
-
-const moodAnimations: Record<RithuMood, { y?: number[]; scale?: number[]; rotate?: number[]; transition?: Record<string, unknown> }> = {
-  happy: { rotate: [0, -5, 5, -5, 0], transition: { duration: 0.5, repeat: Infinity, repeatDelay: 4 } },
-  thinking: { y: [0, -3, 0], transition: { duration: 1.5, repeat: Infinity } },
-  excited: { scale: [1, 1.1, 1], rotate: [0, -10, 10, -10, 0], transition: { duration: 0.6, repeat: Infinity, repeatDelay: 2 } },
-  sad: { y: [0, 2, 0], transition: { duration: 2, repeat: Infinity } },
-  strong: { scale: [1, 1.15, 1], transition: { duration: 0.4, repeat: Infinity, repeatDelay: 1.5 } },
-  idle: { y: [0, -6, 0], transition: { duration: 3, repeat: Infinity, ease: "easeInOut" } },
 };
 
 const timeBasedMessages = [
@@ -61,6 +39,8 @@ export function RithuFloat({ className }: RithuFloatProps) {
   const [message, setMessage] = useState("");
   const [dismissed, setDismissed] = useState(false);
   const [hasShown, setHasShown] = useState(false);
+  const dismissTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pathname = usePathname();
 
   // Show idle greeting on mount
   useEffect(() => {
@@ -78,37 +58,39 @@ export function RithuFloat({ className }: RithuFloatProps) {
     }
   }, [hasShown]);
 
-  // Listen for URL changes to update mood
+  // React to client-side route changes (usePathname fires on every navigation).
+  // Previously this listened to the window `popstate` event, which Next.js
+  // client navigation does not emit — so the mentor kept a stale mood.
   useEffect(() => {
-    const handleRouteChange = () => {
-      const path = window.location.pathname;
-      if (path.includes("/practice")) {
-        setMood("thinking");
-        setMessage("Practice mode! You got this! 🎯");
-      } else if (path.includes("/achievements")) {
-        setMood("excited");
-        setMessage("Look at all your badges! 🏆");
-      } else if (path.includes("/leaderboard")) {
-        setMood("strong");
-        setMessage("Climb the leaderboard! 💪");
-      } else if (path.includes("/learn")) {
-        setMood("happy");
-        setMessage("Learning time! Let's go! 📚");
-      } else {
-        setMood("idle");
-        setMessage(getTimeMessage());
-      }
-      setDismissed(false);
+    const path = pathname;
 
-      // Auto-dismiss after 5 seconds
-      setTimeout(() => setDismissed(true), 5000);
+    if (path.includes("/practice")) {
+      setMood("thinking");
+      setMessage("Practice mode! You got this! 🎯");
+    } else if (path.includes("/achievements")) {
+      setMood("excited");
+      setMessage("Look at all your badges! 🏆");
+    } else if (path.includes("/leaderboard")) {
+      setMood("strong");
+      setMessage("Climb the leaderboard! 💪");
+    } else if (path.includes("/learn")) {
+      setMood("happy");
+      setMessage("Learning time! Let's go! 📚");
+    } else {
+      setMood("idle");
+      setMessage(getTimeMessage());
+    }
+    setDismissed(false);
+
+    // Auto-dismiss after 5 seconds
+    if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
+    dismissTimerRef.current = setTimeout(() => setDismissed(true), 5000);
+  }, [pathname]);
+
+  useEffect(() => {
+    return () => {
+      if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
     };
-
-    // Initial mood
-    handleRouteChange();
-
-    window.addEventListener("popstate", handleRouteChange);
-    return () => window.removeEventListener("popstate", handleRouteChange);
   }, []);
 
   function handleClick() {
@@ -136,7 +118,7 @@ export function RithuFloat({ className }: RithuFloatProps) {
   }
 
   return (
-    <div className={cn("fixed bottom-20 right-4 z-50 md:bottom-6", className)}>
+    <div className={cn("fixed bottom-28 right-4 z-50 md:bottom-6", className)}>
       <AnimatePresence>
         {/* Speech bubble */}
         {isExpanded && message && !dismissed && (
@@ -146,8 +128,14 @@ export function RithuFloat({ className }: RithuFloatProps) {
             exit={{ opacity: 0, scale: 0.8, y: 10 }}
             className="absolute bottom-full right-0 mb-3 w-64"
           >
-            <div className="relative rounded-2xl rounded-br-sm border border-border bg-card p-3 shadow-xl">
+            <div
+              role="dialog"
+              aria-label="Rithu's message"
+              className="relative rounded-2xl rounded-br-sm border border-border bg-card p-3 shadow-xl"
+            >
               <button
+                type="button"
+                aria-label="Dismiss message"
                 onClick={(e) => {
                   e.stopPropagation();
                   setDismissed(true);
@@ -166,7 +154,7 @@ export function RithuFloat({ className }: RithuFloatProps) {
 
       {/* Rithu button */}
       <motion.button
-        animate={moodAnimations[mood]}
+        animate={RITHU_MOOD_ANIMATIONS[mood]}
         onClick={handleClick}
         className="relative group"
         aria-label="Rithu AI Mentor"
@@ -174,15 +162,15 @@ export function RithuFloat({ className }: RithuFloatProps) {
         {/* Glow ring */}
         <div className={cn(
           "absolute -inset-2 rounded-full bg-gradient-to-br opacity-20 blur-lg transition-opacity group-hover:opacity-40",
-          moodColors[mood]
+          RITHU_MOOD_COLORS[mood]
         )} />
 
         {/* Main circle */}
         <div className={cn(
-          "relative grid size-14 place-items-center rounded-full bg-gradient-to-br shadow-xl border-2 border-white/30 transition-all group-hover:scale-110",
-          moodColors[mood]
+          "relative grid size-14 place-items-center rounded-full bg-gradient-to-br shadow-xl border border-white/30 transition-all group-hover:scale-110",
+          RITHU_MOOD_COLORS[mood]
         )}>
-          <span className="text-2xl drop-shadow-sm">{moodEmojis[mood]}</span>
+          <span className="text-2xl drop-shadow-sm">{RITHU_MOOD_EMOJIS[mood]}</span>
 
           {/* Sparkle */}
           <motion.div

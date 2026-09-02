@@ -76,11 +76,15 @@ export function CursorTrail({ enabled = true }: { enabled?: boolean }) {
           });
         }
       }
+      if (particlesRef.current.length > 0 && !animRef.current) {
+        animRef.current = requestAnimationFrame(animate);
+      }
     };
 
     window.addEventListener("mousemove", onMouseMove);
 
     const animate = () => {
+      animRef.current = 0;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Update and draw particles
@@ -130,10 +134,10 @@ export function CursorTrail({ enabled = true }: { enabled?: boolean }) {
         return true;
       });
 
-      animRef.current = requestAnimationFrame(animate);
+      if (particlesRef.current.length > 0) {
+        animRef.current = requestAnimationFrame(animate);
+      }
     };
-
-    animate();
 
     return () => {
       cancelAnimationFrame(animRef.current);

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Sparkles, MessageSquare, ArrowRight, X } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -22,6 +22,7 @@ export function RithuBubble({
   className = "",
 }: RithuBubbleProps) {
   const [open, setOpen] = useState(true);
+  const reduceMotion = useReducedMotion();
 
   if (!open) return null;
 
@@ -35,7 +36,7 @@ export function RithuBubble({
       >
         {/* Rithu Mascot Avatar */}
         <motion.div
-          animate={{ scale: [1, 1.05, 1] }}
+          animate={reduceMotion ? {} : { scale: [1, 1.05, 1] }}
           transition={{ duration: 3, repeat: Infinity }}
           className="relative size-10 sm:size-12 shrink-0 rounded-2xl bg-gradient-to-tr from-primary via-emerald-400 to-teal-300 flex items-center justify-center text-white font-black text-lg sm:text-xl shadow-lg shadow-primary/20 border-2 border-white/40"
         >
@@ -52,6 +53,8 @@ export function RithuBubble({
               <MessageSquare className="size-3.5" /> Rithu ({topic})
             </span>
             <button
+              type="button"
+              aria-label="Dismiss tip"
               onClick={() => setOpen(false)}
               className="text-muted-foreground hover:text-foreground p-0.5 rounded-full"
             >

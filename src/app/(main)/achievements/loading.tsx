@@ -4,7 +4,7 @@ export default function AchievementsLoading() {
   return (
     <div className="flex flex-col gap-8 max-w-5xl mx-auto pb-12">
       {/* Hero header skeleton */}
-      <div className="rounded-3xl border-2 bg-card p-6 sm:p-8">
+      <div className="rounded-3xl border bg-card p-6 sm:p-8">
         <div className="flex flex-col sm:flex-row items-center gap-6">
           <Skeleton className="size-24 rounded-full shrink-0" />
           <div className="flex-1 space-y-3 text-center sm:text-left">
@@ -32,7 +32,7 @@ export default function AchievementsLoading() {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="rounded-2xl border-2 bg-card p-4 space-y-3"
+                className="rounded-2xl border bg-card p-4 space-y-3"
               >
                 <div className="flex items-center gap-3">
                   <Skeleton className="size-12 rounded-xl" />

@@ -50,7 +50,8 @@ export function Supernova({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center"
+          aria-hidden="true"
+          className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none"
         >
           {/* Backdrop */}
           <motion.div

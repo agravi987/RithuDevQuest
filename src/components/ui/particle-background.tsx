@@ -39,12 +39,16 @@ export function ParticleBackground({
 
     let animationId: number;
     let particles: Particle[] = [];
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
 
     function resize() {
       if (!canvas) return;
-      canvas.width = canvas.offsetWidth * window.devicePixelRatio;
-      canvas.height = canvas.offsetHeight * window.devicePixelRatio;
-      ctx?.scale(window.devicePixelRatio, window.devicePixelRatio);
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(canvas.offsetWidth * dpr);
+      canvas.height = Math.round(canvas.offsetHeight * dpr);
+      ctx?.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
     function createParticles() {
@@ -70,17 +74,17 @@ export function ParticleBackground({
       ctx.globalAlpha = 1;
     }
 
-    function drawConnections(particles: Particle[]) {
+    function drawConnections(items: Particle[]) {
       if (!ctx) return;
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
+      for (let i = 0; i < items.length; i++) {
+        for (let j = i + 1; j < items.length; j++) {
+          const dx = items[i].x - items[j].x;
+          const dy = items[i].y - items[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 120) {
             ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.moveTo(items[i].x, items[i].y);
+            ctx.lineTo(items[j].x, items[j].y);
             ctx.strokeStyle = `oklch(0.72 0.19 142 / ${0.08 * (1 - dist / 120)})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
@@ -89,7 +93,7 @@ export function ParticleBackground({
       }
     }
 
-    function animate() {
+    function drawFrame() {
       if (!canvas || !ctx) return;
       ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
 
@@ -104,21 +108,44 @@ export function ParticleBackground({
       }
 
       drawConnections(particles);
+    }
+
+    function animate() {
+      drawFrame();
       animationId = requestAnimationFrame(animate);
+    }
+
+    function onResize() {
+      resize();
+      particles = createParticles();
+      drawFrame();
+    }
+
+    function onVisibility() {
+      if (reduceMotion) return;
+      cancelAnimationFrame(animationId);
+      if (!document.hidden) {
+        drawFrame();
+        animate();
+      }
     }
 
     resize();
     particles = createParticles();
-    animate();
 
-    window.addEventListener("resize", () => {
-      resize();
-      particles = createParticles();
-    });
+    if (reduceMotion) {
+      drawFrame();
+    } else {
+      animate();
+    }
+
+    window.addEventListener("resize", onResize);
+    document.addEventListener("visibilitychange", onVisibility);
 
     return () => {
       cancelAnimationFrame(animationId);
-      window.removeEventListener("resize", resize);
+      window.removeEventListener("resize", onResize);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, [count, colors]);
 

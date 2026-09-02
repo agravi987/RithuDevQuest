@@ -17,7 +17,7 @@ export default function LeaderboardLoading() {
         {[1, 2, 3, 4, 5, 6, 7].map((i) => (
           <div
             key={i}
-            className="flex items-center gap-3 rounded-2xl border-2 bg-card px-4 py-3"
+            className="flex items-center gap-3 rounded-2xl border bg-card px-4 py-3"
           >
             <Skeleton className="size-6 rounded-lg" />
             <Skeleton className="size-10 rounded-full" />
@@ -31,7 +31,7 @@ export default function LeaderboardLoading() {
       </div>
 
       {/* Info card */}
-      <div className="rounded-2xl border-2 bg-card p-5 space-y-2">
+      <div className="rounded-2xl border bg-card p-5 space-y-2">
         <Skeleton className="h-3 w-full" />
         <Skeleton className="h-3 w-3/4" />
       </div>

@@ -11,7 +11,7 @@ export default function LearnLoading() {
       </div>
 
       {/* Hero card skeleton */}
-      <div className="rounded-3xl border-2 bg-card p-6 sm:p-8">
+      <div className="rounded-3xl border bg-card p-6 sm:p-8">
         <div className="flex items-center gap-4 mb-6">
           <Skeleton className="size-16 rounded-2xl shrink-0" />
           <div className="flex-1 space-y-2">
@@ -25,7 +25,7 @@ export default function LearnLoading() {
       {/* Path cards skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="rounded-2xl border-2 bg-card p-5 space-y-3">
+          <div key={i} className="rounded-2xl border bg-card p-5 space-y-3">
             <div className="flex items-center gap-3">
               <Skeleton className="size-10 rounded-xl" />
               <div className="flex-1 space-y-2">

@@ -13,11 +13,18 @@ export function ScrollToTop() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const handleClick = () => {
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+  };
+
   return (
     <button
-      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      onClick={handleClick}
       className={cn(
-        "fixed bottom-24 right-4 z-40 grid size-10 place-items-center rounded-full bg-card border-2 border-border shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl md:bottom-6",
+        "fixed bottom-24 right-4 z-40 grid size-10 place-items-center rounded-full bg-card border border-border shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl md:bottom-6",
         visible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0 pointer-events-none"
       )}
       aria-label="Scroll to top"

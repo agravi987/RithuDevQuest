@@ -6,12 +6,24 @@ export const GALAXY = {
     spaceship: "/png_images/spacecraft/spaceship.png",
   },
   planets: {
-    // NASA public-domain transparent renders (sourced from Wikimedia Commons)
     devops: "/png_images/planets/devops.png",
     cloud: "/png_images/planets/cloud.png",
     "ai-agents": "/png_images/planets/ai-agents.png",
     "web-dev": "/png_images/planets/web-dev.png",
     "system-design": "/png_images/planets/system-design.png",
+  },
+  ui: {
+    mars: "/png_images/mars.png",
+    saturn: "/png_images/saturn.png",
+  },
+  /** Emoji fallbacks for when PNG assets aren't loaded */
+  emoji: {
+    devops: "🐧",
+    cloud: "☁️",
+    "ai-agents": "🤖",
+    "web-dev": "🌐",
+    "system-design": "🏗️",
+    spaceship: "🚀",
   },
 } as const;
 

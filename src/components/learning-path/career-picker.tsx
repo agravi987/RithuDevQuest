@@ -45,10 +45,10 @@ export function CareerPicker({ careers, activeSlug }: CareerPickerProps) {
               aria-current={active ? "page" : undefined}
               aria-label={`${career.title} career sector${career.pathCount ? `, ${career.pathCount} paths` : ""}${progress > 0 ? `, ${progress}% explored` : ""}`}
               className={cn(
-                "group flex flex-col items-center gap-2 rounded-2xl border px-4 py-3 transition-all duration-300",
+                "group flex flex-col items-center gap-2.5 rounded-2xl border px-5 py-4 transition-all duration-300",
                 active
-                  ? "border-foreground/25 bg-foreground/[0.04]"
-                  : "border-transparent hover:border-foreground/10",
+                  ? "border-foreground/20 bg-foreground/[0.05] shadow-lg shadow-foreground/5"
+                  : "border-transparent hover:border-foreground/10 hover:bg-foreground/[0.02]",
               )}
             >
               <div className="relative">
@@ -91,28 +91,33 @@ export function CareerPicker({ careers, activeSlug }: CareerPickerProps) {
               <div className="text-center">
                 <p
                   className={cn(
-                    "text-xs font-bold leading-tight",
+                    "text-xs font-bold leading-tight transition-colors",
                     active
                       ? "text-foreground"
-                      : "text-muted-foreground",
+                      : "text-muted-foreground group-hover:text-foreground/80",
                   )}
                 >
                   {career.title}
                 </p>
-                <p
-                  className={cn(
-                    "mt-0.5 text-[9px] font-semibold tabular-nums",
-                    active
-                      ? "text-primary"
-                      : "text-muted-foreground/70",
+                <div className="flex items-center justify-center gap-1.5 mt-1">
+                  {progress > 0 && (
+                    <div className="size-1.5 rounded-full bg-emerald-400 shadow-[0_0_4px_rgba(52,211,153,0.5)]" />
                   )}
-                >
-                  {progress > 0
-                    ? `${progress}%`
-                    : career.pathCount
-                      ? `${career.pathCount} paths`
-                      : "Not started"}
-                </p>
+                  <p
+                    className={cn(
+                      "text-[10px] font-semibold tabular-nums",
+                      active
+                        ? "text-primary"
+                        : progress > 0 ? "text-emerald-400/70" : "text-muted-foreground/60",
+                    )}
+                  >
+                    {progress > 0
+                      ? `${progress}% explored`
+                      : career.pathCount
+                        ? `${career.pathCount} paths`
+                        : "Not started"}
+                  </p>
+                </div>
               </div>
             </Link>
           </motion.div>

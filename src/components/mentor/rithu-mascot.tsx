@@ -1,10 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { Sparkles, X } from "lucide-react";
-
-type RithuMood = "happy" | "thinking" | "excited" | "sad" | "strong" | "idle";
+import {
+  RITHU_MOOD_EMOJIS,
+  RITHU_MOOD_COLORS,
+  RITHU_MOOD_ANIMATIONS,
+  type RithuMood,
+} from "@/components/mentor/rithu-moods";
 
 type RithuMascotProps = {
   mood?: RithuMood;
@@ -12,33 +16,6 @@ type RithuMascotProps = {
   size?: "sm" | "md" | "lg";
   showSpeech?: boolean;
   className?: string;
-};
-
-const moodEmojis: Record<RithuMood, string> = {
-  happy: "😊",
-  thinking: "🤔",
-  excited: "🎉",
-  sad: "😢",
-  strong: "💪",
-  idle: "👋",
-};
-
-const moodAnimations: Record<RithuMood, { rotate?: number[]; scale?: number[]; y?: number[]; transition?: Record<string, unknown> }> = {
-  happy: { rotate: [0, -5, 5, -5, 0], transition: { duration: 0.5, repeat: Infinity, repeatDelay: 3 } },
-  thinking: { y: [0, -3, 0], transition: { duration: 1.5, repeat: Infinity } },
-  excited: { scale: [1, 1.1, 1], rotate: [0, -10, 10, -10, 0], transition: { duration: 0.6, repeat: Infinity, repeatDelay: 2 } },
-  sad: { y: [0, 2, 0], transition: { duration: 2, repeat: Infinity } },
-  strong: { scale: [1, 1.15, 1], transition: { duration: 0.4, repeat: Infinity, repeatDelay: 1.5 } },
-  idle: { y: [0, -4, 0], transition: { duration: 3, repeat: Infinity, ease: "easeInOut" } },
-};
-
-const moodColors: Record<RithuMood, string> = {
-  happy: "from-emerald-400 to-primary",
-  thinking: "from-blue-400 to-cyan-400",
-  excited: "from-amber-400 to-orange-500",
-  sad: "from-slate-400 to-slate-500",
-  strong: "from-red-400 to-pink-500",
-  idle: "from-primary to-emerald-400",
 };
 
 const sizeClasses = {
@@ -56,6 +33,7 @@ export function RithuMascot({
 }: RithuMascotProps) {
   const [dismissed, setDismissed] = useState(false);
   const [currentMessage, setCurrentMessage] = useState(message);
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     setCurrentMessage(message);
@@ -74,6 +52,8 @@ export function RithuMascot({
             className="relative max-w-xs rounded-2xl rounded-br-sm border border-border bg-card p-3 shadow-md"
           >
             <button
+              type="button"
+              aria-label="Dismiss message"
               onClick={() => setDismissed(true)}
               className="absolute -right-2 -top-2 size-5 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
             >
@@ -88,23 +68,27 @@ export function RithuMascot({
 
       {/* Rithu character */}
       <motion.div
-        animate={moodAnimations[mood]}
+        animate={reduceMotion ? { rotate: 0 } : RITHU_MOOD_ANIMATIONS[mood]}
         className={`relative ${sizeClasses[size]}`}
       >
         {/* Animated glow ring */}
         <motion.div
-          animate={{ scale: [1, 1.3, 1], opacity: [0.15, 0.3, 0.15] }}
+          animate={
+            reduceMotion
+              ? { scale: 1, opacity: 0.2 }
+              : { scale: [1, 1.3, 1], opacity: [0.15, 0.3, 0.15] }
+          }
           transition={{ duration: 2, repeat: Infinity }}
-          className={`absolute -inset-2 rounded-full bg-gradient-to-br ${moodColors[mood]} opacity-20 blur-lg`}
+          className={`absolute -inset-2 rounded-full bg-gradient-to-br ${RITHU_MOOD_COLORS[mood]} opacity-20 blur-lg`}
         />
 
         {/* Character body */}
-        <div className={`relative grid size-full place-items-center rounded-full bg-gradient-to-br ${moodColors[mood]} shadow-lg border-2 border-white/30`}>
-          <span className="drop-shadow-sm">{moodEmojis[mood]}</span>
+        <div className={`relative grid size-full place-items-center rounded-full bg-gradient-to-br ${RITHU_MOOD_COLORS[mood]} shadow-lg border-2 border-white/30`}>
+          <span className="drop-shadow-sm">{RITHU_MOOD_EMOJIS[mood]}</span>
 
           {/* Sparkle accessory */}
           <motion.div
-            animate={{ rotate: 360 }}
+            animate={reduceMotion ? { rotate: 0 } : { rotate: 360 }}
             transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
             className="absolute -right-1 -top-1"
           >

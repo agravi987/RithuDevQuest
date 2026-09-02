@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Home, ArrowLeft, MapPin } from "lucide-react";
+import { motion } from "motion/react";
+import { Home, ArrowLeft, MapPin, Rocket } from "lucide-react";
 
 export default function NotFound() {
   return (
@@ -15,46 +16,80 @@ export default function NotFound() {
       </div>
 
       {/* Main content */}
-      <div className="relative z-10 flex flex-col items-center gap-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="relative z-10 flex flex-col items-center gap-6"
+      >
         {/* Large 404 with gradient */}
         <div className="relative">
-          <span className="text-[120px] font-black leading-none tracking-tighter bg-gradient-to-br from-primary via-emerald-400 to-xp bg-clip-text text-transparent opacity-20">
+          <motion.span
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 0.15, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-[120px] font-black leading-none tracking-tighter bg-gradient-to-br from-primary via-emerald-400 to-xp bg-clip-text text-transparent select-none"
+          >
             404
-          </span>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="grid size-20 place-items-center rounded-3xl bg-gradient-to-br from-primary to-emerald-400 text-primary-foreground shadow-xl shadow-primary/20 animate-bounce">
+          </motion.span>
+          <motion.div
+            initial={{ scale: 0, rotate: -30 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
+            className="absolute inset-0 flex items-center justify-center"
+          >
+            <div className="relative grid size-20 place-items-center rounded-3xl bg-gradient-to-br from-primary to-emerald-400 text-primary-foreground shadow-xl shadow-primary/20">
               <MapPin className="size-10" />
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                className="absolute -inset-3 rounded-full border border-dashed border-primary/20"
+              />
             </div>
-          </div>
+          </motion.div>
         </div>
 
-        <div>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
           <h1 className="text-3xl font-black tracking-tight">Lost in the Matrix!</h1>
-          <p className="mt-2 text-muted-foreground max-w-md">
+          <p className="mt-2 text-muted-foreground max-w-md text-sm">
             This quest node doesn&apos;t exist yet. Looks like you ventured beyond the map boundaries.
           </p>
-        </div>
+        </motion.div>
 
         {/* Navigation buttons */}
-        <div className="flex flex-col gap-3 sm:flex-row">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="flex flex-col gap-3 sm:flex-row"
+        >
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 rounded-2xl bg-primary px-8 py-3.5 text-sm font-bold text-primary-foreground shadow-md shadow-primary/15 hover:shadow-lg hover:shadow-primary/20 hover:brightness-110 transition-all active:scale-[0.98]"
+            className="group inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-primary to-emerald-500 px-8 py-3.5 text-sm font-bold text-primary-foreground shadow-md shadow-primary/15 hover:shadow-lg hover:shadow-primary/25 hover:brightness-110 transition-all active:scale-[0.98] btn-glow"
           >
-            <Home className="size-4" />
+            <Home className="size-4 transition-transform group-hover:-translate-y-0.5" />
             Back to Dashboard
           </Link>
           <button
             onClick={() => window.history.back()}
-            className="inline-flex items-center gap-2 rounded-2xl border-2 border-border bg-card px-8 py-3.5 text-sm font-bold hover:border-primary/30 hover:bg-primary/5 transition-all"
+            className="inline-flex items-center gap-2 rounded-2xl border border-border bg-card px-8 py-3.5 text-sm font-bold hover:border-primary/30 hover:bg-primary/5 transition-all"
           >
             <ArrowLeft className="size-4" />
             Go Back
           </button>
-        </div>
+        </motion.div>
 
         {/* Helpful links */}
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-muted-foreground">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-muted-foreground"
+        >
           <span>Quick links:</span>
           {[
             { href: "/learn", label: "🗺️ Learn" },
@@ -70,8 +105,19 @@ export default function NotFound() {
               {link.label}
             </Link>
           ))}
-        </div>
-      </div>
+        </motion.div>
+
+        {/* Fun太空 fact */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="mt-4 flex items-center gap-2 rounded-full bg-muted/50 px-4 py-2 text-[10px] font-medium text-muted-foreground"
+        >
+          <Rocket className="size-3" />
+          Fun fact: This page was lost in a black hole somewhere in sector 7G
+        </motion.div>
+      </motion.div>
     </div>
   );
 }

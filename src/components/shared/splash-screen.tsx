@@ -36,7 +36,8 @@ export function SplashScreen() {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, scale: 1.05 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
-          className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-gradient-to-br from-primary/10 via-background to-achievement/10"
+          aria-hidden="true"
+          className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-gradient-to-br from-primary/10 via-background to-achievement/10 pointer-events-none"
         >
           {/* Emoji rain particles */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">

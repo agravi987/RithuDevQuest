@@ -4,7 +4,7 @@ export default function PracticeLoading() {
   return (
     <div className="flex flex-col gap-8 max-w-5xl mx-auto pb-12">
       {/* Header skeleton */}
-      <div className="rounded-3xl border-2 bg-card p-6 sm:p-8">
+      <div className="rounded-3xl border bg-card p-6 sm:p-8">
         <div className="flex items-center gap-4">
           <Skeleton className="size-16 rounded-2xl" />
           <div className="space-y-2">

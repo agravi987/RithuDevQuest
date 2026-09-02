@@ -15,16 +15,14 @@ export function GlowCard({
   glowColor = "oklch(0.72 0.19 142 / 0.15)",
 }: GlowCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
 
   function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
     if (!cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
-    setMousePos({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
+    // Write position straight to the DOM node to avoid re-rendering on every move
+    cardRef.current.style.setProperty("--glow-x", `${e.clientX - rect.left}px`);
+    cardRef.current.style.setProperty("--glow-y", `${e.clientY - rect.top}px`);
   }
 
   return (
@@ -42,10 +40,9 @@ export function GlowCard({
       {/* Glow spotlight */}
       {isHovered && (
         <div
-          className="pointer-events-none absolute -inset-px transition-opacity duration-300"
+          className="pointer-events-none absolute -inset-px"
           style={{
-            opacity: isHovered ? 1 : 0,
-            background: `radial-gradient(400px circle at ${mousePos.x}px ${mousePos.y}px, ${glowColor}, transparent 70%)`,
+            background: `radial-gradient(400px circle at var(--glow-x, 50%) var(--glow-y, 50%), ${glowColor}, transparent 70%)`,
           }}
         />
       )}

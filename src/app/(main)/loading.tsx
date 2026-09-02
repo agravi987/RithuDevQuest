@@ -4,7 +4,7 @@ export default function Loading() {
   return (
     <div className="min-h-[50vh] flex flex-col items-center justify-center gap-4 text-center p-8">
       <div className="relative">
-        <div className="size-16 rounded-3xl bg-primary/15 border-2 border-primary/30 flex items-center justify-center text-primary animate-pulse">
+        <div className="size-16 rounded-3xl bg-primary/15 border border-primary/30 flex items-center justify-center text-primary animate-pulse">
           <Sparkles className="size-8 animate-spin" />
         </div>
       </div>

@@ -37,10 +37,15 @@ export function Starfield({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
     const resize = () => {
-      canvas.width = canvas.offsetWidth * window.devicePixelRatio;
-      canvas.height = canvas.offsetHeight * window.devicePixelRatio;
-      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(canvas.offsetWidth * dpr);
+      canvas.height = Math.round(canvas.offsetHeight * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
     resize();
     window.addEventListener("resize", resize);
@@ -51,49 +56,42 @@ export function Starfield({
       y: Math.random() * canvas.offsetHeight,
       size: Math.random() * 2 + 0.5,
       opacity: Math.random() * 0.8 + 0.2,
-      speed: (Math.random() * 0.5 + 0.5) * speed,
+      speed: (Math.random() * 0.5 + 0.5) * speed * depth,
       twinklePhase: Math.random() * Math.PI * 2,
       twinkleSpeed: Math.random() * 0.02 + 0.01,
     }));
 
-    let time = 0;
-
-    const animate = () => {
-      time += 0.016;
+    const drawFrame = (timeSec: number) => {
       const w = canvas.offsetWidth;
       const h = canvas.offsetHeight;
 
       ctx.clearRect(0, 0, w, h);
 
-      // Draw stars
       for (const star of starsRef.current) {
-        // Move star
         star.y -= star.speed * 0.5;
-        star.x += Math.sin(time + star.twinklePhase) * 0.1;
+        star.x += Math.sin(timeSec + star.twinklePhase) * 0.1;
 
-        // Wrap around
         if (star.y < -10) {
           star.y = h + 10;
           star.x = Math.random() * w;
         }
 
-        // Twinkle
-        const twinkle = Math.sin(time * star.twinkleSpeed * 60 + star.twinklePhase);
+        const twinkle = Math.sin(
+          timeSec * star.twinkleSpeed * 60 + star.twinklePhase,
+        );
         const alpha = star.opacity * (0.6 + twinkle * 0.4);
 
-        // Draw star
         ctx.beginPath();
         ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
         ctx.fill();
 
-        // Glow for bigger stars
         if (star.size > 1.2) {
           ctx.beginPath();
           ctx.arc(star.x, star.y, star.size * 3, 0, Math.PI * 2);
           const gradient = ctx.createRadialGradient(
             star.x, star.y, 0,
-            star.x, star.y, star.size * 3
+            star.x, star.y, star.size * 3,
           );
           gradient.addColorStop(0, `rgba(200, 220, 255, ${alpha * 0.3})`);
           gradient.addColorStop(1, "transparent");
@@ -102,19 +100,37 @@ export function Starfield({
         }
       }
 
-      // Occasional shooting star
       if (Math.random() < 0.002) {
         drawShootingStar(ctx, w, h);
       }
-
-      animRef.current = requestAnimationFrame(animate);
     };
 
-    animate();
+    const animate = (timeSec: number) => {
+      const elapsed = timeSec / 1000;
+      drawFrame(elapsed);
+      if (!reduceMotion && !document.hidden) {
+        animRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    if (reduceMotion) {
+      drawFrame(0);
+    } else {
+      animRef.current = requestAnimationFrame(animate);
+    }
+
+    const onVisibility = () => {
+      cancelAnimationFrame(animRef.current);
+      if (!document.hidden && !reduceMotion) {
+        animRef.current = requestAnimationFrame(animate);
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
 
     return () => {
       cancelAnimationFrame(animRef.current);
       window.removeEventListener("resize", resize);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, [starCount, speed, depth]);
 

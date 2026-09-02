@@ -21,8 +21,18 @@ export function AnimatedNumber({
   const [display, setDisplay] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
   const hasAnimated = useRef(false);
+  const rafRef = useRef<number>(0);
 
   useEffect(() => {
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (reduceMotion) {
+      setDisplay(value);
+      hasAnimated.current = true;
+      return;
+    }
+
     const start = hasAnimated.current ? display : 0;
     const diff = value - start;
     if (diff === 0) return;
@@ -38,13 +48,17 @@ export function AnimatedNumber({
       setDisplay(Math.round(start + diff * eased));
 
       if (progress < 1) {
-        requestAnimationFrame(tick);
+        rafRef.current = requestAnimationFrame(tick);
       } else {
         hasAnimated.current = true;
       }
     }
 
-    requestAnimationFrame(tick);
+    rafRef.current = requestAnimationFrame(tick);
+
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
