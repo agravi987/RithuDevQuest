@@ -469,6 +469,29 @@ async function seedAchievements(prisma: PrismaClient) {
   }
 }
 
+async function seedAdminUser(prisma: PrismaClient) {
+  const adminEmail = process.env.ADMIN_EMAIL ?? "test@rithudevquest.dev";
+
+  const existing = await prisma.user.findUnique({
+    where: { email: adminEmail },
+    select: { id: true },
+  });
+
+  if (!existing) {
+    console.log(
+      `Admin user "${adminEmail}" not found — register an account with this email first, or set ADMIN_EMAIL in .env.`,
+    );
+    return;
+  }
+
+  await prisma.user.update({
+    where: { id: existing.id },
+    data: { role: "admin" },
+  });
+
+  console.log(`Promoted "${adminEmail}" to admin role.`);
+}
+
 async function main() {
   const prisma = new PrismaClient({
     adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
@@ -479,6 +502,7 @@ async function main() {
       await seedCareer(prisma, career);
     }
     await seedAchievements(prisma);
+    await seedAdminUser(prisma);
 
     console.log("Seeded curriculum:");
 
