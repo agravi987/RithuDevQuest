@@ -1,17 +1,19 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import { signupAction, type SignupState } from "@/lib/auth-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
+import { PasswordStrengthMeter } from "@/components/ui/password-strength";
 
 const initialState: SignupState = { status: "idle" };
 
 const inputClass =
-  "h-10 rounded-xl border-border bg-background text-foreground placeholder:text-muted-foreground/60 transition-colors focus-visible:border-emerald-400/60 focus-visible:ring-emerald-400/20";
+  "h-10 rounded-xl bg-background text-foreground placeholder:text-muted-foreground/60";
 const labelClass = "text-muted-foreground";
 
 export function SignupForm() {
@@ -19,6 +21,11 @@ export function SignupForm() {
     signupAction,
     initialState,
   );
+  const [fieldError, setFieldError] = useState<string | null>(null);
+  const [password, setPassword] = useState("");
+
+  const error = fieldError ?? (state.status === "error" ? state.message : null);
+  const clearError = () => setFieldError(null);
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
@@ -31,8 +38,10 @@ export function SignupForm() {
           name="name"
           placeholder="Ada Lovelace"
           autoComplete="name"
-          required
           minLength={2}
+          aria-invalid={error ? true : undefined}
+          onChange={clearError}
+          required
           className={inputClass}
         />
       </div>
@@ -46,6 +55,8 @@ export function SignupForm() {
           type="email"
           placeholder="you@example.com"
           autoComplete="email"
+          aria-invalid={error ? true : undefined}
+          onChange={clearError}
           required
           className={inputClass}
         />
@@ -54,24 +65,30 @@ export function SignupForm() {
         <Label htmlFor="password" className={labelClass}>
           Password
         </Label>
-        <Input
+        <PasswordInput
           id="password"
           name="password"
-          type="password"
           placeholder="At least 8 characters"
           autoComplete="new-password"
-          required
           minLength={8}
           maxLength={72}
+          aria-invalid={error ? true : undefined}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            clearError();
+          }}
+          required
           className={inputClass}
         />
+        <PasswordStrengthMeter value={password} />
       </div>
-      {state.status === "error" && (
+      {error && (
         <p
+          role="alert"
           aria-live="polite"
-          className="rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-300"
+          className="rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
         >
-          {state.message}
+          {error}
         </p>
       )}
       <Button
@@ -80,8 +97,14 @@ export function SignupForm() {
         disabled={pending}
         className="mt-1 h-11 w-full rounded-xl bg-gradient-to-r from-primary to-emerald-400 text-sm font-black text-primary-foreground shadow-lg shadow-primary/25 btn-glow hover:brightness-110 transition-all"
       >
-        {pending && <Loader2 className="animate-spin" />}
-        Create account
+        {pending ? (
+          <>
+            <Loader2 className="animate-spin" />
+            Creating account…
+          </>
+        ) : (
+          "Create account"
+        )}
       </Button>
     </form>
   );

@@ -1,6 +1,7 @@
 import type { NextAuthConfig } from "next-auth";
 
 export const authConfig = {
+  trustHost: true,
   pages: {
     signIn: "/login",
   },
@@ -29,7 +30,8 @@ export const authConfig = {
       const isLoggedIn = !!auth?.user;
       if (nextUrl.pathname.startsWith("/login") || nextUrl.pathname.startsWith("/signup")) {
         if (isLoggedIn) {
-          return Response.redirect(new URL("/dashboard", nextUrl));
+          const dest = auth?.user?.role === "admin" ? "/admin" : "/dashboard";
+          return Response.redirect(new URL(dest, nextUrl));
         }
         return true;
       }

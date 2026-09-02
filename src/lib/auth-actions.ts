@@ -101,13 +101,27 @@ export async function loginAction(
     typeof formData.get("callbackUrl") === "string" &&
     (formData.get("callbackUrl") as string).startsWith("/")
       ? (formData.get("callbackUrl") as string)
-      : "/dashboard";
+      : null;
+
+  // Determine redirect destination based on user role
+  let redirectTo = "/dashboard";
+  if (callbackUrl) {
+    redirectTo = callbackUrl;
+  } else {
+    const user = await prisma.user.findUnique({
+      where: { email: parsed.data.email },
+      select: { role: true },
+    });
+    if (user?.role === "admin") {
+      redirectTo = "/admin";
+    }
+  }
 
   try {
     await signIn("credentials", {
       email: parsed.data.email,
       password: parsed.data.password,
-      redirectTo: callbackUrl,
+      redirectTo,
     });
   } catch (err) {
     // Re-throw redirect so Next.js can handle navigation

@@ -14,7 +14,8 @@ export default auth((req) => {
 
   if (isAuthPage) {
     if (isLoggedIn) {
-      return NextResponse.redirect(new URL("/dashboard", nextUrl));
+      const dest = req.auth?.user?.role === "admin" ? "/admin" : "/dashboard";
+      return NextResponse.redirect(new URL(dest, nextUrl));
     }
     return NextResponse.next();
   }
@@ -31,6 +32,13 @@ export default auth((req) => {
     return NextResponse.redirect(
       new URL(`/login?callbackUrl=${encodeURIComponent(from)}`, nextUrl),
     );
+  }
+
+  // Admin routes are reserved for users with the admin role
+  if (nextUrl.pathname.startsWith("/admin")) {
+    if (req.auth?.user?.role !== "admin") {
+      return NextResponse.redirect(new URL("/dashboard", nextUrl));
+    }
   }
 
   return NextResponse.next();

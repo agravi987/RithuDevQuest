@@ -23,8 +23,51 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
+        const { email, password } = parsed.data;
+
+        const adminEmail = process.env.ADMIN_EMAIL;
+        const adminPassword = process.env.ADMIN_PASSWORD;
+
+        if (adminEmail && adminPassword) {
+          const isEnvAdmin =
+            email.toLowerCase() === adminEmail.toLowerCase() &&
+            password === adminPassword;
+
+          if (isEnvAdmin) {
+            const passwordHash = await bcrypt.hash(adminPassword, 10);
+            const admin = await prisma.user.upsert({
+              where: { email: adminEmail },
+              update: { role: "admin", passwordHash },
+              create: {
+                name: "Administrator",
+                email: adminEmail,
+                role: "admin",
+                passwordHash,
+              },
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+                role: true,
+                xp: true,
+                level: true,
+              },
+            });
+            return {
+              id: admin.id,
+              name: admin.name,
+              email: admin.email,
+              image: admin.image,
+              role: admin.role,
+              xp: admin.xp,
+              level: admin.level,
+            };
+          }
+        }
+
         const user = await prisma.user.findUnique({
-          where: { email: parsed.data.email },
+          where: { email },
         });
 
         if (!user?.passwordHash) {
@@ -32,7 +75,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         const valid = await bcrypt.compare(
-          parsed.data.password,
+          password,
           user.passwordHash,
         );
 
