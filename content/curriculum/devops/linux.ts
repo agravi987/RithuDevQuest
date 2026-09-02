@@ -113,6 +113,16 @@ export const linuxPath: SeedPath = {
                   explanation:
                     "whoami shows your login name, pwd prints the present working directory, and ls lists its contents. Together they tell you exactly where you are in the shell.",
                 },
+                {
+                  type: "word_scramble",
+                  difficulty: "beginner",
+                  question:
+                    "Unscramble the word that names the program which interprets the commands you type.",
+                  scrambledWord: "shell",
+                  explanation:
+                    "The shell is the program that reads your command line and asks the operating system to run it; Bash is one common shell.",
+                  hint: "It is the program Bash is.",
+                },
               ],
             },
             {
@@ -220,6 +230,31 @@ export const linuxPath: SeedPath = {
                   explanation:
                     "cd .. climbs one level, cd ~ (or plain cd) returns home, and pwd confirms where you are. pwd pairs perfectly with any navigation sequence.",
                 },
+                {
+                  type: "sequence",
+                  difficulty: "intermediate",
+                  question:
+                    "Arrange these steps in the order you would follow to create and inspect a directory named logs and then return home.",
+                  sequenceItems: [
+                    { id: "cd-home", text: "Run cd ~ to return to your home directory" },
+                    { id: "mkdir-logs", text: "Run mkdir logs to create the directory" },
+                    { id: "cd-logs", text: "Run cd logs to enter it" },
+                    { id: "ls-logs", text: "Run ls to list what is inside logs" },
+                  ],
+                  sequenceCorrectOrder: ["mkdir-logs", "cd-logs", "ls-logs", "cd-home"],
+                  explanation:
+                    "First mkdir logs creates the folder, cd logs enters it, ls inspects its contents, and cd ~ finally climbs back home.",
+                  hint: "You must create the directory before you can enter it.",
+                },
+                {
+                  type: "fill_blank",
+                  difficulty: "beginner",
+                  question:
+                    "Fill in the blank: The command ________ prints your current working directory.",
+                  fillBlanks: [{ answer: "pwd" }],
+                  explanation:
+                    "pwd stands for 'print working directory' and shows the absolute path of where you are in the tree.",
+                },
               ],
             },
             {
@@ -324,6 +359,21 @@ export const linuxPath: SeedPath = {
                   ],
                   explanation:
                     "man opens the manual, n moves to the next search match, and q closes the pager. This is the same habit you will use to learn every tool on the command line.",
+                },
+                {
+                  type: "match",
+                  difficulty: "beginner",
+                  question:
+                    "Match each key or argument to what it does inside a man page.",
+                  matchPairs: [
+                    { left: "/term", right: "Search forward for text" },
+                    { left: "n", right: "Jump to the next match" },
+                    { left: "q", right: "Quit the pager" },
+                    { left: "--help", right: "Print a brief usage summary" },
+                  ],
+                  explanation:
+                    "Inside a man page, /term searches forward, n repeats the search to the next match, and q quits. --help is a separate, non-interactive summary.",
+                  hint: "n is only useful right after you run a search.",
                 },
               ],
             },
@@ -440,6 +490,28 @@ export const linuxPath: SeedPath = {
                   explanation:
                     "tail -n 20 shows the most recent entries, tail -f follows new output live while you watch, and cat dumps the entire file for a full scan.",
                 },
+                {
+                  type: "code_completion",
+                  difficulty: "intermediate",
+                  question:
+                    "Complete the one-liner that keeps watching app.log and prints every new line as it is appended.",
+                  codeLanguage: "bash",
+                  codeBlanks: [
+                    { id: "cmd", answer: "tail -f app.log", placeholder: "<command>" },
+                  ],
+                  explanation:
+                    "tail -f app.log follows the file and streams each newly appended line in real time — the classic way to watch live logs.",
+                  hint: "The command is the word 'tail' plus two things: -f and the filename.",
+                },
+                {
+                  type: "fill_blank",
+                  difficulty: "beginner",
+                  question:
+                    "Fill in the blank: The command ________ shows the first ten lines of a file by default.",
+                  fillBlanks: [{ answer: "head" }],
+                  explanation:
+                    "head prints the beginning of a file (ten lines by default), the natural complement to tail.",
+                },
               ],
             },
             {
@@ -545,6 +617,21 @@ export const linuxPath: SeedPath = {
                   ],
                   explanation:
                     ":q! abandons your changes, i enters insert mode to type, and :wq (or :x) saves and quits in one step.",
+                },
+                {
+                  type: "match",
+                  difficulty: "intermediate",
+                  question:
+                    "Match each Vim key or command to what it does.",
+                  matchPairs: [
+                    { left: "i", right: "Enter insert mode" },
+                    { left: "Esc", right: "Return to normal mode" },
+                    { left: ":w", right: "Save the file" },
+                    { left: ":q!", right: "Quit without saving" },
+                  ],
+                  explanation:
+                    "i enters insert mode for typing, Esc returns to normal mode, :w writes the file, and :q! discards your changes and quits.",
+                  hint: "One pair is about escaping back from typing.",
                 },
               ],
             },
@@ -672,6 +759,15 @@ export const linuxPath: SeedPath = {
                   explanation:
                     "mkdir creates directories, touch creates empty files within a path, and cp copies a file — you now have a backed-up scratch setup.",
                 },
+                {
+                  type: "fill_blank",
+                  difficulty: "beginner",
+                  question:
+                    "Fill in the blank: The command ________ creates a new empty file (or refreshes its timestamp if it already exists).",
+                  fillBlanks: [{ answer: "touch" }],
+                  explanation:
+                    "touch is the standard way to create an empty file; run it again on an existing file and it simply updates the timestamp.",
+                },
               ],
             },
           ],
@@ -754,8 +850,32 @@ export const linuxPath: SeedPath = {
                   type: "command",
                   difficulty: "beginner",
                   question: "Type the command that changes to the parent directory.",
-                  correctAnswer: "cd ..",
+correctAnswer: "cd ..",
                   explanation: ".. refers to the parent directory. cd .. moves one level up in the directory tree.",
+                },
+                {
+                  type: "sequence",
+                  difficulty: "intermediate",
+                  question:
+                    "You are in /home/ana/projects/web. Put these commands in the order that lands you in /home/ana.",
+                  sequenceItems: [
+                    { id: "cd-projects", text: "Run cd projects (from /home/ana)" },
+                    { id: "cd-dotdot", text: "Run cd .. (from web)" },
+                    { id: "cd-dotdot-2", text: "Run cd .. (from projects)" },
+                  ],
+                  sequenceCorrectOrder: ["cd-dotdot", "cd-dotdot-2", "cd-projects"],
+                  explanation:
+                    "Each cd .. climbs one level: first to projects, then to ana. cd projects is the relative jump from ana to projects, so it belongs in the middle.",
+                  hint: "Track which directory you are in after each command.",
+                },
+                {
+                  type: "fill_blank",
+                  difficulty: "beginner",
+                  question:
+                    "Fill in the blank: A path that begins with / is an ________ path.",
+                  fillBlanks: [{ answer: "absolute" }],
+                  explanation:
+                    "An absolute path always starts at the root directory (/), so it names one exact location no matter where you are.",
                 },
               ],
             },
@@ -810,7 +930,21 @@ export const linuxPath: SeedPath = {
                   difficulty: "beginner",
                   question: "The shell expands wildcard patterns before the command sees them.",
                   correctAnswer: "true",
-                  explanation: "Glob expansion happens in the shell before the command runs.",
+explanation: "Glob expansion happens in the shell before the command runs.",
+                },
+                {
+                  type: "match",
+                  difficulty: "beginner",
+                  question:
+                    "Match each glob pattern with the filenames it matches.",
+                  matchPairs: [
+                    { left: "*.log", right: "app.log and error.log" },
+                    { left: "file?.txt", right: "file1.txt but not file12.txt" },
+                    { left: "file[12].txt", right: "file1.txt and file2.txt only" },
+                  ],
+                  explanation:
+                    "* matches any run of characters, ? matches exactly one character, and [12] matches a single character from the set — so file?.txt misses file12.txt.",
+                  hint: "Compare how many characters ? and [12] each cover.",
                 },
               ],
             },
@@ -858,7 +992,36 @@ export const linuxPath: SeedPath = {
                   difficulty: "beginner",
                   question: "The find command searches file contents for matching text.",
                   correctAnswer: "false",
-                  explanation: "find searches by filename, size, time. grep searches file contents.",
+explanation: "find searches by filename, size, time. grep searches file contents.",
+                },
+                {
+                  type: "code_completion",
+                  difficulty: "intermediate",
+                  question:
+                    "Complete the GNU find one-liner that searches /var/log for files ending in .log that were modified less than 7 days ago.",
+                  codeLanguage: "bash",
+                  codeBlanks: [
+                    { id: "find-cmd", answer: "find /var/log -name \"*.log\" -mtime -7", placeholder: "<command>" },
+                    { id: "mtime-flag", answer: "-mtime -7", placeholder: "<time filter>" },
+                  ],
+                  explanation:
+                    "find /var/log starts the search, -name filters by filename, and -mtime -7 keeps only files modified within the last 7 days (minus means 'less than').",
+                  hint: "The time filter uses mtime plus a minus sign and the number of days.",
+                },
+                {
+                  type: "sequence",
+                  difficulty: "intermediate",
+                  question:
+                    "You want to delete every .tmp file under /var. Put the parts of the find command in the order find evaluates them.",
+                  sequenceItems: [
+                    { id: "delete-flag", text: "-delete removes each match" },
+                    { id: "name-filter", text: "-name \"*.tmp\" filters by name" },
+                    { id: "search-root", text: "find /var starts the search" },
+                  ],
+                  sequenceCorrectOrder: ["search-root", "name-filter", "delete-flag"],
+                  explanation:
+                    "find evaluates predicates left to right: start at /var, keep only names matching *.tmp, and then -delete acts on the survivors — exactly the order shown.",
+                  hint: "Read the command as words on one line, left to right.",
                 },
               ],
             },
@@ -920,8 +1083,38 @@ export const linuxPath: SeedPath = {
                   type: "command",
                   difficulty: "beginner",
                   question: "Type the command that shows permissions of all files in long format.",
-                  correctAnswer: "ls -l",
+correctAnswer: "ls -l",
                   explanation: "ls -l displays permissions, owner, group, size, and date.",
+                },
+                {
+                  type: "match",
+                  difficulty: "beginner",
+                  question:
+                    "Match each permission triple with what it grants.",
+                  matchPairs: [
+                    { left: "rwx", right: "Read, write, and execute" },
+                    { left: "r-x", right: "Read and execute only" },
+                    { left: "r--", right: "Read only" },
+                    { left: "--x", right: "Execute only" },
+                  ],
+                  explanation:
+                    "Each triple lists read, write, and execute in that fixed order, so r-x means the write bit is off while read and execute are on.",
+                  hint: "The order is always read, write, execute.",
+                },
+                {
+                  type: "multi_select",
+                  difficulty: "intermediate",
+                  question:
+                    "Which of the following are true about the execute (x) bit on a directory?",
+                  multiSelectOptions: [
+                    { text: "Without it, cd into the directory fails.", isCorrect: true },
+                    { text: "It grants the ability to enter and traverse the directory.", isCorrect: true },
+                    { text: "It is irrelevant to directories — it only matters for files.", isCorrect: false },
+                    { text: "It replaces the read bit for directories.", isCorrect: false },
+                  ],
+                  explanation:
+                    "On directories, x means 'may enter': cd and traversal need it, and without it even listing entries fails. It does not replace the read bit, which governs listing contents.",
+                  hint: "Think of x as a ticket to walk through the door of the directory.",
                 },
               ],
             },
@@ -968,8 +1161,23 @@ export const linuxPath: SeedPath = {
                   type: "true_false",
                   difficulty: "beginner",
                   question: "Mode 644 means owner can read+write, others can only read.",
-                  correctAnswer: "true",
+correctAnswer: "true",
                   explanation: "6=rw-, 4=r--. Standard for regular files.",
+                },
+                {
+                  type: "multi_select",
+                  difficulty: "beginner",
+                  question:
+                    "Which of these octal conversions are correct?",
+                  multiSelectOptions: [
+                    { text: "rwx converts to 7.", isCorrect: true },
+                    { text: "r-x converts to 5.", isCorrect: true },
+                    { text: "rw- converts to 6.", isCorrect: true },
+                    { text: "r-- converts to 7.", isCorrect: false },
+                  ],
+                  explanation:
+                    "Read=4, write=2, execute=1, and you sum the bits in the triple: rwx is 4+2+1=7, r-x is 4+0+1=5, rw- is 4+2+0=6, and r-- is 4.",
+                  hint: "Add 4 (read), 2 (write), and 1 (execute) only where the letter is present.",
                 },
               ],
             },
@@ -1023,8 +1231,23 @@ export const linuxPath: SeedPath = {
                   type: "true_false",
                   difficulty: "intermediate",
                   question: "Setting a directory to 777 is safe in production.",
-                  correctAnswer: "false",
+correctAnswer: "false",
                   explanation: "777 gives everyone full access. Use least privilege.",
+                },
+                {
+                  type: "sequence",
+                  difficulty: "intermediate",
+                  question:
+                    "You own a web directory that is currently owned by root and left too open. Arrange these steps in the order that takes ownership and tightens access.",
+                  sequenceItems: [
+                    { id: "chmod-dir", text: "Run sudo chmod 750 /var/www to remove permissive access" },
+                    { id: "chown-dir", text: "Run sudo chown -R $USER /var/www to take ownership" },
+                    { id: "verify-dir", text: "Run ls -ld /var/www to confirm the new mode and owner" },
+                  ],
+                  sequenceCorrectOrder: ["chown-dir", "chmod-dir", "verify-dir"],
+                  explanation:
+                    "First chown so you control the files, then chmod 750 to grant owner full access with least privilege for everyone else, and finally ls -ld to verify owner and mode.",
+                  hint: "You must own the directory before your chmod is the one that sticks.",
                 },
               ],
             },
@@ -1086,8 +1309,23 @@ export const linuxPath: SeedPath = {
                   type: "true_false",
                   difficulty: "beginner",
                   question: "The PID is unique for each running process.",
-                  correctAnswer: "true",
+correctAnswer: "true",
                   explanation: "Every process gets a unique PID.",
+                },
+                {
+                  type: "match",
+                  difficulty: "beginner",
+                  question:
+                    "Match each process tool or concept with its purpose.",
+                  matchPairs: [
+                    { left: "ps aux", right: "Print a snapshot of all processes" },
+                    { left: "PID", right: "Unique id you pass to kill" },
+                    { left: "top", right: "Live refreshing process view" },
+                    { left: "ps aux | grep nginx", right: "Filter the list for nginx" },
+                  ],
+                  explanation:
+                    "ps aux takes a snapshot, top keeps refreshing live, the PID is the number kill targets, and piping ps into grep narrows the output to one program.",
+                  hint: "One pair is about the number shown in the first column of ps aux.",
                 },
               ],
             },
@@ -1134,8 +1372,32 @@ export const linuxPath: SeedPath = {
                   type: "true_false",
                   difficulty: "intermediate",
                   question: "Try SIGTERM before SIGKILL to allow cleanup.",
-                  correctAnswer: "true",
+correctAnswer: "true",
                   explanation: "SIGTERM lets the process flush buffers and close connections.",
+                },
+                {
+                  type: "fill_blank",
+                  difficulty: "beginner",
+                  question:
+                    "Fill in the blank: Running kill 1234 with no flags sends the ________ signal.",
+                  fillBlanks: [{ answer: "SIGTERM" }],
+                  explanation:
+                    "kill's default signal is SIGTERM (15), a polite request that a well-behaved process honors by cleaning up and exiting.",
+                },
+                {
+                  type: "multi_select",
+                  difficulty: "intermediate",
+                  question:
+                    "Which of the following statements about signals are true?",
+                  multiSelectOptions: [
+                    { text: "kill -9 sends SIGKILL, which cannot be ignored.", isCorrect: true },
+                    { text: "A process can catch SIGTERM and exit gracefully.", isCorrect: true },
+                    { text: "SIGKILL lets a process save its state before exit.", isCorrect: false },
+                    { text: "kill sends SIGKILL by default.", isCorrect: false },
+                  ],
+                  explanation:
+                    "SIGTERM can be handled, so processes use it to flush and close cleanly; SIGKILL (kill -9) is delivered straight to the kernel and cannot be caught — always warn first.",
+                  hint: "Only one of the two signals is catchable.",
                 },
               ],
             },
@@ -1189,8 +1451,24 @@ export const linuxPath: SeedPath = {
                   type: "true_false",
                   difficulty: "intermediate",
                   question: "nohup keeps a process running after terminal closes.",
-                  correctAnswer: "true",
+correctAnswer: "true",
                   explanation: "nohup makes the process immune to SIGHUP.",
+                },
+                {
+                  type: "sequence",
+                  difficulty: "intermediate",
+                  question:
+                    "Put these steps in the order you would follow to start a server in the background, check on it, bring it back, and stop it.",
+                  sequenceItems: [
+                    { id: "fg-job", text: "Run fg to bring the job back to the foreground" },
+                    { id: "start-bg", text: "Run node server.js & to start it in the background" },
+                    { id: "list-jobs", text: "Run jobs to list the background jobs" },
+                    { id: "kill-job", text: "Run kill %1 to stop the foreground job" },
+                  ],
+                  sequenceCorrectOrder: ["start-bg", "list-jobs", "fg-job", "kill-job"],
+                  explanation:
+                    "Start with & so the shell returns immediately, confirm it with jobs, resume it with fg, and finally kill %1 referencing the job number.",
+                  hint: "The & symbol is the very first thing you do.",
                 },
               ],
             },
@@ -1252,8 +1530,32 @@ export const linuxPath: SeedPath = {
                   type: "true_false",
                   difficulty: "beginner",
                   question: "ss is the modern replacement for netstat.",
-                  correctAnswer: "true",
+correctAnswer: "true",
                   explanation: "ss is faster and more informative than netstat.",
+                },
+                {
+                  type: "match",
+                  difficulty: "intermediate",
+                  question:
+                    "Match each command with the information it reveals.",
+                  matchPairs: [
+                    { left: "ip addr", right: "Interfaces and their IP addresses" },
+                    { left: "ip route", right: "The routing table" },
+                    { left: "ss -tlnp", right: "TCP listeners and owning processes" },
+                    { left: "ss -tlnp | grep 8080", right: "Which PID owns port 8080" },
+                  ],
+                  explanation:
+                    "ip addr lists interfaces, ip route shows how packets are forwarded, and ss -tlnp reveals listening TCP sockets with the owning PID — grep narrows it to one port.",
+                  hint: "Two pairs use ss, one pair uses ip.",
+                },
+                {
+                  type: "fill_blank",
+                  difficulty: "beginner",
+                  question:
+                    "Fill in the blank: The command ________ lists TCP listening sockets along with the process that owns them.",
+                  fillBlanks: [{ answer: "ss -tlnp" }],
+                  explanation:
+                    "ss -tlnp shows listening (-l) TCP (-t) sockets in numeric form (-n) with the owning process (-p) — the modern netstat replacement.",
                 },
               ],
             },
@@ -1300,8 +1602,30 @@ export const linuxPath: SeedPath = {
                   type: "true_false",
                   difficulty: "intermediate",
                   question: "nc can test whether a TCP port is open.",
-                  correctAnswer: "true",
+correctAnswer: "true",
                   explanation: "nc -vz host port tests TCP connectivity.",
+                },
+                {
+                  type: "code_completion",
+                  difficulty: "intermediate",
+                  question:
+                    "Complete the one-liner that fetches the body of a health endpoint with output silenced so only the payload is shown.",
+                  codeLanguage: "bash",
+                  codeBlanks: [
+                    { id: "curl-cmd", answer: "curl -s http://localhost:3000/api/health", placeholder: "<command>" },
+                  ],
+                  explanation:
+                    "curl -s fetches quietly (no progress meter) and prints the response body; a non-zero exit when the port is closed is how scripts detect a down service.",
+                  hint: "Start with curl, add -s, then the URL.",
+                },
+                {
+                  type: "fill_blank",
+                  difficulty: "intermediate",
+                  question:
+                    "Fill in the blank: The tool ________ opens a raw TCP connection and can report whether a port is open with -vz.",
+                  fillBlanks: [{ answer: "nc" }],
+                  explanation:
+                    "nc (netcat) with -vz host port performs a verbose zero-I/O connection test — the definitive probe when ICMP is filtered.",
                 },
               ],
             },
@@ -1355,8 +1679,23 @@ export const linuxPath: SeedPath = {
                   type: "command",
                   difficulty: "intermediate",
                   question: "Type the command that resolves example.com via system resolution.",
-                  correctAnswer: "getent hosts example.com",
+correctAnswer: "getent hosts example.com",
                   explanation: "getent hosts uses the same path as applications.",
+                },
+                {
+                  type: "multi_select",
+                  difficulty: "intermediate",
+                  question:
+                    "Which of the following statements about name resolution are true?",
+                  multiSelectOptions: [
+                    { text: "dig queries DNS directly and can show every record type.", isCorrect: true },
+                    { text: "getent hosts resolves through the same path applications use, including /etc/hosts.", isCorrect: true },
+                    { text: "Entries in /etc/hosts are ignored whenever DNS is configured.", isCorrect: false },
+                    { text: "dig always consults /etc/hosts before a DNS server.", isCorrect: false },
+                  ],
+                  explanation:
+                    "dig talks straight to DNS, while getent mirrors how applications resolve and therefore honours /etc/hosts. Comparing the two is how you spot a stray hosts entry.",
+                  hint: "One of the checked tools reads /etc/hosts, the other does not.",
                 },
               ],
             },

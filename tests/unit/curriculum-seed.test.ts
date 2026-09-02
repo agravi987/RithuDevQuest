@@ -3,6 +3,16 @@ import { describe, expect, it } from "vitest";
 import { devopsCareer } from "@content/curriculum/devops";
 import { activityTypeOf } from "@/lib/curriculum/seed";
 
+const RICH_TYPES = new Set([
+  "fill_blank",
+  "multi_select",
+  "match",
+  "sequence",
+  "code_completion",
+  "word_scramble",
+  "flip_cards",
+]);
+
 describe("Curriculum seed content", () => {
   it("assembles a devops career with four paths", () => {
     expect(devopsCareer.title).toBe("DevOps Engineering");
@@ -102,7 +112,7 @@ describe("Curriculum seed content", () => {
           expect(part.prompt, question.lesson).toBeTruthy();
           expect(part.correctAnswer, question.lesson).toBeTruthy();
         }
-      } else {
+      } else if (!RICH_TYPES.has(question.type)) {
         expect(question.correctAnswer, question.lesson).toBeTruthy();
       }
       if (question.type === "mcq") {
@@ -110,6 +120,33 @@ describe("Curriculum seed content", () => {
         expect(question.options, question.lesson).toContain(
           question.correctAnswer,
         );
+      }
+      if (question.type === "fill_blank") {
+        expect(question.fillBlanks?.length ?? 0, question.lesson).toBeGreaterThanOrEqual(1);
+      }
+      if (question.type === "multi_select") {
+        expect(question.multiSelectOptions?.length ?? 0, question.lesson).toBeGreaterThanOrEqual(2);
+        expect(
+          question.multiSelectOptions?.some((option) => option.isCorrect) ?? false,
+          question.lesson,
+        ).toBe(true);
+      }
+      if (question.type === "match") {
+        expect(question.matchPairs?.length ?? 0, question.lesson).toBeGreaterThanOrEqual(2);
+      }
+      if (question.type === "sequence") {
+        expect(question.sequenceItems?.length ?? 0, question.lesson).toBeGreaterThanOrEqual(2);
+        const ids = new Set(question.sequenceItems?.map((item) => item.id) ?? []);
+        expect(
+          (question.sequenceCorrectOrder ?? []).every((id) => ids.has(id)),
+          question.lesson,
+        ).toBe(true);
+      }
+      if (question.type === "code_completion") {
+        expect(question.codeBlanks?.length ?? 0, question.lesson).toBeGreaterThanOrEqual(1);
+      }
+      if (question.type === "word_scramble") {
+        expect(question.scrambledWord, question.lesson).toBeTruthy();
       }
     }
   });
