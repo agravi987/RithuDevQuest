@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 import { getAllCareers, getCareerBySlug } from "@/lib/curriculum/queries";
 import { getGamificationProfile } from "@/lib/gamification/queries";
 import { getUserSkillsMastery } from "@/lib/mastery/queries";
@@ -28,6 +29,25 @@ export default async function DashboardPage() {
     getUserSkillsMastery(session.user.id),
     getDailyQuests(session.user.id),
   ]);
+
+  const today = new Date();
+  const todayStart = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
+  const dailyChallenge = await prisma.dailyChallenge.findUnique({
+    where: {
+      userId_date: { userId: session.user.id, date: todayStart },
+    },
+    select: { completedAt: true },
+  });
+  const dailyChallengeStatus: "pending" | "in_progress" | "completed" =
+    !dailyChallenge
+      ? "pending"
+      : dailyChallenge.completedAt
+        ? "completed"
+        : "in_progress";
 
   const careers = await Promise.all(
     careerList.map(async (c) => {
@@ -143,6 +163,7 @@ export default async function DashboardPage() {
           xpReward: q.xpReward,
           icon: q.icon,
         }))}
+        dailyChallengeStatus={dailyChallengeStatus}
       />
     </div>
   );

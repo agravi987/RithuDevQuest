@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Target, ArrowRight, ShieldAlert, CheckCircle, Sparkles } from "lucide-react";
+import { ArrowRight, ShieldAlert, CheckCircle, Sparkles } from "lucide-react";
 
 import { auth } from "@/lib/auth";
 import { getUserSkillsMastery } from "@/lib/mastery/queries";
 import { getSkillRecommendations } from "@/lib/mastery/recommendation";
 import { AIPracticeBox } from "@/components/practice/ai-practice-box";
+import { DailyChallengeCard } from "@/components/practice/daily-challenge-card";
 import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 
 export const metadata: Metadata = {
-  title: "AI Practice Arena",
+  title: "Practice Arena",
 };
 
 function getMasteryColor(score: number): string {
@@ -41,60 +42,29 @@ export default async function PracticePage() {
 
   return (
     <div className="flex flex-col gap-8 max-w-5xl mx-auto pb-12">
-      {/* Breadcrumbs */}
       <Breadcrumbs items={[{ label: "Practice" }]} />
 
-      {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-500/10 via-card to-primary/5 border-2 border-primary/10 p-5 sm:p-8">
-        <div className="absolute -right-16 -top-16 size-48 rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute -bottom-12 -left-12 size-36 rounded-full bg-emerald-500/5 blur-3xl" />
+      {/* ═══ Daily Challenge — Hero ═══ */}
+      <DailyChallengeCard />
 
-        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
-          <div className="grid size-12 sm:size-16 shrink-0 place-items-center rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white shadow-lg shadow-primary/15 border-2 border-white/30">
-            <Target className="size-6 sm:size-8" />
-          </div>
-          <div className="flex-1">
-            <div className="flex flex-wrap items-center gap-2 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
-                Adaptive Learning
-              </span>
-              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
-                AI-Powered
-              </span>
-              <Sparkles className="size-3 text-amber-400 fill-amber-400/50" />
-            </div>
-            <h1 className="text-xl sm:text-3xl font-black tracking-tight">
-              AI Practice Arena
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Target weak areas, reinforce conceptual mastery, and sharpen your DevOps skills.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Recommended Weak Skills Section */}
+      {/* ═══ Focus Areas ═══ */}
       {recommendations.length > 0 && (
         <section className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="grid size-8 place-items-center rounded-xl bg-amber-500/10 text-amber-500">
-                <ShieldAlert className="size-4" />
-              </div>
-              <h2 className="text-lg font-bold tracking-tight">
-                Focus Areas
-              </h2>
-              <span className="text-xs font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                {recommendations.length}
-              </span>
+          <div className="flex items-center gap-2">
+            <div className="grid size-8 place-items-center rounded-xl bg-amber-500/10 text-amber-500">
+              <ShieldAlert className="size-4" />
             </div>
+            <h2 className="text-lg font-bold tracking-tight">Focus Areas</h2>
+            <span className="text-xs font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+              {recommendations.length}
+            </span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {recommendations.map((rec) => (
               <div
                 key={rec.skillId}
-                className="group relative overflow-hidden rounded-2xl border-2 border-amber-500/15 bg-card p-5 hover:border-amber-500/30 hover:shadow-md hover:shadow-amber-500/5 transition-all duration-300 magnetic-lift"
+                className="group relative overflow-hidden rounded-2xl border border-amber-500/15 bg-card p-5 hover:border-amber-500/30 hover:shadow-md hover:shadow-amber-500/5 transition-all duration-300"
               >
                 <div className="absolute -right-8 -top-8 size-24 rounded-full bg-amber-500/5 blur-2xl transition-opacity group-hover:opacity-100 opacity-0" />
 
@@ -113,7 +83,6 @@ export default async function PracticePage() {
                     </span>
                   </div>
 
-                  {/* Mastery bar */}
                   <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted mb-3">
                     <div
                       className="h-full rounded-full bg-amber-500 transition-all"
@@ -141,35 +110,39 @@ export default async function PracticePage() {
         </section>
       )}
 
-      {/* Interactive AI Practice Generator */}
+      {/* ═══ AI Practice ═══ */}
       <section className="flex flex-col gap-4">
+        <div className="flex items-center gap-2">
+          <div className="grid size-8 place-items-center rounded-xl bg-primary/10 text-primary">
+            <Sparkles className="size-4" />
+          </div>
+          <h2 className="text-lg font-bold tracking-tight">AI Skill Generator</h2>
+        </div>
         <AIPracticeBox />
       </section>
 
-      {/* Full Skill Mastery Matrix */}
+      {/* ═══ Skills ═══ */}
       <section className="flex flex-col gap-4">
         <div className="flex items-center gap-2">
           <div className="grid size-8 place-items-center rounded-xl bg-primary/10 text-primary">
             <CheckCircle className="size-4" />
           </div>
-          <h2 className="text-lg font-bold tracking-tight">
-            Skill Mastery
-          </h2>
+          <h2 className="text-lg font-bold tracking-tight">Skill Mastery</h2>
           <span className="text-xs font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-            {skills.length} skills
+            {skills.length}
           </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5" role="list" aria-label="Skill mastery list">
           {skills.length === 0 && (
             <div className="col-span-full text-center py-8">
-              <p className="text-sm text-muted-foreground">Complete lessons to build your skill mastery profile.</p>
+              <p className="text-sm text-muted-foreground">Complete lessons to build your mastery profile.</p>
             </div>
           )}
           {skills.map((s) => (
             <div
               key={s.skillId}
-              className="group rounded-2xl border-2 border-border/50 bg-card p-4 hover:border-primary/20 hover:shadow-sm hover:shadow-primary/5 transition-all duration-200 hover:scale-[1.01]"
+              className="group rounded-2xl border border-border/50 bg-card p-4 hover:border-primary/20 hover:shadow-sm hover:shadow-primary/5 transition-all duration-200 hover:scale-[1.01]"
             >
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-xs font-bold capitalize text-foreground truncate">
