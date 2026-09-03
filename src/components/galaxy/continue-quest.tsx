@@ -68,12 +68,12 @@ export function ContinueQuest({ quest }: ContinueQuestProps) {
         <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-1 text-[10px] font-bold text-amber-400 backdrop-blur-sm">
           <Zap className="size-3" /> +25 XP
         </span>
-        <span className="inline-flex items-center gap-1 rounded-full border border-orange-400/30 bg-orange-400/10 px-2.5 py-1 text-[10px] font-bold text-orange-400 backdrop-blur-sm">
+        <span className="hidden sm:inline-flex items-center gap-1 rounded-full border border-orange-400/30 bg-orange-400/10 px-2.5 py-1 text-[10px] font-bold text-orange-400 backdrop-blur-sm">
           <Flame className="size-3" /> Streak
         </span>
       </div>
 
-      <div className="relative z-10 flex items-center gap-4 sm:gap-6">
+      <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
         {/* Destination planet */}
         <div className="relative shrink-0">
           <PlanetVisual
@@ -91,7 +91,7 @@ export function ContinueQuest({ quest }: ContinueQuestProps) {
         </div>
 
         {/* Details */}
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 pt-10 sm:pt-0">
           <p
             className={`mb-1 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest ${planet.accent}`}
           >
@@ -119,7 +119,7 @@ export function ContinueQuest({ quest }: ContinueQuestProps) {
           </div>
 
           {/* Extra context */}
-          <div className="mt-2 flex items-center gap-3 text-[10px] text-white/30">
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-white/30">
             <span>{remaining > 0 ? `${remaining} lessons remaining` : "All lessons completed!"}</span>
             {progress > 0 && progress < 100 && (
               <span className="flex items-center gap-1">
@@ -133,7 +133,7 @@ export function ContinueQuest({ quest }: ContinueQuestProps) {
         {/* CTA */}
         <Link
           href={quest.href}
-          className="group inline-flex shrink-0 flex-col items-center gap-1.5 rounded-2xl bg-gradient-to-b from-primary via-primary to-emerald-600 px-5 py-4 text-primary-foreground shadow-xl shadow-primary/30 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/50 hover:brightness-110 hover:scale-[1.05] active:scale-[0.97] btn-glow"
+          className="group inline-flex shrink-0 flex-col items-center gap-1.5 rounded-2xl bg-gradient-to-b from-primary via-primary to-emerald-600 px-5 py-3.5 text-primary-foreground shadow-xl shadow-primary/30 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/50 hover:brightness-110 hover:scale-[1.05] active:scale-[0.97] btn-glow sm:self-center"
         >
           <span className="inline-flex items-center gap-1.5 text-sm font-black">
             <Rocket className="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:-rotate-12" />

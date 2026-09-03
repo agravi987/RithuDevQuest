@@ -10,8 +10,8 @@ import { getDailyQuests } from "@/lib/quests/daily";
 import { getModuleCompletionCounts } from "@/lib/progress/queries";
 import { getNextQuest } from "@/lib/progress/getNextQuest";
 
-import { DashboardClient } from "@/components/dashboard/dashboard-client";
 import { ContinueQuest } from "@/components/galaxy/continue-quest";
+import { DashboardClientWrapper } from "./DashboardClientWrapper";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -127,7 +127,7 @@ export default async function DashboardPage() {
       {/* Continue Your Quest — next mission across the galaxy */}
       {nextQuest && <ContinueQuest quest={nextQuest} />}
 
-      <DashboardClient
+      <DashboardClientWrapper
         firstName={firstName}
         profile={{
           streak: {

@@ -9,7 +9,7 @@ export function ThemeProvider({
   ...props
 }: ComponentProps<typeof NextThemesProvider>) {
   return (
-    <NextThemesProvider {...props}>
+    <NextThemesProvider {...props} themes={["dark"]}>
       <MotionConfig reducedMotion="user">{children}</MotionConfig>
     </NextThemesProvider>
   );

@@ -84,11 +84,11 @@ const pathMeta: Record<string, { emoji: string; color: string }> = {
 };
 
 const careerColors: Record<string, string> = {
-  devops: "text-emerald-400/90 border-emerald-500/30 bg-emerald-500/10",
-  cloud: "text-sky-400/90 border-sky-500/30 bg-sky-500/10",
-  "ai-agents": "text-fuchsia-400/90 border-fuchsia-500/30 bg-fuchsia-500/10",
-  "web-dev": "text-amber-400/90 border-amber-500/30 bg-amber-500/10",
-  "system-design": "text-teal-400/90 border-teal-500/30 bg-teal-500/10",
+  devops: "text-emerald-600 border-emerald-600/30 bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30",
+  cloud: "text-sky-600 border-sky-600/30 bg-sky-500/10 dark:text-sky-400 dark:border-sky-500/30",
+  "ai-agents": "text-fuchsia-600 border-fuchsia-600/30 bg-fuchsia-500/10 dark:text-fuchsia-400 dark:border-fuchsia-500/30",
+  "web-dev": "text-amber-600 border-amber-600/30 bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/30",
+  "system-design": "text-teal-600 border-teal-600/30 bg-teal-500/10 dark:text-teal-400 dark:border-teal-500/30",
 };
 
 function getModuleIcon(icon: string): string {
@@ -274,7 +274,7 @@ export function DashboardClient({
                       {[25, 50, 75].map((milestone) => (
                         <div
                           key={milestone}
-                          className="absolute top-0 h-full w-px bg-white/30"
+                          className="absolute top-0 h-full w-px bg-foreground/20"
                           style={{ left: `${milestone}%` }}
                         />
                       ))}

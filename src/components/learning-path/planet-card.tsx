@@ -241,7 +241,7 @@ export function PlanetCard({
       >
         {/* Starfield */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(20)].map((_, i) => (
+          {[...Array(8)].map((_, i) => (
             <div
               key={i}
               className="absolute size-0.5 rounded-full bg-white/40 animate-twinkle"

@@ -77,7 +77,7 @@ export function LessonHeader({
       </div>
 
       {/* Bottom row: step count + type + time */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5">
         <div className="flex items-center gap-2">
           <p className="text-xs font-semibold text-muted-foreground">
             Step {Math.min(completedSteps + 1, totalSteps)} of {totalSteps}

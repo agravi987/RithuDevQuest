@@ -10,7 +10,6 @@ import type { CompleteLessonResult } from "@/lib/lesson/types";
 import { cn } from "@/lib/utils";
 import { AchievementPopup } from "@/components/gamification/achievement-popup";
 import { Supernova } from "@/components/ui/supernova";
-import { useShootingStar } from "@/components/ui/shooting-star-effect";
 import { useEffect, useState } from "react";
 
 type LessonCompleteProps = {
@@ -38,14 +37,12 @@ export function LessonComplete({
   const gamification = result.gamification;
   const newAchievements = gamification?.newAchievements ?? [];
   const didLevelUp = gamification?.didLevelUp ?? false;
-  const fireShootingStar = useShootingStar();
   const [celebrating, setCelebrating] = useState(true);
 
   useEffect(() => {
-    fireShootingStar("#ffd700");
-    const t = setTimeout(() => fireShootingStar("#a855f7"), 300);
+    const t = setTimeout(() => setCelebrating(false), 3000);
     return () => clearTimeout(t);
-  }, [fireShootingStar]);
+  }, []);
 
   return (
     <>

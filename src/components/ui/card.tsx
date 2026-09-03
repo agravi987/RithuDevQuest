@@ -2,17 +2,38 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+type CardVariant = "default" | "elevated" | "interactive" | "nebula" | "glass";
+
+const cardVariantClass: Record<CardVariant, string> = {
+  default:
+    "bg-card ring-foreground/10 shadow-[var(--elev-1)]",
+  elevated:
+    "bg-[var(--bg-elevated)] ring-foreground/10 shadow-[var(--elev-2)]",
+  interactive:
+    "bg-card ring-foreground/10 cursor-pointer transition-all duration-200 hover:border-primary/30 hover:shadow-[var(--glow-sm)] hover:-translate-y-0.5 ring-1 ring-foreground/10 hover:ring-primary/25",
+  nebula:
+    "bg-card ring-foreground/10 bg-gradient-to-br from-[oklch(0.16_0.02_255)] via-[oklch(0.14_0.025_142)] to-[oklch(0.15_0.02_280)]",
+  glass:
+    "bg-[var(--bg-glass)] ring-white/10 backdrop-blur-xl shadow-[var(--elev-1)]",
+};
+
 function Card({
   className,
   size = "default",
+  variant = "default",
   ...props
-}: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
+}: React.ComponentProps<"div"> & {
+  size?: "default" | "sm";
+  variant?: CardVariant;
+}) {
   return (
     <div
       data-slot="card"
       data-size={size}
+      data-variant={variant}
       className={cn(
-        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-foreground/10 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl py-(--card-spacing) text-sm text-card-foreground ring-1 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        cardVariantClass[variant],
         className
       )}
       {...props}

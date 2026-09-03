@@ -1,5 +1,6 @@
 import "server-only";
 
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
 
@@ -67,24 +68,24 @@ export type LessonWithActivities = Prisma.LessonGetPayload<{
   };
 }>;
 
-export async function getCareerBySlug(
-  slug: string,
-): Promise<CareerWithPaths | null> {
-  return prisma.career.findUnique({
-    where: { slug },
-    include: {
-      paths: {
-        orderBy: { order: "asc" },
-        include: {
-          modules: {
-            orderBy: { order: "asc" },
-            include: {
-              units: {
-                orderBy: { order: "asc" },
-                include: {
-                  lessons: {
-                    orderBy: { order: "asc" },
-                    include: { skills: true },
+export const getCareerBySlug = unstable_cache(
+  async (slug: string): Promise<CareerWithPaths | null> => {
+    return prisma.career.findUnique({
+      where: { slug },
+      include: {
+        paths: {
+          orderBy: { order: "asc" },
+          include: {
+            modules: {
+              orderBy: { order: "asc" },
+              include: {
+                units: {
+                  orderBy: { order: "asc" },
+                  include: {
+                    lessons: {
+                      orderBy: { order: "asc" },
+                      include: { skills: true },
+                    },
                   },
                 },
               },
@@ -92,18 +93,24 @@ export async function getCareerBySlug(
           },
         },
       },
-    },
-  });
-}
+    });
+  },
+  ["career-by-slug"],
+  { tags: ["curriculum"], revalidate: 3600 },
+);
 
-export async function getAllCareers(): Promise<
-  Prisma.CareerGetPayload<{ include: { paths: true } }>[]
-> {
-  return prisma.career.findMany({
-    orderBy: { order: "asc" },
-    include: { paths: { orderBy: { order: "asc" } } },
-  });
-}
+export const getAllCareers = unstable_cache(
+  async (): Promise<
+    Prisma.CareerGetPayload<{ include: { paths: true } }>[]
+  > => {
+    return prisma.career.findMany({
+      orderBy: { order: "asc" },
+      include: { paths: { orderBy: { order: "asc" } } },
+    });
+  },
+  ["all-careers"],
+  { tags: ["curriculum"], revalidate: 3600 },
+);
 
 export async function getPathBySlug(
   careerSlug: string,
@@ -130,50 +137,53 @@ export async function getPathBySlug(
   });
 }
 
-export async function getPathBySlugAcrossCareers(
-  slug: string,
-): Promise<PathWithModules | null> {
-  return prisma.learningPath.findFirst({
-    where: { slug },
-    include: {
-      modules: {
-        orderBy: { order: "asc" },
-        include: {
-          units: {
-            orderBy: { order: "asc" },
-            include: {
-              lessons: {
-                orderBy: { order: "asc" },
-                include: { skills: true },
+export const getPathBySlugAcrossCareers = unstable_cache(
+  async (slug: string): Promise<PathWithModules | null> => {
+    return prisma.learningPath.findFirst({
+      where: { slug },
+      include: {
+        modules: {
+          orderBy: { order: "asc" },
+          include: {
+            units: {
+              orderBy: { order: "asc" },
+              include: {
+                lessons: {
+                  orderBy: { order: "asc" },
+                  include: { skills: true },
+                },
               },
             },
           },
         },
       },
-    },
-  });
-}
+    });
+  },
+  ["path-by-slug"],
+  { tags: ["curriculum"], revalidate: 3600 },
+);
 
-export async function getModuleBySlug(
-  pathSlug: string,
-  slug: string,
-): Promise<ModuleWithUnits | null> {
-  return prisma.module.findFirst({
-    where: { path: { slug: pathSlug }, slug },
-    include: {
-      path: true,
-      units: {
-        orderBy: { order: "asc" },
-        include: {
-          lessons: {
-            orderBy: { order: "asc" },
-            include: { skills: true },
+export const getModuleBySlug = unstable_cache(
+  async (pathSlug: string, slug: string): Promise<ModuleWithUnits | null> => {
+    return prisma.module.findFirst({
+      where: { path: { slug: pathSlug }, slug },
+      include: {
+        path: true,
+        units: {
+          orderBy: { order: "asc" },
+          include: {
+            lessons: {
+              orderBy: { order: "asc" },
+              include: { skills: true },
+            },
           },
         },
       },
-    },
-  });
-}
+    });
+  },
+  ["module-by-slug"],
+  { tags: ["curriculum"], revalidate: 3600 },
+);
 
 export async function getUnitBySlug(
   moduleSlug: string,

@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
-import { ThemeToggle } from "@/components/shared/theme-toggle";
+
 import { SoundToggle } from "@/components/shared/sound-toggle";
 import { handleSignOut } from "@/app/(main)/logout-action";
 
@@ -128,7 +128,6 @@ export function MobileMenuButton() {
             <div className="border-t border-border/50 p-3 flex items-center justify-between">
               <div className="flex items-center gap-1">
                 <SoundToggle />
-                <ThemeToggle />
               </div>
 
               <div className="flex items-center gap-1">

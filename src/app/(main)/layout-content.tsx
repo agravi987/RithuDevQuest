@@ -60,7 +60,7 @@ export function LayoutContent({
         {/* Main content */}
         <main
           id="main-content"
-          className="flex-1 min-h-screen pt-14 animate-page-fade"
+          className="flex-1 min-h-screen pt-14 pb-16 lg:pb-0 animate-page-fade"
           style={{ marginLeft: "var(--sidebar-width, 0px)" }}
         >
           <div className="px-4 py-4 lg:px-6 lg:py-6">

@@ -673,7 +673,7 @@ export function RichQuestion({
                             aria-label="Move up in order"
                             onClick={() => moveSeq(position, Math.max(0, position - 1))}
                             disabled={position === 0}
-                            className="size-6 rounded-lg bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground hover:bg-primary/10 disabled:opacity-30"
+                            className="size-8 sm:size-6 rounded-lg bg-muted flex items-center justify-center text-sm sm:text-xs font-bold text-muted-foreground hover:bg-primary/10 disabled:opacity-30"
                           >
                             ↑
                           </button>
@@ -682,7 +682,7 @@ export function RichQuestion({
                             aria-label="Move down in order"
                             onClick={() => moveSeq(position, Math.min(seqOrder.length - 1, position + 1))}
                             disabled={position === seqOrder.length - 1}
-                            className="size-6 rounded-lg bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground hover:bg-primary/10 disabled:opacity-30"
+                            className="size-8 sm:size-6 rounded-lg bg-muted flex items-center justify-center text-sm sm:text-xs font-bold text-muted-foreground hover:bg-primary/10 disabled:opacity-30"
                           >
                             ↓
                           </button>
@@ -776,7 +776,7 @@ export function RichQuestion({
                             />
                           </span>
                         ) : (
-                          <span className="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-2 py-0.5 text-sm text-muted-foreground/40">
+                          <span className="inline-flex items-center rounded-lg border border-border bg-muted/60 px-2 py-0.5 text-sm text-muted-foreground/60">
                             ___
                           </span>
                         )}

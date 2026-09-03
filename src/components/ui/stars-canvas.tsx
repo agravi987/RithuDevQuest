@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 
 type Star = {
   x: number;
@@ -28,20 +28,33 @@ type StarsCanvasProps = {
   shootingStars?: boolean;
   speed?: number;
   nebula?: boolean;
+  enabled?: boolean;
 };
 
 export function StarsCanvas({
   className,
-  density = 120,
+  density = 80,
   shootingStars = true,
   speed = 0.3,
-  nebula = true,
+  nebula = false,
+  enabled = true,
 }: StarsCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const starsRef = useRef<Star[]>([]);
   const shootingRef = useRef<ShootingStar[]>([]);
   const frameRef = useRef<number>(0);
   const mouseRef = useRef({ x: 0.5, y: 0.5 });
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const [isVisible, setIsVisible] = useState(true);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setPrefersReducedMotion(mediaQuery.matches);
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener("change", handler);
+    return () => mediaQuery.removeEventListener("change", handler);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -49,8 +62,9 @@ export function StarsCanvas({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    const maxDpr = 1.5;
     const resize = () => {
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
       canvas.width = canvas.clientWidth * dpr;
       canvas.height = canvas.clientHeight * dpr;
       ctx.scale(dpr, dpr);
@@ -58,20 +72,21 @@ export function StarsCanvas({
     resize();
     window.addEventListener("resize", resize);
 
-    // Init stars
-    const w = canvas.clientWidth;
-    const h = canvas.clientHeight;
-    starsRef.current = Array.from({ length: density }, () => ({
-      x: Math.random() * w,
-      y: Math.random() * h,
-      size: Math.random() * 2 + 0.3,
-      speed: (Math.random() * 0.5 + 0.1) * speed,
-      opacity: Math.random() * 0.8 + 0.2,
-      twinkleSpeed: Math.random() * 0.02 + 0.005,
-      twinkleOffset: Math.random() * Math.PI * 2,
-    }));
+    const initStars = () => {
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      starsRef.current = Array.from({ length: density }, () => ({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        size: Math.random() * 2 + 0.3,
+        speed: (Math.random() * 0.5 + 0.1) * speed,
+        opacity: Math.random() * 0.8 + 0.2,
+        twinkleSpeed: Math.random() * 0.02 + 0.005,
+        twinkleOffset: Math.random() * Math.PI * 2,
+      }));
+    };
+    initStars();
 
-    // Mouse parallax
     const handleMouse = (e: MouseEvent) => {
       mouseRef.current = {
         x: e.clientX / window.innerWidth,
@@ -82,14 +97,19 @@ export function StarsCanvas({
 
     let lastShot = Date.now();
     let time = 0;
+    const isPaused = !enabled || prefersReducedMotion || !isVisible;
 
     const animate = () => {
+      if (isPaused) {
+        frameRef.current = requestAnimationFrame(animate);
+        return;
+      }
+
       time++;
       const cw = canvas.clientWidth;
       const ch = canvas.clientHeight;
       ctx.clearRect(0, 0, cw, ch);
 
-      // Draw nebula blobs
       if (nebula) {
         const mx = (mouseRef.current.x - 0.5) * 20;
         const my = (mouseRef.current.y - 0.5) * 20;
@@ -109,13 +129,11 @@ export function StarsCanvas({
         }
       }
 
-      // Draw stars with twinkle
       for (const star of starsRef.current) {
         const twinkle =
           Math.sin(time * star.twinkleSpeed + star.twinkleOffset) * 0.3 + 0.7;
         const alpha = star.opacity * twinkle;
 
-        // Parallax offset
         const px = (mouseRef.current.x - 0.5) * star.size * 8;
         const py = (mouseRef.current.y - 0.5) * star.size * 8;
 
@@ -124,7 +142,6 @@ export function StarsCanvas({
         ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
         ctx.fill();
 
-        // Glow for bigger stars
         if (star.size > 1.2) {
           ctx.beginPath();
           ctx.arc(star.x + px, star.y + py, star.size * 3, 0, Math.PI * 2);
@@ -132,7 +149,6 @@ export function StarsCanvas({
           ctx.fill();
         }
 
-        // Slow drift
         star.y += star.speed;
         if (star.y > ch + 5) {
           star.y = -5;
@@ -140,7 +156,6 @@ export function StarsCanvas({
         }
       }
 
-      // Shooting stars
       if (shootingStars) {
         const now = Date.now();
         if (now - lastShot > 3000 + Math.random() * 5000) {
@@ -180,7 +195,6 @@ export function StarsCanvas({
           ctx.lineWidth = 1.5;
           ctx.stroke();
 
-          // Head glow
           ctx.beginPath();
           ctx.arc(s.x, s.y, 2, 0, Math.PI * 2);
           ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
@@ -193,14 +207,28 @@ export function StarsCanvas({
       frameRef.current = requestAnimationFrame(animate);
     };
 
-    frameRef.current = requestAnimationFrame(animate);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      { rootMargin: "100px" }
+    );
+    observer.observe(canvas);
+    observerRef.current = observer;
+
+    if (!isPaused) {
+      frameRef.current = requestAnimationFrame(animate);
+    }
 
     return () => {
       cancelAnimationFrame(frameRef.current);
       window.removeEventListener("resize", resize);
       window.removeEventListener("mousemove", handleMouse);
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
     };
-  }, [density, shootingStars, speed, nebula]);
+  }, [density, shootingStars, speed, nebula, enabled, prefersReducedMotion, isVisible]);
 
   return (
     <canvas

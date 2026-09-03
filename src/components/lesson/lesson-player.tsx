@@ -85,11 +85,98 @@ export function LessonPlayer({
   const step = steps[index];
   const isLastStep = index === steps.length - 1;
 
-  function canSubmitValue(): boolean {
+  const canSubmitValue = useCallback((): boolean => {
     if (!step || step.kind !== "question") return false;
     const isTyped = step.type === "command" || step.type === "scenario";
     return isTyped ? (value ?? "").trim().length > 0 : value !== null;
-  }
+  }, [step, value]);
+
+  const resetQuestionState = useCallback(() => {
+    setValue(null);
+    setFeedback(null);
+    setPartIndex(0);
+  }, []);
+
+  const handleSubmit = useCallback(
+    async (answerOverride?: string) => {
+      if (!step || step.kind !== "question") return;
+      const answer = answerOverride ?? value;
+      if (!answer) return;
+      if (soundEnabled) resumeAudio();
+
+      setSubmitting(true);
+      setError(null);
+      try {
+        const response = await submitAnswer({
+          lessonId: data.lesson.id,
+          questionId: step.id,
+          answer,
+          partIndex: step.type === "scenario" ? partIndex : undefined,
+        });
+        setFeedback(response);
+        if (response.xpEarned > 0) {
+          setXpEarned((previous) => previous + response.xpEarned);
+          setXpTrigger((previous) => previous + 1);
+          if (soundEnabled) playXpGainSound();
+        }
+        if (response.isCorrect) {
+          correctAnswerConfetti();
+          if (soundEnabled) playCorrectSound();
+        } else {
+          if (soundEnabled) playWrongSound();
+          onLoseHeart?.();
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Something went wrong");
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [step, value, partIndex, soundEnabled, data.lesson.id, onLoseHeart],
+  );
+
+  const handleContinue = useCallback(async () => {
+    if (step?.kind === "question" && !feedback?.isCorrect) return;
+
+    if (isLastStep) {
+      setCompleting(true);
+      setError(null);
+      try {
+        const response = await completeLesson({
+          lessonId: data.lesson.id,
+          questionIds: data.questions.map((question) => question.id),
+        });
+        setResult(response);
+        lessonCompleteConfetti();
+        if (soundEnabled) playLessonCompleteSound();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Something went wrong");
+        setCompleting(false);
+      }
+      return;
+    }
+
+    if (
+      step?.kind === "question" &&
+      step.type === "scenario" &&
+      feedback?.scenarioComplete === false &&
+      partIndex < (step.parts?.length ?? 1) - 1
+    ) {
+      setPartIndex((previous) => previous + 1);
+      setValue(null);
+      setFeedback(null);
+      return;
+    }
+
+    setIndex((previous) => previous + 1);
+    resetQuestionState();
+  }, [step, isLastStep, feedback, partIndex, soundEnabled, data.lesson.id, data.questions, resetQuestionState]);
+
+  const handleRetry = useCallback(() => {
+    setFeedback(null);
+    setValue(null);
+    setError(null);
+  }, []);
 
   // Keyboard shortcuts: Enter to submit/continue, R to retry, number keys for MCQ
   const handleKeyDown = useCallback(
@@ -150,97 +237,13 @@ export function LessonPlayer({
         }
       }
     },
-    [feedback, submitting, step, handleSubmit, handleContinue, handleRetry, setValue],
+    [feedback, submitting, step, handleSubmit, handleContinue, handleRetry, setValue, canSubmitValue],
   );
 
   useEffect(() => {
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
-
-  function resetQuestionState() {
-    setValue(null);
-    setFeedback(null);
-    setPartIndex(0);
-  }
-
-  async function handleSubmit(answerOverride?: string) {
-    if (!step || step.kind !== "question") return;
-    const answer = answerOverride ?? value;
-    if (!answer) return;
-    if (soundEnabled) resumeAudio();
-
-    setSubmitting(true);
-    setError(null);
-    try {
-      const response = await submitAnswer({
-        lessonId: data.lesson.id,
-        questionId: step.id,
-        answer,
-        partIndex: step.type === "scenario" ? partIndex : undefined,
-      });
-      setFeedback(response);
-      if (response.xpEarned > 0) {
-        setXpEarned((previous) => previous + response.xpEarned);
-        setXpTrigger((previous) => previous + 1);
-        if (soundEnabled) playXpGainSound();
-      }
-      if (response.isCorrect) {
-        correctAnswerConfetti();
-        if (soundEnabled) playCorrectSound();
-      } else {
-        if (soundEnabled) playWrongSound();
-        onLoseHeart?.();
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  async function handleContinue() {
-    if (step?.kind === "question" && !feedback?.isCorrect) return;
-
-    if (isLastStep) {
-      setCompleting(true);
-      setError(null);
-      try {
-        const response = await completeLesson({
-          lessonId: data.lesson.id,
-          questionIds: data.questions.map((question) => question.id),
-        });
-        setResult(response);
-        lessonCompleteConfetti();
-        if (soundEnabled) playLessonCompleteSound();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Something went wrong");
-        setCompleting(false);
-      }
-      return;
-    }
-
-    if (
-      step?.kind === "question" &&
-      step.type === "scenario" &&
-      feedback?.scenarioComplete === false &&
-      partIndex < (step.parts?.length ?? 1) - 1
-    ) {
-      setPartIndex((previous) => previous + 1);
-      setValue(null);
-      setFeedback(null);
-      return;
-    }
-
-    setIndex((previous) => previous + 1);
-    resetQuestionState();
-  }
-
-  function handleRetry() {
-    setFeedback(null);
-    setValue(null);
-    setError(null);
-  }
 
   if (result) {
     return (

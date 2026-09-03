@@ -78,7 +78,7 @@ export default function Home() {
       {/* ═══════════ HERO ═══════════ */}
       <div className="relative flex min-h-[80vh] flex-col items-center justify-center overflow-hidden px-4 py-20 sm:py-28 text-center">
         <CosmicBackground variant="deep" className="z-0" />
-        <StarsCanvas density={150} shootingStars nebula speed={0.2} className="z-0" />
+        <StarsCanvas density={100} shootingStars={true} nebula={false} speed={0.15} className="z-0" />
 
         {/* Radial glow behind logo */}
         <div className="pointer-events-none absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 size-[600px] rounded-full bg-primary/8 blur-[150px] z-0" />
@@ -110,13 +110,7 @@ export default function Home() {
 
           {/* Title */}
           <Reveal delay={0.15}>
-            <h1 className="mb-5 max-w-4xl text-5xl sm:text-7xl font-black leading-[1.05] tracking-tight lg:text-9xl">
-              <span className="text-white">Rithu</span>
-              <span className="bg-gradient-to-r from-primary via-emerald-400 to-xp bg-clip-text text-transparent">
-                Dev
-              </span>
-              <span className="text-white">Quest</span>
-            </h1>
+            <h1 className="mb-5 w-full max-w-full text-[1.9rem] sm:text-7xl font-black leading-[1.05] tracking-tight lg:text-9xl">Rithu<span className="whitespace-nowrap"><span className="bg-gradient-to-r from-primary via-emerald-400 to-xp bg-clip-text text-transparent">Dev</span><span className="text-white">Quest</span></span></h1>
           </Reveal>
 
           {/* Subtitle */}

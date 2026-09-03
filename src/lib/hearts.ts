@@ -110,9 +110,9 @@ export async function getHeartsInfo(userId: string) {
 
   return {
     hearts,
+    maxHearts: MAX_HEARTS,
     nextRegen,
     isFull: hearts >= MAX_HEARTS,
-    maxHearts: MAX_HEARTS,
     regenIntervalMinutes: REGEN_INTERVAL_MINUTES,
   };
 }

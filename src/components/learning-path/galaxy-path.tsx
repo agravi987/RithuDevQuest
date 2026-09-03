@@ -11,7 +11,6 @@ import { SpaceshipPlayer } from "@/components/galaxy/spaceship-player";
 import { MilestoneNode } from "@/components/galaxy/milestone-node";
 import { LockedTooltip } from "@/components/galaxy/locked-tooltip";
 import { RithuMessage, RITHU_MESSAGES } from "@/components/galaxy/rithu-message";
-import { StarsCanvas } from "@/components/ui/stars-canvas";
 
 type LessonNode = {
   id: string;
@@ -332,17 +331,19 @@ function LessonRow({
         </motion.div>
       )}
 
-      {/* ── Floating label (no card, no box) ── */}
-      <div className={cn(
-        "absolute top-1/2 -translate-y-1/2 transition-all duration-300 z-20",
-        "pointer-events-none",
-        isLeft ? "left-[calc(100%+14px)]" : "right-[calc(100%+14px)] text-right",
-      )}
-        style={{ transform: `translate(-50%, calc(-50% + ${floatY}px))` }}>
+      <div
+        className={cn(
+          "absolute top-1/2 -translate-y-1/2 transition-all duration-300 z-20",
+          "pointer-events-none",
+          "overflow-hidden max-w-[calc(100vw-2rem)]",
+          isLeft ? "left-[calc(100%+14px)]" : "right-[calc(100%+14px)] text-right",
+        )}
+        style={{ transform: `translate(-50%, calc(-50% + ${floatY}px))` }}
+      >
 
         {/* Title — floating glow text */}
         <p className={cn(
-          "text-[11px] sm:text-xs font-bold leading-tight whitespace-nowrap",
+          "text-[11px] sm:text-xs font-bold leading-tight whitespace-nowrap truncate",
           done && "text-emerald-300/70",
           isCurrent && "text-amber-200 drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]",
           !done && !isCurrent && !locked && "text-white/60",
@@ -471,10 +472,7 @@ export function GalaxyPath({ modules, streak }: GalaxyPathProps) {
   if (modules.length === 0) {
     return (
       <div className="relative w-full max-w-2xl mx-auto py-6 px-4">
-        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl" aria-hidden>
-          <StarsCanvas density={160} shootingStars nebula speed={0.1} className="opacity-60" />
-        </div>
-        <div className="relative z-10 flex flex-col items-center justify-center gap-3 rounded-3xl border border-white/[0.08] bg-white/[0.03] px-6 py-16 text-center">
+        <div className="relative z-10 flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
           <span className="text-4xl">🪐</span>
           <p className="text-sm font-bold text-white/80">
             No modules available
@@ -489,12 +487,6 @@ export function GalaxyPath({ modules, streak }: GalaxyPathProps) {
 
   return (
     <div className="relative w-full max-w-2xl mx-auto py-6 px-4">
-      {/* Background */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl" aria-hidden>
-        <StarsCanvas density={160} shootingStars nebula speed={0.1} className="opacity-60" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#060a14]/60" />
-      </div>
-
       <div className="relative z-10 space-y-2">
         {/* Progress */}
         {total > 0 && (

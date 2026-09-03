@@ -6,10 +6,10 @@ import { ArrowRight, ShieldAlert, CheckCircle, Sparkles } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { getUserSkillsMastery } from "@/lib/mastery/queries";
 import { getSkillRecommendations } from "@/lib/mastery/recommendation";
-import { AIPracticeBox } from "@/components/practice/ai-practice-box";
 import { DailyChallengeCard } from "@/components/practice/daily-challenge-card";
 import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
+import { AIPracticeBoxClient } from "./AIPracticeBoxClient";
 
 export const metadata: Metadata = {
   title: "Practice Arena",
@@ -118,7 +118,7 @@ export default async function PracticePage() {
           </div>
           <h2 className="text-lg font-bold tracking-tight">AI Skill Generator</h2>
         </div>
-        <AIPracticeBox />
+        <AIPracticeBoxClient />
       </section>
 
       {/* ═══ Skills ═══ */}

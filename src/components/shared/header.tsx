@@ -2,7 +2,7 @@
 
 import { LogOut } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ThemeToggle } from "@/components/shared/theme-toggle";
+
 import { SoundToggle } from "@/components/shared/sound-toggle";
 import { MobileMenuButton } from "@/components/shared/mobile-menu-button";
 import { handleSignOut } from "@/app/(main)/logout-action";
@@ -94,7 +94,6 @@ export function Header({ userName, userXp, userLevel, currentStreak, userHearts 
 
           <div className="flex items-center gap-1">
             <SoundToggle />
-            <ThemeToggle />
           </div>
 
           <div className="h-6 w-px bg-border/50" />

@@ -16,7 +16,9 @@ test.describe("Keyboard Navigation", () => {
 test.describe("Navigation Links", () => {
   test("landing page has brand text", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByText("RithuDevQuest")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "RithuDevQuest" }),
+    ).toBeVisible();
   });
 });
 
@@ -38,8 +40,12 @@ test.describe("Theme & Visual Consistency", () => {
         let cls = 0;
         const observer = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
-            if ((entry as any).hadRecentInput === false) {
-              cls += (entry as any).value;
+            const shift = entry as unknown as {
+              hadRecentInput: boolean;
+              value: number;
+            };
+            if (shift.hadRecentInput === false) {
+              cls += shift.value;
             }
           }
         });
@@ -130,7 +136,7 @@ test.describe("No Console Errors", () => {
 
 test.describe("404 Page", () => {
   test("invalid route does not crash", async ({ page }) => {
-    const response = await page.goto("/this-page-does-not-exist-12345");
+    await page.goto("/this-page-does-not-exist-12345");
     // Page should load without crashing (even if it's a 404 or redirect)
     await page.waitForTimeout(1000);
     const text = await page.textContent("body");

@@ -26,11 +26,11 @@ type LeaderboardProps = {
 };
 
 const tierColors: Record<number, { bg: string; border: string; text: string; badge: string }> = {
-  1: { bg: "from-amber-600/10 to-amber-700/5", border: "border-amber-600/20", text: "text-amber-700", badge: "bg-amber-600/15 text-amber-700" },
-  2: { bg: "from-slate-400/10 to-slate-500/5", border: "border-slate-400/20", text: "text-slate-600", badge: "bg-slate-400/15 text-slate-600" },
-  3: { bg: "from-yellow-500/10 to-yellow-600/5", border: "border-yellow-500/20", text: "text-yellow-600", badge: "bg-yellow-500/15 text-yellow-600" },
-  4: { bg: "from-cyan-500/10 to-cyan-600/5", border: "border-cyan-500/20", text: "text-cyan-600", badge: "bg-cyan-500/15 text-cyan-600" },
-  5: { bg: "from-purple-500/10 to-purple-600/5", border: "border-purple-500/20", text: "text-purple-600", badge: "bg-purple-500/15 text-purple-600" },
+  1: { bg: "from-amber-500/10 to-amber-600/5", border: "border-amber-500/25", text: "text-amber-300", badge: "bg-amber-400/15 text-amber-300" },
+  2: { bg: "from-slate-400/10 to-slate-500/5", border: "border-slate-400/25", text: "text-slate-300", badge: "bg-slate-400/15 text-slate-300" },
+  3: { bg: "from-yellow-500/10 to-yellow-600/5", border: "border-yellow-500/25", text: "text-yellow-300", badge: "bg-yellow-400/15 text-yellow-300" },
+  4: { bg: "from-cyan-500/10 to-cyan-600/5", border: "border-cyan-500/25", text: "text-cyan-300", badge: "bg-cyan-400/15 text-cyan-300" },
+  5: { bg: "from-purple-500/10 to-purple-600/5", border: "border-purple-500/25", text: "text-purple-300", badge: "bg-purple-400/15 text-purple-300" },
 };
 
 export function Leaderboard({
@@ -123,9 +123,9 @@ export function Leaderboard({
                   {/* Rank */}
                   <div className={cn(
                     "grid size-8 place-items-center rounded-lg text-xs font-black transition-all duration-200",
-                    member.rank === 1 ? "bg-amber-400/15 text-amber-600 shadow-sm shadow-amber-400/20" :
-                    member.rank === 2 ? "bg-slate-400/15 text-slate-600" :
-                    member.rank === 3 ? "bg-orange-400/15 text-orange-600" :
+                    member.rank === 1 ? "bg-amber-400/15 text-amber-300 shadow-sm shadow-amber-400/20" :
+                    member.rank === 2 ? "bg-slate-400/15 text-slate-300" :
+                    member.rank === 3 ? "bg-orange-400/15 text-orange-300" :
                     "bg-muted text-muted-foreground"
                   )}>
                     {member.rank <= 3 ? (

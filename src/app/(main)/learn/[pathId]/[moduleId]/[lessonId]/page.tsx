@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 
-import { LessonPlayer } from "@/components/lesson/lesson-player";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import {
@@ -18,6 +17,7 @@ import { parseQuestionDifficulty } from "@/lib/quiz/validation";
 import { buildRichPayload } from "@/lib/quiz/types";
 import { selectQuestionRun } from "@/lib/quiz/selection";
 import { getHeartsInfo } from "@/lib/hearts";
+import { LessonPlayerClient } from "./LessonPlayerClient";
 
 type LessonPageProps = {
   params: Promise<{ pathId: string; moduleId: string; lessonId: string }>;
@@ -161,7 +161,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
           {mod.title}
         </Link>
       </div>
-      <LessonPlayer
+      <LessonPlayerClient
         data={data}
         heartsInfo={heartsInfo}
       />

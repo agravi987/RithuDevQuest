@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Space_Grotesk, Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
@@ -8,6 +8,12 @@ import "./globals.css";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+});
+
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -29,15 +35,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${spaceGrotesk.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col overflow-x-hidden bg-background">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-          themes={["light", "dark", "midnight"]}
+          defaultTheme="dark"
+          themes={["dark"]}
         >
           {children}
           <Toaster />

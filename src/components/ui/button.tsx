@@ -9,15 +9,17 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/85 hover:shadow-md hover:shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-[var(--glow-md)] hover:scale-[1.02] active:scale-[0.98] shadow-[var(--glow-sm)] transition-all duration-200",
         outline:
-          "border-border bg-background hover:bg-muted hover:text-foreground hover:scale-[1.02] active:scale-[0.98] aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50 transition-all duration-200",
+          "border-border bg-background hover:bg-muted hover:text-foreground hover:border-border-strong hover:shadow-[var(--elev-1)] hover:scale-[1.02] active:scale-[0.98] aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50 transition-all duration-200",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
+          "bg-secondary text-secondary-foreground border border-border-subtle hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] hover:shadow-[var(--elev-1)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground transition-all duration-200",
         ghost:
           "hover:bg-muted hover:text-foreground hover:scale-[1.02] active:scale-[0.98] aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50 transition-all duration-200",
         destructive:
-          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
+          "bg-destructive/10 text-destructive hover:bg-destructive/20 hover:shadow-[var(--glow-sm)] focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
+        glass:
+          "bg-[var(--bg-glass)] text-foreground backdrop-blur-md border border-border-subtle hover:border-border-default hover:bg-[var(--bg-elevated)] hover:shadow-[var(--elev-1)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

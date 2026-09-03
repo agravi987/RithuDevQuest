@@ -10,9 +10,9 @@ export default function AuthLayout({
     <div className="relative flex min-h-svh flex-col items-center justify-center gap-10 overflow-hidden bg-gradient-to-b from-sky-50 via-indigo-50/60 to-background px-4 py-12 dark:bg-background">
       {/* Stars backdrop */}
       <StarsCanvas
-        density={120}
-        shootingStars
-        nebula
+        density={80}
+        shootingStars={true}
+        nebula={false}
         speed={0.15}
         className="opacity-40 dark:opacity-60"
       />

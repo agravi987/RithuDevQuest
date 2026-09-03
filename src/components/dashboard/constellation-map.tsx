@@ -51,7 +51,7 @@ export function ConstellationMap({ paths }: ConstellationMapProps) {
 
   if (paths.length === 0) {
     return (
-      <div className="relative w-full overflow-hidden rounded-2xl border border-white/8 bg-gradient-to-br from-[oklch(0.12_0.03_260)] via-[oklch(0.1_0.02_280)] to-[oklch(0.08_0.04_300)] p-6 shadow-xl shadow-black/20">
+      <div className="relative w-full overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[oklch(0.12_0.03_260)] via-[oklch(0.1_0.02_280)] to-[oklch(0.08_0.04_300)] p-6 shadow-xl shadow-black/20">
         <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
           <span className="text-3xl">🌌</span>
           <h3 className="text-sm font-bold text-white/80">
@@ -66,7 +66,7 @@ export function ConstellationMap({ paths }: ConstellationMapProps) {
   }
 
   return (
-    <div className="relative w-full overflow-hidden rounded-2xl border border-white/8 bg-gradient-to-br from-[oklch(0.12_0.03_260)] via-[oklch(0.1_0.02_280)] to-[oklch(0.08_0.04_300)] p-6 shadow-xl shadow-black/20">
+    <div className="relative w-full overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[oklch(0.12_0.03_260)] via-[oklch(0.1_0.02_280)] to-[oklch(0.08_0.04_300)] p-6 shadow-xl shadow-black/20">
       {/* Background grid + nebula */}
       <div
         className="absolute inset-0 opacity-[0.03]"

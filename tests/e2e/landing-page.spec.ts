@@ -6,7 +6,7 @@ import { test, expect } from "@playwright/test";
 test.describe("Landing Page", () => {
   test("renders hero section with title and CTA", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByText("RithuDevQuest")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "RithuDevQuest" })).toBeVisible();
     const cta = page.getByRole("link", { name: /launch your quest/i });
     await expect(cta).toBeVisible();
     await expect(cta).toHaveAttribute("href", "/signup");

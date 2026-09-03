@@ -22,7 +22,7 @@ export function evaluatePasswordStrength(password: string): PasswordStrength {
   const passed = Object.values(checks).filter(Boolean).length;
 
   let score: PasswordStrength["score"];
-  if (!checks.length || password.length === 0) score = 0;
+  if (password.length === 0) score = 0;
   else if (passed <= 2) score = 1;
   else if (passed <= 4) score = 2;
   else score = 3;

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { Trophy, Flame, Zap, Sparkles, Clock } from "lucide-react";
-import { Starfield } from "@/components/ui/starfield";
+import { GalaxySection } from "@/components/galaxy/galaxy-section";
 
 export async function generateMetadata({
   params,
@@ -208,24 +208,18 @@ export default async function PathPage({
   });
 
   return (
-    <div className="relative min-h-0 -mx-4 px-4 -mt-8 pt-8 pb-16 bg-gradient-to-b from-[#060a14] via-[#0a0f1f] to-[#080c18]">
-      {/* Starfield background */}
-      <Starfield starCount={100} speed={0.2} className="opacity-60" />
-
-      {/* Nebula glow */}
-      <div className="pointer-events-none absolute left-1/4 top-0 size-96 -translate-x-1/2 rounded-full bg-purple-500/5 blur-[120px]" />
-      <div className="pointer-events-none absolute right-1/4 top-1/3 size-64 rounded-full bg-blue-500/5 blur-[100px]" />
-
+    <GalaxySection
+      className="-mx-4 -mt-8 px-4 pt-8 pb-16 min-h-screen overflow-hidden"
+      starCount={100}
+    >
       <div className="relative z-10 max-w-6xl mx-auto">
         {/* Breadcrumbs */}
-        <div className="[&_.text-muted-foreground]:text-white/40 [&_.text-foreground]:text-white">
-          <Breadcrumbs
-            items={[{ label: "Learn", href: "/learn" }, { label: path.title }]}
-          />
-        </div>
+        <Breadcrumbs
+          items={[{ label: "Learn", href: "/learn" }, { label: path.title }]}
+        />
 
         {/* Galaxy Header */}
-        <div className="relative mt-6 mb-10 overflow-hidden rounded-3xl border border-white/[0.06] p-5 sm:p-8 backdrop-blur-md" style={{background: "linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)"}}>
+        <div className="relative mt-6 mb-10 overflow-hidden rounded-3xl border border-border bg-card/80 p-5 sm:p-8 backdrop-blur-sm">
           <div className="absolute -right-16 -top-16 size-48 rounded-full bg-primary/5 blur-3xl" />
 
           <div className="relative z-10 flex items-start sm:items-center gap-4 sm:gap-6">
@@ -244,39 +238,39 @@ export default async function PathPage({
             </div>
 
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-white/30 mb-1">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
                 {planet.subtitle}
               </p>
-              <h1 className="text-xl sm:text-3xl font-black tracking-tight text-white truncate">
+              <h1 className="text-xl sm:text-3xl font-black tracking-tight text-foreground truncate">
                 {path.title}
               </h1>
               {path.description && (
-                <p className="mt-1 text-xs sm:text-sm text-white/40 line-clamp-2">
+                <p className="mt-1 text-xs sm:text-sm text-muted-foreground line-clamp-2">
                   {path.description}
                 </p>
               )}
 
               {/* Stats */}
               <div className="flex flex-wrap items-center gap-2 mt-3">
-                <span className="flex items-center gap-1 rounded-full bg-white/5 border border-white/10 px-2.5 py-1 text-[10px] font-bold text-white/50">
-                  <Sparkles className="size-2.5 text-amber-400" />
+                <span className="flex items-center gap-1 rounded-full bg-foreground/5 border border-foreground/10 px-2.5 py-1 text-[10px] font-bold text-muted-foreground">
+                  <Sparkles className="size-2.5 text-amber-500" />
                   {completedCount}/{totalLessons} stars
                 </span>
-                <span className="flex items-center gap-1 rounded-full bg-white/5 border border-white/10 px-2.5 py-1 text-[10px] font-bold text-white/50">
+                <span className="flex items-center gap-1 rounded-full bg-foreground/5 border border-foreground/10 px-2.5 py-1 text-[10px] font-bold text-muted-foreground">
                   <Clock className="size-2.5" />
                   ~{estimatedTime}
                 </span>
                 {profile && (
                   <>
-                    <span className="flex items-center gap-1 rounded-full bg-white/5 border border-white/10 px-2.5 py-1 text-[10px] font-bold text-orange-400">
+                    <span className="flex items-center gap-1 rounded-full bg-foreground/5 border border-foreground/10 px-2.5 py-1 text-[10px] font-bold text-orange-500 dark:text-orange-400">
                       <Flame className="size-2.5" />
                       {profile.streak.currentStreak} streak
                     </span>
-                    <span className="flex items-center gap-1 rounded-full bg-white/5 border border-white/10 px-2.5 py-1 text-[10px] font-bold text-amber-400">
+                    <span className="flex items-center gap-1 rounded-full bg-foreground/5 border border-foreground/10 px-2.5 py-1 text-[10px] font-bold text-amber-500 dark:text-amber-400">
                       <Zap className="size-2.5" />
                       {profile.user.xp} XP
                     </span>
-                    <span className="flex items-center gap-1 rounded-full bg-white/5 border border-white/10 px-2.5 py-1 text-[10px] font-bold text-purple-400">
+                    <span className="flex items-center gap-1 rounded-full bg-foreground/5 border border-foreground/10 px-2.5 py-1 text-[10px] font-bold text-purple-600 dark:text-purple-400">
                       <Trophy className="size-2.5" />
                       Lv.{profile.levelInfo.level}
                     </span>
@@ -286,13 +280,13 @@ export default async function PathPage({
 
               {/* Mobile progress ring - compact */}
               <div className="mt-3 sm:hidden flex items-center gap-2">
-                <div className="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden">
+                <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-amber-400 transition-all duration-1000"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
-                <span className="text-xs font-black text-white shrink-0">
+                <span className="text-xs font-black text-foreground shrink-0">
                   {progress}%
                 </span>
               </div>
@@ -313,7 +307,7 @@ export default async function PathPage({
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="5"
-                  className="text-white/10"
+                  className="text-foreground/10"
                 />
                 <circle
                   cx="40"
@@ -341,7 +335,7 @@ export default async function PathPage({
                 </defs>
               </svg>
               <div className="absolute flex flex-col items-center justify-center">
-                <span className="text-lg font-black text-white">
+                <span className="text-lg font-black text-foreground">
                   {progress}%
                 </span>
               </div>
@@ -356,6 +350,6 @@ export default async function PathPage({
           streak={profile?.streak.currentStreak}
         />
       </div>
-    </div>
+    </GalaxySection>
   );
 }

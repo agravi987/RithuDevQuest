@@ -37,7 +37,7 @@ export function CosmicBackground({
         className="absolute inset-0"
         style={{
           background: isDeep
-            ? "linear-gradient(180deg, #020617 0%, #0a0f1f 30%, #0d1117 60%, oklch(0.14 0.015 260) 100%)"
+            ? "linear-gradient(180deg, oklch(0.105 0.018 255) 0%, oklch(0.12 0.025 255) 35%, oklch(0.14 0.02 260) 65%, oklch(0.175 0.025 142) 100%)"
             : "linear-gradient(180deg, oklch(0.98 0.005 120) 0%, oklch(0.96 0.01 200) 50%, oklch(0.98 0.005 120) 100%)",
         }}
       />
