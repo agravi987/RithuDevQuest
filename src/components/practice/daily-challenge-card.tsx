@@ -54,21 +54,49 @@ export function DailyChallengeCard() {
   const router = useRouter();
   const [status, setStatus] = useState<LauncherStatus | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const remaining = useRemainingTime(
     status?.isActive ? status.expiresAt : undefined,
   );
 
   useEffect(() => {
+    const CACHE_KEY = "daily-challenge-status";
+    const CACHE_DURATION = 5 * 60 * 1000;
+
+    // Try to read from sessionStorage first
+    const cached = sessionStorage.getItem(CACHE_KEY);
+    if (cached) {
+      try {
+        const { data, timestamp } = JSON.parse(cached);
+        if (Date.now() - timestamp < CACHE_DURATION) {
+          setStatus(data);
+          setLoaded(true);
+          return;
+        }
+      } catch {
+        // Ignore parse errors
+      }
+    }
+
+    // Fetch fresh data
     fetch("/api/daily-challenge")
       .then((r) => r.json())
       .then((s: LauncherStatus) => {
         setStatus(s);
         setLoaded(true);
+        // Cache the result
+        sessionStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify({ data: s, timestamp: Date.now() }),
+        );
       })
       .catch(() => setLoaded(true));
   }, []);
 
-  const goToChallenge = () => router.push("/practice/daily-challenge");
+  const goToChallenge = () => {
+    setIsNavigating(true);
+    router.push("/practice/daily-challenge");
+  };
 
   /* ─── Loading ─── */
   if (!loaded) {
@@ -178,10 +206,35 @@ export function DailyChallengeCard() {
         <motion.div whileTap={{ scale: 0.98 }}>
           <Button
             onClick={goToChallenge}
-            className="w-full font-bold py-5 sm:py-6 rounded-xl text-base shadow-lg shadow-emerald-500/20 hover:shadow-xl hover:shadow-emerald-500/30 bg-gradient-to-r from-emerald-400 to-green-600 hover:from-emerald-300 hover:to-green-500 text-white border-0 gap-2 transition-all duration-200"
+            disabled={isNavigating}
+            className="w-full font-bold py-5 sm:py-6 rounded-xl text-base shadow-lg shadow-emerald-500/20 hover:shadow-xl hover:shadow-emerald-500/30 bg-gradient-to-r from-emerald-400 to-green-600 hover:from-emerald-300 hover:to-green-500 text-white border-0 gap-2 transition-all duration-200 disabled:opacity-70 disabled:cursor-wait"
           >
-            <Play className="size-5 fill-white" />
-            {isActive ? "Resume Daily Challenge" : "Start Daily Challenge"}
+            {isNavigating ? (
+              <>
+                <svg className="size-5 fill-white animate-spin" viewBox="0 0 24 24">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                Launching...
+              </>
+            ) : (
+              <>
+                <Play className="size-5 fill-white" />
+                {isActive ? "Resume Daily Challenge" : "Start Daily Challenge"}
+              </>
+            )}
           </Button>
         </motion.div>
       </div>

@@ -8,7 +8,8 @@ import { getGamificationProfile } from "@/lib/gamification/queries";
 import { getUserSkillsMastery } from "@/lib/mastery/queries";
 import { getDailyQuests } from "@/lib/quests/daily";
 import { getModuleCompletionCounts } from "@/lib/progress/queries";
-import { getNextQuest } from "@/lib/progress/getNextQuest";
+import { getCompletedLessonIds } from "@/lib/progress/queries";
+import { getNextLesson } from "@/lib/curriculum/navigation";
 
 import { ContinueQuest } from "@/components/galaxy/continue-quest";
 import { DashboardClientWrapper } from "./DashboardClientWrapper";
@@ -115,7 +116,79 @@ export default async function DashboardPage() {
 
   const firstName = session.user.name?.split(" ")[0] ?? "Adventurer";
 
-  const nextQuest = await getNextQuest(session.user.id);
+  // Compute next quest inline using already-fetched careers data to avoid duplicate DB queries
+  const completedLessonIds = await getCompletedLessonIds(session.user.id);
+  const completedSet = new Set(completedLessonIds);
+
+  let nextQuest: {
+    careerSlug: string;
+    careerTitle: string;
+    pathSlug: string;
+    pathTitle: string;
+    moduleSlug: string;
+    moduleTitle: string;
+    lessonId: string;
+    lessonSlug: string;
+    lessonTitle: string;
+    href: string;
+    completedCount: number;
+    totalCount: number;
+  } | null = null;
+
+  for (const career of careers) {
+    if (!career) continue;
+
+    for (const path of career.paths) {
+      const allLessons = path.modules.flatMap((mod) =>
+        mod.units.flatMap((unit) => unit.lessons),
+      );
+      const totalCount = allLessons.length;
+      const completedCount = allLessons.filter((lesson) =>
+        completedSet.has(lesson.id),
+      ).length;
+
+      for (const mod of path.modules) {
+        const next = getNextLesson(
+          mod.units.map((unit) => ({
+            id: unit.id,
+            order: unit.order,
+            lessons: unit.lessons.map((lesson) => ({
+              id: lesson.id,
+              order: lesson.order,
+              title: lesson.title,
+              slug: lesson.slug,
+              estimatedMinutes: lesson.estimatedMinutes,
+            })),
+          })),
+          completedSet,
+        );
+        if (!next) continue;
+
+        const lesson = mod.units
+          .flatMap((unit) => unit.lessons)
+          .find((l) => l.id === next.id);
+        if (!lesson) continue;
+
+        nextQuest = {
+          careerSlug: career.slug,
+          careerTitle: career.title,
+          pathSlug: path.slug,
+          pathTitle: path.title,
+          moduleSlug: mod.slug,
+          moduleTitle: mod.title,
+          lessonId: lesson.id,
+          lessonSlug: lesson.slug,
+          lessonTitle: lesson.title,
+          href: `/learn/${path.slug}/${mod.slug}/${lesson.slug}`,
+          completedCount,
+          totalCount,
+        };
+        break;
+      }
+      if (nextQuest) break;
+    }
+    if (nextQuest) break;
+  }
 
   const topSkills = skills
     .filter((s) => s.mastery.totalAttempts > 0)

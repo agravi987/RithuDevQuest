@@ -1,16 +1,11 @@
-import { Sparkles } from "lucide-react";
-
 export default function Loading() {
   return (
-    <div className="min-h-[50vh] flex flex-col items-center justify-center gap-4 text-center p-8">
-      <div className="relative">
-        <div className="size-16 rounded-3xl bg-primary/15 border border-primary/30 flex items-center justify-center text-primary animate-pulse">
-          <Sparkles className="size-8 animate-spin" />
+    <div className="flex min-h-[40vh] items-center justify-center">
+      <div className="flex flex-col items-center gap-4 text-center">
+        <div className="relative grid size-12 place-items-center rounded-full bg-gradient-to-br from-primary via-emerald-400 to-cyan-400 animate-pulse-ring">
+          <div className="size-16 rounded-full border-2 border-primary/30 animate-spin border-t-transparent" />
         </div>
-      </div>
-      <div className="flex flex-col gap-1">
-        <h3 className="font-bold text-base tracking-tight">Loading quest...</h3>
-        <p className="text-xs text-muted-foreground">Preparing your challenges and stats</p>
+        <p className="text-sm font-medium text-muted-foreground">Loading your galaxy...</p>
       </div>
     </div>
   );

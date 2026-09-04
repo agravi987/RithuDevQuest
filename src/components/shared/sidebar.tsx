@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
@@ -9,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useSidebar } from "@/lib/sidebar-context";
 import { SidebarTooltip } from "@/components/ui/sidebar-tooltip";
 import { MAIN_NAV_ITEMS, type NavItem } from "@/lib/navigation";
+import { NavLink } from "@/components/shared/nav-link";
 
 export function Sidebar() {
   const { collapsed, toggleCollapsed } = useSidebar();
@@ -26,7 +26,7 @@ export function Sidebar() {
         "flex items-center border-b border-border/50 h-14 shrink-0",
         collapsed ? "justify-center px-2" : "gap-2.5 px-5"
       )}>
-        <Link href="/dashboard" className="flex items-center gap-2.5 group shrink-0" aria-label="RithuDevQuest Home">
+        <NavLink href="/dashboard" className="flex items-center gap-2.5 group shrink-0" aria-label="RithuDevQuest Home">
           <div className="relative grid size-7 place-items-center rounded-lg bg-gradient-to-br from-primary via-emerald-400 to-cyan-400 text-primary-foreground shadow-md shadow-primary/30 transition-all duration-300 group-hover:scale-110">
             <span className="text-xs font-black">R</span>
           </div>
@@ -42,7 +42,7 @@ export function Sidebar() {
               </motion.span>
             )}
           </AnimatePresence>
-        </Link>
+        </NavLink>
       </div>
 
       {/* Nav Links */}
@@ -93,7 +93,7 @@ function SidebarNavItem({
     pathname === item.href || pathname.startsWith(item.href + "/");
 
   return (
-    <Link
+    <NavLink
       href={item.href}
       className={cn(
         "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-200",
@@ -136,6 +136,6 @@ function SidebarNavItem({
       {isActive && !collapsed && (
         <div className="ml-auto size-1.5 rounded-full bg-primary animate-pulse" />
       )}
-    </Link>
+    </NavLink>
   );
 }

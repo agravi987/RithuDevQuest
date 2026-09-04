@@ -1,6 +1,6 @@
 import "server-only";
 
-import { groq, GROQ_DEFAULT_MODEL } from "@/lib/ai/groq";
+import { groq, GROQ_FAST_MODEL, GROQ_REASONING_MODEL } from "@/lib/ai/groq";
 import { prisma } from "@/lib/db";
 import {
   generatedQuestionsBatchSchema,
@@ -49,7 +49,7 @@ export function cleanJsonString(raw: string): string {
 async function callGroqChat(
   systemPrompt: string,
   userPrompt: string,
-  model: string = GROQ_DEFAULT_MODEL,
+  model: string = GROQ_FAST_MODEL,
 ): Promise<string> {
   const response = await groq.chat.completions.create({
     model,
@@ -129,7 +129,7 @@ export async function generateQuestions(
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      const raw = await callGroqChat(system, user);
+      const raw = await callGroqChat(system, user, GROQ_FAST_MODEL);
       const parsedJson = JSON.parse(cleanJsonString(raw));
 
       let questions: GeneratedQuestion[] = [];
@@ -184,7 +184,7 @@ export async function generateExplanation(
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      const raw = await callGroqChat(system, user);
+      const raw = await callGroqChat(system, user, GROQ_FAST_MODEL);
       const parsedJson = JSON.parse(cleanJsonString(raw));
       return explanationResponseSchema.parse(parsedJson);
     } catch (err) {
@@ -207,7 +207,7 @@ export async function generateHint(
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      const raw = await callGroqChat(system, user);
+      const raw = await callGroqChat(system, user, GROQ_FAST_MODEL);
       const parsedJson = JSON.parse(cleanJsonString(raw));
       return hintResponseSchema.parse(parsedJson);
     } catch (err) {
@@ -230,7 +230,7 @@ export async function generateMentorResponse(
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      const raw = await callGroqChat(system, user);
+      const raw = await callGroqChat(system, user, GROQ_REASONING_MODEL);
       const parsedJson = JSON.parse(cleanJsonString(raw));
       return mentorResponseSchema.parse(parsedJson);
     } catch (err) {

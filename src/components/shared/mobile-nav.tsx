@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { MAIN_NAV_ITEMS } from "@/lib/navigation";
+import { NavLink } from "@/components/shared/nav-link";
 
 export function MobileNav() {
   const pathname = usePathname();
@@ -19,7 +19,7 @@ export function MobileNav() {
             pathname === item.href || pathname.startsWith(item.href + "/");
           const Icon = item.icon;
           return (
-            <Link
+            <NavLink
               key={item.href}
               href={item.href}
               className={cn(
@@ -60,7 +60,7 @@ export function MobileNav() {
               >
                 {item.label}
               </span>
-            </Link>
+            </NavLink>
           );
         })}
       </div>
