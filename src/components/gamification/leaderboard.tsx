@@ -83,7 +83,7 @@ export function Leaderboard({
         {/* Promotion Zone Label with glow */}
         <div className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-primary/5 border-b border-primary/10">
           <TrendingUp className="size-3.5 text-primary animate-float-sparkle shrink-0" />
-          <span className="text-[9px] sm:text-[10px] font-bold text-primary uppercase tracking-wider truncate">
+          <span className="text-[10px] sm:text-[11px] font-bold text-primary uppercase tracking-wider truncate">
             Promotion Zone — Top {promoteCount} advance
           </span>
         </div>
@@ -164,7 +164,7 @@ export function Leaderboard({
                 {showPromotionLine && (
                   <div className="flex items-center gap-2 px-4 py-1.5 bg-muted/30 border-y border-border/30">
                     <div className="h-px flex-1 bg-primary/30 border-dashed" />
-                    <span className="text-[9px] font-bold text-primary/60 uppercase tracking-wider">
+                    <span className="text-[10px] font-bold text-primary/60 uppercase tracking-wider">
                       ─── Promotion Line ───
                     </span>
                     <div className="h-px flex-1 bg-primary/30 border-dashed" />
@@ -173,7 +173,7 @@ export function Leaderboard({
                 {showDemotionLine && (
                   <div className="flex items-center gap-2 px-4 py-1.5 bg-muted/30 border-y border-border/30">
                     <div className="h-px flex-1 bg-destructive/30 border-dashed" />
-                    <span className="text-[9px] font-bold text-destructive/60 uppercase tracking-wider">
+                    <span className="text-[10px] font-bold text-destructive/60 uppercase tracking-wider">
                       ─── Demotion Line ───
                     </span>
                     <div className="h-px flex-1 bg-destructive/30 border-dashed" />

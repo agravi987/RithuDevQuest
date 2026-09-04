@@ -230,7 +230,7 @@ export function ConstellationMap({ paths }: ConstellationMapProps) {
                 <p className="text-[10px] font-bold text-white/70 leading-tight">
                   {path.name}
                 </p>
-                <p className="text-[8px] text-white/30">{path.progress}%</p>
+                <p className="text-[10px] text-white/30">{path.progress}%</p>
               </div>
             </motion.div>
           );
@@ -264,15 +264,15 @@ export function ConstellationMap({ paths }: ConstellationMapProps) {
       <div className="relative mt-4 flex flex-wrap items-center justify-center gap-4">
         <div className="flex items-center gap-1.5">
           <div className="size-1.5 rounded-full bg-white/20" />
-          <span className="text-[9px] text-white/30">Not started</span>
+          <span className="text-[10px] text-white/30">Not started</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="size-1.5 rounded-full bg-amber-400/60" />
-          <span className="text-[9px] text-white/30">In progress</span>
+          <span className="text-[10px] text-white/30">In progress</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="size-1.5 rounded-full bg-emerald-400/60" />
-          <span className="text-[9px] text-white/30">Mastered</span>
+          <span className="text-[10px] text-white/30">Mastered</span>
         </div>
       </div>
     </div>

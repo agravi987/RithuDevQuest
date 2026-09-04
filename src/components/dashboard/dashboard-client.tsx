@@ -11,6 +11,7 @@ import {
   Trophy,
   ArrowUpRight,
   Timer,
+  Bot,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { AnimatedNumber } from "@/components/ui/animated-number";
@@ -161,7 +162,7 @@ export function DashboardClient({
                 onClick={() => setSelectedCareerSlug(career.slug)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`shrink-0 snap-start rounded-full border px-3 py-1.5 text-[11px] font-bold transition-all ${
+                className={`shrink-0 snap-start flex min-h-[36px] items-center rounded-full border px-3 py-1.5 text-[11px] font-bold transition-all ${
                   active
                     ? getCareer(career.slug)?.tabClass ?? "text-foreground border-border bg-background"
                     : "text-muted-foreground border-border/60 bg-background/40 hover:text-foreground hover:border-foreground/20"
@@ -219,7 +220,7 @@ export function DashboardClient({
                       <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
                         <AnimatedNumber value={currentPath.courseProgress} suffix="%" />
                       </span>
-                      <span className="text-[9px] text-muted-foreground font-medium">progress</span>
+                      <span className="text-[10px] text-muted-foreground font-medium">progress</span>
                     </div>
                   </div>
 
@@ -275,10 +276,10 @@ export function DashboardClient({
                     </div>
                   </div>
 
-                  {/* CTA */}
+                  {/* CTA (secondary — the primary quest CTA lives above) */}
                   <Link
                     href={`/learn/${currentPath.slug}`}
-                    className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-emerald-500 px-5 py-2.5 text-sm font-black text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/40 hover:brightness-110 transition-all active:scale-[0.98] btn-glow"
+                    className="group inline-flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 px-5 py-2.5 text-sm font-bold text-primary hover:bg-primary/10 hover:border-primary/50 transition-all active:scale-[0.98]"
                   >
                     <Rocket className="size-4 transition-transform group-hover:-rotate-12 group-hover:scale-110" />
                     Continue Learning
@@ -377,7 +378,7 @@ export function DashboardClient({
                           <span className="text-xs font-semibold capitalize truncate">
                             {skill.skillName.replace(/-/g, " ")}
                           </span>
-                          <span className="text-[9px] font-medium text-muted-foreground shrink-0">
+                          <span className="text-[10px] font-medium text-muted-foreground shrink-0">
                             · {getMasteryLabel(skill.score)}
                           </span>
                         </div>
@@ -414,8 +415,8 @@ export function DashboardClient({
           <AnimateOnScroll delay={200}>
             <div className="rounded-2xl border border-border/50 bg-card p-4 shadow-lg shadow-black/5">
               <div className="flex items-center gap-3 mb-3">
-                <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-primary via-emerald-400 to-cyan-400 text-lg shadow-lg shadow-primary/20">
-                  🤖
+                <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-primary via-emerald-400 to-cyan-400 shadow-lg shadow-primary/20">
+                  <Bot className="size-5 text-white" />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-foreground">Rithu — AI Mentor</h3>

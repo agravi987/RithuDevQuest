@@ -225,7 +225,7 @@ export function AIPracticeBox() {
                 )
               }
               disabled={question != null}
-              className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-medium focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-9 rounded-md border border-border/70 bg-card px-3 py-1 text-sm shadow-sm font-medium cursor-pointer focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <option value="beginner">Beginner</option>
               <option value="intermediate">Intermediate</option>
@@ -249,7 +249,7 @@ export function AIPracticeBox() {
                 )
               }
               disabled={question != null}
-              className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-medium focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-9 rounded-md border border-border/70 bg-card px-3 py-1 text-sm shadow-sm font-medium cursor-pointer focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <option value="mcq">Multiple Choice</option>
               <option value="command">Terminal Command</option>

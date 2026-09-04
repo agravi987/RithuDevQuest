@@ -12,10 +12,6 @@ export const GALAXY = {
     "web-dev": "/png_images/planets/web-dev.png",
     "system-design": "/png_images/planets/system-design.png",
   },
-  ui: {
-    mars: "/png_images/mars.png",
-    saturn: "/png_images/saturn.png",
-  },
   /** Emoji fallbacks for when PNG assets aren't loaded */
   emoji: {
     devops: "🐧",

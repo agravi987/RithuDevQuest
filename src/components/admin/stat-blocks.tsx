@@ -105,7 +105,7 @@ export function BarChart({
               title={`${d.label}: ${d.value}`}
             />
           </div>
-          <span className="text-[9px] font-medium text-muted-foreground truncate w-full text-center">
+          <span className="text-[10px] font-medium text-muted-foreground truncate w-full text-center">
             {d.label}
           </span>
         </div>

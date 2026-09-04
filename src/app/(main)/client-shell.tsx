@@ -5,6 +5,7 @@ import { SoundProvider } from "@/lib/sound-context";
 import { ScrollToTop } from "@/components/ui/scroll-to-top";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
 import { GalaxyToastProvider } from "@/components/ui/galaxy-toast";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 
 export function ClientShell({ children }: { children: React.ReactNode }) {
   return (
@@ -12,9 +13,11 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
       <GalaxyToastProvider>
         <SplashScreen />
         <ScrollProgress />
-        <div className="flex min-h-svh flex-col">
-          {children}
-        </div>
+        <ErrorBoundary>
+          <div className="flex min-h-svh flex-col">
+            {children}
+          </div>
+        </ErrorBoundary>
         <ScrollToTop />
       </GalaxyToastProvider>
     </SoundProvider>

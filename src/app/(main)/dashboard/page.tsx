@@ -123,7 +123,7 @@ export default async function DashboardPage() {
     .slice(0, 4);
 
   return (
-    <div className="flex flex-col gap-5 min-h-0">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 min-h-0">
       {/* Continue Your Quest — next mission across the galaxy */}
       {nextQuest && <ContinueQuest quest={nextQuest} />}
 

@@ -171,10 +171,10 @@ function QuestItem({ quest }: { quest: Quest }) {
         {!quest.completed && (
           <div className="mt-1.5">
             <div className="flex items-center justify-between mb-0.5">
-              <span className="text-[9px] text-muted-foreground/70">
+              <span className="text-[10px] text-muted-foreground/70">
                 {quest.current}/{quest.target} completed
               </span>
-              <span className="text-[9px] font-bold text-xp/70">
+              <span className="text-[10px] font-bold text-xp/70">
                 +{quest.xpReward} XP reward
               </span>
             </div>
