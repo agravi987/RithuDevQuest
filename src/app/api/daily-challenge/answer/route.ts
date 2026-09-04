@@ -2,12 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { validateAcceptedAnswer } from "@/lib/quiz/validation";
+import {
+  COMBO_BONUS_XP,
+  COMBO_THRESHOLD,
+  DAILY_BASE_XP_PER_CORRECT,
+  STREAK_BONUS_XP,
+  currentComboFrom,
+} from "@/lib/practice/xp";
 
 const CHALLENGE_DURATION_MS = 30 * 60 * 1000;
-const BASE_XP_PER_CORRECT = 10;
-const STREAK_BONUS_XP = 2;
-const COMBO_THRESHOLD = 3;
-const COMBO_BONUS_XP = 5;
 const ANSWER_COOLDOWN_MS = 1500;
 
 export async function POST(request: NextRequest) {
@@ -87,17 +90,15 @@ export async function POST(request: NextRequest) {
       select: { isCorrect: true },
     });
 
-    let combo = 0;
-    for (const a of recentAnswers) {
-      if (a.isCorrect) combo++;
-      else break;
-    }
-    if (isCorrect) combo++;
+    const combo = currentComboFrom(
+      recentAnswers.map((a) => a.isCorrect),
+      isCorrect,
+    );
 
     // Calculate XP
     let xpEarned = 0;
     if (isCorrect) {
-      xpEarned = BASE_XP_PER_CORRECT;
+      xpEarned = DAILY_BASE_XP_PER_CORRECT;
       const streak = await prisma.streak.findUnique({
         where: { userId },
         select: { currentStreak: true },

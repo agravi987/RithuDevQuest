@@ -40,6 +40,11 @@ export default async function PracticePage() {
     getSkillRecommendations(session.user.id),
   ]);
 
+  // Only show skills the user has engaged with, weakest first for focus.
+  const attemptedSkills = skills
+    .filter((s) => s.mastery.totalAttempts > 0)
+    .sort((a, b) => a.mastery.score - b.mastery.score);
+
   return (
     <div className="flex flex-col gap-8 max-w-5xl mx-auto pb-12">
       <Breadcrumbs items={[{ label: "Practice" }]} />
@@ -60,10 +65,11 @@ export default async function PracticePage() {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3" role="list" aria-label="Focus area recommendations">
             {recommendations.map((rec) => (
               <div
                 key={rec.skillId}
+                role="listitem"
                 className="group relative overflow-hidden rounded-2xl border border-amber-500/15 bg-card p-5 hover:border-amber-500/30 hover:shadow-md hover:shadow-amber-500/5 transition-all duration-300"
               >
                 <div className="absolute -right-8 -top-8 size-24 rounded-full bg-amber-500/5 blur-2xl transition-opacity group-hover:opacity-100 opacity-0" />
@@ -94,7 +100,10 @@ export default async function PracticePage() {
                     {rec.reason}
                   </p>
                   <div className="flex items-center justify-between gap-3 pt-2 border-t border-border/30">
-                    <span className="text-[10px] font-semibold text-muted-foreground truncate">
+                    <span
+                      className="text-[10px] font-semibold text-muted-foreground truncate min-w-0"
+                      title={rec.lessonTitle}
+                    >
                       📚 {rec.lessonTitle}
                     </span>
                     <Button asChild size="sm" className="h-8 shrink-0 rounded-lg font-bold text-xs gap-1 shadow-sm shadow-primary/10 hover:shadow-md hover:shadow-primary/20 transition-all duration-200">
@@ -128,31 +137,40 @@ export default async function PracticePage() {
             <CheckCircle className="size-4" />
           </div>
           <h2 className="text-lg font-bold tracking-tight">Skill Mastery</h2>
-          <span className="text-xs font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-            {skills.length}
-          </span>
+          {attemptedSkills.length > 0 && (
+            <span className="text-xs font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+              {attemptedSkills.length}
+            </span>
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5" role="list" aria-label="Skill mastery list">
-          {skills.length === 0 && (
+          {attemptedSkills.length === 0 && (
             <div className="col-span-full text-center py-8">
               <p className="text-sm text-muted-foreground">Complete lessons to build your mastery profile.</p>
             </div>
           )}
-          {skills.map((s) => (
+          {attemptedSkills.map((s) => (
             <div
               key={s.skillId}
+              role="listitem"
               className="group rounded-2xl border border-border/50 bg-card p-4 hover:border-primary/20 hover:shadow-sm hover:shadow-primary/5 transition-all duration-200 hover:scale-[1.01]"
             >
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-bold capitalize text-foreground truncate">
+              <div className="flex items-center justify-between mb-1.5 gap-2">
+                <span
+                  className="text-xs font-bold capitalize text-foreground truncate min-w-0"
+                  title={s.skillName.replace(/-/g, " ")}
+                >
                   {s.skillName.replace(/-/g, " ")}
                 </span>
-                <span className={`text-xs font-black ${getMasteryTextColor(s.mastery.score)}`}>
+                <span className={`text-xs font-black shrink-0 ${getMasteryTextColor(s.mastery.score)}`}>
                   {s.mastery.score}%
                 </span>
               </div>
-              <p className="text-[10px] text-muted-foreground truncate mb-2">
+              <p
+                className="text-[10px] text-muted-foreground truncate mb-2"
+                title={`${s.pathTitle} · ${s.moduleTitle}`}
+              >
                 {s.pathTitle} · {s.moduleTitle}
               </p>
               <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">

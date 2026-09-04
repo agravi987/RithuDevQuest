@@ -261,6 +261,16 @@ export function QuestionSection({
               {value ? `Selected option ${value}` : ""}
             </span>
 
+            {error && (
+              <p
+                id="question-error"
+                role="alert"
+                className="text-sm font-medium text-destructive"
+              >
+                {error}
+              </p>
+            )}
+
             {/* Check button */}
             <Button
               onClick={() => onSubmit()}

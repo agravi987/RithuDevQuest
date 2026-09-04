@@ -43,11 +43,7 @@ function shuffleWithSeed<T>(arr: T[], seed: number): T[] {
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({
-      hasChallengeToday: false,
-      isCompleted: false,
-      isActive: false,
-    });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const today = getTodayDate();
@@ -167,8 +163,13 @@ export async function POST(request: NextRequest) {
           options: (dq.question.options as string[]) ?? null,
           hint: dq.question.hint ?? null,
           order: dq.order,
+          userAnswer: dq.userAnswer ?? null,
+          isCorrect: dq.isCorrect ?? null,
+          answeredAt: dq.answeredAt?.toISOString() ?? null,
         })),
         expiresAt: new Date(existing.startedAt.getTime() + CHALLENGE_DURATION_MS).toISOString(),
+        durationMs: CHALLENGE_DURATION_MS,
+        isExpired: new Date() > new Date(existing.startedAt.getTime() + CHALLENGE_DURATION_MS),
       });
     }
 
@@ -185,9 +186,12 @@ export async function POST(request: NextRequest) {
 
     const excludeIds = recentCorrect.map((r) => r.questionId);
 
+    const SIMPLE_QUESTION_TYPES = ["mcq", "true_false", "command"];
+
     let pool = await prisma.question.findMany({
       where: {
         source: "curriculum",
+        type: { in: SIMPLE_QUESTION_TYPES },
         ...(excludeIds.length > 0 ? { id: { notIn: excludeIds } } : {}),
       },
       select: {
@@ -202,7 +206,7 @@ export async function POST(request: NextRequest) {
 
     if (pool.length < QUESTIONS_PER_CHALLENGE) {
       pool = await prisma.question.findMany({
-        where: { source: "curriculum" },
+        where: { source: "curriculum", type: { in: SIMPLE_QUESTION_TYPES } },
         select: {
           id: true,
           question: true,
@@ -254,6 +258,7 @@ export async function POST(request: NextRequest) {
         order: i,
       })),
       expiresAt: new Date(challenge.startedAt.getTime() + CHALLENGE_DURATION_MS).toISOString(),
+      durationMs: CHALLENGE_DURATION_MS,
     });
   } catch (err) {
     console.error("[API daily-challenge]", err);

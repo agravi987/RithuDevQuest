@@ -66,7 +66,12 @@ export function AIPracticeBox() {
       }
 
       if (data.questions && data.questions.length > 0) {
-        setQuestion(data.questions[0]);
+        const q = data.questions[0];
+        // The renderer only supports these types; bail gracefully otherwise.
+        if (!["mcq", "command", "true_false"].includes(q.type)) {
+          throw new Error("Unsupported question format returned. Please try again.");
+        }
+        setQuestion(q);
       } else {
         throw new Error("No question returned");
       }
@@ -186,6 +191,7 @@ export function AIPracticeBox() {
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               placeholder="e.g. Kubernetes Services"
+              disabled={question != null}
               className="text-sm font-medium"
             />
             <div className="flex flex-wrap gap-1 mt-2">
@@ -194,7 +200,8 @@ export function AIPracticeBox() {
                   key={preset}
                   type="button"
                   onClick={() => setTopic(preset)}
-                  className="text-[9px] font-semibold px-2 py-0.5 rounded-full border border-border/60 bg-background/60 text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-primary/5 transition-all"
+                  disabled={question != null}
+                  className="text-[11px] font-semibold px-2.5 py-1 rounded-full border border-border/60 bg-background/60 text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-primary/5 transition-all disabled:opacity-50 disabled:pointer-events-none"
                 >
                   {preset}
                 </button>
@@ -217,7 +224,8 @@ export function AIPracticeBox() {
                   e.target.value as "beginner" | "intermediate" | "advanced",
                 )
               }
-              className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-medium focus:outline-none focus:ring-1 focus:ring-ring"
+              disabled={question != null}
+              className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-medium focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <option value="beginner">Beginner</option>
               <option value="intermediate">Intermediate</option>
@@ -240,7 +248,8 @@ export function AIPracticeBox() {
                   e.target.value as "mcq" | "command" | "true_false",
                 )
               }
-              className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-medium focus:outline-none focus:ring-1 focus:ring-ring"
+              disabled={question != null}
+              className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-medium focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <option value="mcq">Multiple Choice</option>
               <option value="command">Terminal Command</option>
@@ -423,6 +432,18 @@ export function AIPracticeBox() {
                   </div>
                 )}
               </div>
+            )}
+
+            {submitted && !submitPending && (
+              <button
+                type="button"
+                onClick={handleGenerate}
+                disabled={loading}
+                className="self-end inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary/80 transition-colors disabled:opacity-50"
+              >
+                <RefreshCw className="size-3.5" />
+                Try another question
+              </button>
             )}
           </motion.div>
         )}

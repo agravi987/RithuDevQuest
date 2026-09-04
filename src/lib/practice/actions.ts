@@ -3,6 +3,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { processLessonGamification } from "@/lib/gamification/actions";
+import { getGamificationProfile } from "@/lib/gamification/queries";
 import { updateQuestProgress } from "@/lib/quests/daily";
 import { validateAcceptedAnswer } from "@/lib/quiz/validation";
 
@@ -47,6 +48,54 @@ function isPracticeAnswerCorrect(
   );
 }
 
+const unauthedResult = (error: string): PracticeResult => ({
+  success: false,
+  isCorrect: false,
+  xpEarned: 0,
+  totalXp: 0,
+  level: 1,
+  levelTitle: "Newcomer",
+  progressPercentage: 0,
+  xpToNextLevel: 100,
+  didLevelUp: false,
+  newAchievements: [],
+  streak: { currentStreak: 0, longestStreak: 0, status: "reset" },
+  error,
+});
+
+async function buildCurrentProfileResult(
+  userId: string,
+  isCorrect: boolean,
+): Promise<PracticeResult> {
+  const profile = await getGamificationProfile(userId);
+  if (!profile) {
+    return unauthedResult("Could not load your profile");
+  }
+
+  const streakStatus =
+    profile.streak.isActiveToday && profile.streak.currentStreak > 0
+      ? "maintained"
+      : "reset";
+
+  return {
+    success: true,
+    isCorrect,
+    xpEarned: 0,
+    totalXp: profile.user.xp,
+    level: profile.levelInfo.level,
+    levelTitle: profile.levelInfo.title,
+    progressPercentage: profile.levelInfo.progressPercentage,
+    xpToNextLevel: profile.levelInfo.xpToNextLevel,
+    didLevelUp: false,
+    newAchievements: [],
+    streak: {
+      currentStreak: profile.streak.currentStreak,
+      longestStreak: profile.streak.longestStreak,
+      status: streakStatus,
+    },
+  };
+}
+
 export async function submitPracticeAnswer(
   topic: string,
   difficulty: "beginner" | "intermediate" | "advanced",
@@ -58,37 +107,11 @@ export async function submitPracticeAnswer(
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return {
-        success: false,
-        isCorrect: false,
-        xpEarned: 0,
-        totalXp: 0,
-        level: 1,
-        levelTitle: "Newcomer",
-        progressPercentage: 0,
-        xpToNextLevel: 100,
-        didLevelUp: false,
-        newAchievements: [],
-        streak: { currentStreak: 0, longestStreak: 0, status: "reset" },
-        error: "Unauthorized",
-      };
+      return unauthedResult("Unauthorized");
     }
 
     if (!(userAnswer ?? "").trim()) {
-      return {
-        success: false,
-        isCorrect: false,
-        xpEarned: 0,
-        totalXp: 0,
-        level: 1,
-        levelTitle: "Newcomer",
-        progressPercentage: 0,
-        xpToNextLevel: 100,
-        didLevelUp: false,
-        newAchievements: [],
-        streak: { currentStreak: 0, longestStreak: 0, status: "reset" },
-        error: "Please enter an answer",
-      };
+      return unauthedResult("Please enter an answer");
     }
 
     const isCorrect = isPracticeAnswerCorrect(correctAnswer, userAnswer);
@@ -144,37 +167,12 @@ export async function submitPracticeAnswer(
 
     await updateQuestProgress(session.user.id, "practice", 1);
 
-    return {
-      success: true,
-      isCorrect: false,
-      xpEarned: 0,
-      totalXp: 0,
-      level: 1,
-      levelTitle: "Newcomer",
-      progressPercentage: 0,
-      xpToNextLevel: 100,
-      didLevelUp: false,
-      newAchievements: [],
-      streak: { currentStreak: 0, longestStreak: 0, status: "reset" },
-    };
+    return buildCurrentProfileResult(session.user.id, false);
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "Failed to submit practice answer";
     console.error("[Practice Action Error]", err);
-    return {
-      success: false,
-      isCorrect: false,
-      xpEarned: 0,
-      totalXp: 0,
-      level: 1,
-      levelTitle: "Newcomer",
-      progressPercentage: 0,
-      xpToNextLevel: 100,
-      didLevelUp: false,
-      newAchievements: [],
-      streak: { currentStreak: 0, longestStreak: 0, status: "reset" },
-      error: message,
-    };
+    return unauthedResult(message);
   }
 }
 

@@ -3,12 +3,10 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { processLessonGamification } from "@/lib/gamification/actions";
 import { updateQuestProgress } from "@/lib/quests/daily";
+import { STREAK_BONUS_XP, comboBonusFrom } from "@/lib/practice/xp";
 
-const COMBO_THRESHOLD = 3;
-const COMBO_BONUS_XP = 5;
 const PERFECT_BONUS_XP = 50;
 const COMPLETION_BONUS_XP = 25;
-const STREAK_BONUS_XP = 2;
 
 export async function POST(request: NextRequest) {
   try {
@@ -81,16 +79,7 @@ export async function POST(request: NextRequest) {
       select: { isCorrect: true },
     });
 
-    let comboBonus = 0;
-    let currentCombo = 0;
-    for (const a of answers) {
-      if (a.isCorrect) {
-        currentCombo++;
-        if (currentCombo >= COMBO_THRESHOLD) comboBonus += COMBO_BONUS_XP;
-      } else {
-        currentCombo = 0;
-      }
-    }
+    const comboBonus = comboBonusFrom(answers.map((a) => a.isCorrect));
 
     const totalXp = challenge.xpEarned + completionBonus + perfectBonus;
 

@@ -180,11 +180,11 @@ export function FeedbackSection({
             </>
           ) : (
             <>
-              <kbd className="kbd">R</kbd>
+              <kbd className="kbd">Enter</kbd>
               <span>to retry</span>
               <span className="mx-1">·</span>
-              <kbd className="kbd">Enter</kbd>
-              <span>to continue</span>
+              <kbd className="kbd">R</kbd>
+              <span>to retry</span>
             </>
           )}
         </motion.div>
