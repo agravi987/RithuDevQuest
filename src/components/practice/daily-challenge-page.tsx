@@ -20,6 +20,9 @@ import { QuestionSection } from "@/components/lesson/question-section";
 import { FeedbackSection } from "@/components/lesson/feedback-section";
 import { buildRichPayload } from "@/lib/quiz/types";
 import type { LessonQuestionData, SubmitAnswerResult } from "@/lib/lesson/types";
+import { cn } from "@/lib/utils";
+import { DEEP_SPACE_CARD, DEEP_SPACE_SUBTLE, DEEP_SPACE_WARM } from "@/lib/theme";
+import { PlanetVisual } from "@/components/galaxy/planet-visual";
 
 /* ─── Types ─── */
 
@@ -506,7 +509,7 @@ export function DailyChallengePage() {
   /* ─── Render: Loading ─── */
   if (state === "loading" && !status) {
     return (
-      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#081710] to-[#0a0f1f] p-8">
+      <div className={cn("relative overflow-hidden rounded-3xl border border-white/10 p-8", DEEP_SPACE_SUBTLE)}>
         <div className="flex items-center justify-center gap-3 text-white/40">
           <div className="size-5 animate-spin rounded-full border-2 border-white/20 border-t-emerald-400" />
           <span className="text-sm font-medium">Loading daily challenge...</span>
@@ -518,9 +521,20 @@ export function DailyChallengePage() {
   /* ─── Render: Landing ─── */
   if (state === "landing" || (state === "loading" && status)) {
     return (
-      <div className="relative overflow-hidden rounded-3xl border border-emerald-500/20 bg-gradient-to-br from-[#0a1f14] via-[#0f1629] to-[#0a0f1f] p-5 sm:p-8 shadow-2xl shadow-emerald-500/5">
+      <div className={cn("relative overflow-hidden rounded-3xl border border-emerald-500/20 p-5 sm:p-8 shadow-2xl shadow-emerald-500/5", DEEP_SPACE_CARD)}>
         <div className="pointer-events-none absolute -right-20 -top-20 size-64 rounded-full bg-emerald-500/10 blur-[100px]" />
         <div className="pointer-events-none absolute -bottom-16 -left-16 size-48 rounded-full bg-teal-500/5 blur-[80px]" />
+
+        {/* Decorative orbiting planet accent */}
+        <div className="pointer-events-none absolute -right-10 -top-6 hidden sm:block opacity-25">
+          <PlanetVisual
+            src="/png_images/planets/devops.png"
+            alt=""
+            size={160}
+            orbit
+            float
+          />
+        </div>
 
         <button
           type="button"
@@ -612,7 +626,7 @@ export function DailyChallengePage() {
     return (
       <div
         ref={questionTopRef}
-        className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#081710] to-[#0a0f1f] shadow-2xl shadow-black/20"
+        className={cn("relative overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/20", DEEP_SPACE_SUBTLE)}
       >
         {/* Timer bar */}
         <div className="relative h-1.5 bg-white/5">
@@ -722,7 +736,7 @@ export function DailyChallengePage() {
   /* ─── Render: Results ─── */
   if (state === "results" && resultData) {
     return (
-      <div className="relative overflow-hidden rounded-3xl border border-emerald-500/20 bg-gradient-to-br from-[#0a1f14] via-[#0f1629] to-[#0a0f1f] p-5 sm:p-8 shadow-2xl shadow-emerald-500/5">
+      <div className={cn("relative overflow-hidden rounded-3xl border border-emerald-500/20 p-5 sm:p-8 shadow-2xl shadow-emerald-500/5", DEEP_SPACE_CARD)}>
         <div className="pointer-events-none absolute -right-20 -top-20 size-64 rounded-full bg-emerald-500/10 blur-[100px]" />
         <div className="pointer-events-none absolute -bottom-16 -left-16 size-48 rounded-full bg-teal-500/5 blur-[80px]" />
 
@@ -871,7 +885,7 @@ export function DailyChallengePage() {
   /* ─── Render: Time's up (challenge expired while away) ─── */
   if (state === "expired") {
     return (
-      <div className="relative overflow-hidden rounded-3xl border border-amber-500/20 bg-gradient-to-br from-[#1a1509] via-[#0f1629] to-[#0a0f1f] p-5 sm:p-8 shadow-2xl shadow-amber-500/5">
+      <div className={cn("relative overflow-hidden rounded-3xl border border-amber-500/20 p-5 sm:p-8 shadow-2xl shadow-amber-500/5", DEEP_SPACE_WARM)}>
         <div className="pointer-events-none absolute -right-20 -top-20 size-64 rounded-full bg-amber-500/10 blur-[100px]" />
         <div className="relative z-10 text-center">
           <motion.div
@@ -913,7 +927,7 @@ export function DailyChallengePage() {
   /* ─── Render: Already completed today ─── */
   if (state === "completed") {
     return (
-      <div className="relative overflow-hidden rounded-3xl border border-emerald-500/20 bg-gradient-to-br from-[#0a1f14] via-[#0f1629] to-[#0a0f1f] p-5 sm:p-8 shadow-2xl shadow-emerald-500/5">
+      <div className={cn("relative overflow-hidden rounded-3xl border border-emerald-500/20 p-5 sm:p-8 shadow-2xl shadow-emerald-500/5", DEEP_SPACE_CARD)}>
         <div className="pointer-events-none absolute -right-20 -top-20 size-64 rounded-full bg-emerald-500/10 blur-[100px]" />
         <div className="relative z-10 text-center">
           <motion.div

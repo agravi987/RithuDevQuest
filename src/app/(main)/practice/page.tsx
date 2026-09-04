@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, ShieldAlert, CheckCircle, Sparkles } from "lucide-react";
+import { ArrowRight, ShieldAlert, CheckCircle, Sparkles, BookOpen } from "lucide-react";
 
 import { auth } from "@/lib/auth";
 import { getUserSkillsMastery } from "@/lib/mastery/queries";
@@ -9,6 +9,7 @@ import { getSkillRecommendations } from "@/lib/mastery/recommendation";
 import { DailyChallengeCard } from "@/components/practice/daily-challenge-card";
 import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
+import { GalaxySection } from "@/components/galaxy/galaxy-section";
 import { AIPracticeBoxClient } from "./AIPracticeBoxClient";
 
 export const metadata: Metadata = {
@@ -46,8 +47,12 @@ export default async function PracticePage() {
     .sort((a, b) => a.mastery.score - b.mastery.score);
 
   return (
-    <div className="flex flex-col gap-8 max-w-5xl mx-auto pb-12">
-      <Breadcrumbs items={[{ label: "Practice" }]} />
+    <GalaxySection
+      className="-mx-4 -mt-8 px-4 pt-8 pb-16 min-h-screen overflow-hidden"
+      starCount={60}
+    >
+      <div className="relative z-10 flex flex-col gap-8 max-w-5xl mx-auto pb-8">
+        <Breadcrumbs items={[{ label: "Practice" }]} />
 
       {/* ═══ Daily Challenge — Hero ═══ */}
       <DailyChallengeCard />
@@ -100,12 +105,13 @@ export default async function PracticePage() {
                     {rec.reason}
                   </p>
                   <div className="flex items-center justify-between gap-3 pt-2 border-t border-border/30">
-                    <span
-                      className="text-[10px] font-semibold text-muted-foreground truncate min-w-0"
-                      title={rec.lessonTitle}
-                    >
-                      📚 {rec.lessonTitle}
-                    </span>
+                      <span
+                        className="text-[10px] font-semibold text-muted-foreground truncate min-w-0"
+                        title={rec.lessonTitle}
+                      >
+                        <BookOpen className="mr-1 inline size-3 align-[-1px]" />
+                        {rec.lessonTitle}
+                      </span>
                     <Button asChild size="sm" className="h-8 shrink-0 rounded-lg font-bold text-xs gap-1 shadow-sm shadow-primary/10 hover:shadow-md hover:shadow-primary/20 transition-all duration-200">
                       <Link href={rec.actionHref}>
                         Practice <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
@@ -183,6 +189,7 @@ export default async function PracticePage() {
           ))}
         </div>
       </section>
-    </div>
+      </div>
+    </GalaxySection>
   );
 }

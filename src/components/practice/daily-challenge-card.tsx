@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { Timer, Zap, Trophy, Play, RotateCcw, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { DEEP_SPACE_CARD, DEEP_SPACE_SUBTLE } from "@/lib/theme";
+import { PlanetVisual } from "@/components/galaxy/planet-visual";
 
 /* ─── Types ─── */
 
@@ -70,7 +73,7 @@ export function DailyChallengeCard() {
   /* ─── Loading ─── */
   if (!loaded) {
     return (
-      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#081710] to-[#0a0f1f] p-6">
+      <div className={cn("relative overflow-hidden rounded-3xl border border-white/10 p-6", DEEP_SPACE_SUBTLE)}>
         <div className="flex items-center gap-3 text-white/40">
           <div className="size-4 animate-spin rounded-full border-2 border-white/20 border-t-emerald-400" />
           <span className="text-sm font-medium">Checking daily challenge...</span>
@@ -82,7 +85,7 @@ export function DailyChallengeCard() {
   /* ─── Completed today ─── */
   if (status?.hasChallengeToday && status.isCompleted) {
     return (
-      <div className="relative overflow-hidden rounded-3xl border border-emerald-500/20 bg-gradient-to-br from-[#0a1f14] via-[#0f1629] to-[#0a0f1f] p-5 sm:p-6 shadow-2xl shadow-emerald-500/5">
+      <div className={cn("relative overflow-hidden rounded-3xl border border-emerald-500/20 p-5 sm:p-6 shadow-2xl shadow-emerald-500/5", DEEP_SPACE_CARD)}>
         <div className="relative z-10 flex items-center gap-4">
           <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-emerald-400 via-green-500 to-teal-500 shadow-lg shadow-emerald-500/20">
             <RotateCcw className="size-6 text-white" />
@@ -108,9 +111,20 @@ export function DailyChallengeCard() {
   const isActive = status?.isActive ?? false;
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-emerald-500/20 bg-gradient-to-br from-[#0a1f14] via-[#0f1629] to-[#0a0f1f] p-5 sm:p-8 shadow-2xl shadow-emerald-500/5">
+    <div className={cn("relative overflow-hidden rounded-3xl border border-emerald-500/20 p-5 sm:p-8 shadow-2xl shadow-emerald-500/5", DEEP_SPACE_CARD)}>
       <div className="pointer-events-none absolute -right-20 -top-20 size-64 rounded-full bg-emerald-500/8 blur-[100px]" />
       <div className="pointer-events-none absolute -bottom-16 -left-16 size-48 rounded-full bg-teal-500/5 blur-[80px]" />
+
+      {/* Decorative orbiting planet accent */}
+      <div className="pointer-events-none absolute -right-10 -top-6 hidden sm:block opacity-25">
+        <PlanetVisual
+          src="/png_images/planets/devops.png"
+          alt=""
+          size={160}
+          orbit
+          float
+        />
+      </div>
 
       <div className="relative z-10">
         <div className="flex items-start gap-4 mb-6">

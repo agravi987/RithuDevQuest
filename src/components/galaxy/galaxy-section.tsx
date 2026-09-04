@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { StarsCanvas } from "@/components/ui/stars-canvas";
+import { GALAXY_BG } from "@/lib/theme";
 
 type GalaxySectionProps = {
   children: React.ReactNode;
@@ -22,7 +23,7 @@ export function GalaxySection({
       )}
     >
       {/* Deep space gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-sky-50/60 via-indigo-50/30 to-background dark:from-[#060914] dark:via-[#0a0f1f] dark:to-[oklch(0.14_0.015_260)]" />
+      <div className={cn("absolute inset-0 bg-gradient-to-b", GALAXY_BG)} />
 
       {/* Stars */}
       {starCount > 0 && (
