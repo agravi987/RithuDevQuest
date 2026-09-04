@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -23,6 +24,8 @@ type PlanetVisualProps = {
   accentClass?: string;
   /** Image priority (for above-the-fold planets). */
   priority?: boolean;
+  /** Emoji rendered as a graceful fallback if the PNG asset fails to load. */
+  emojiFallback?: string;
 };
 
 /**
@@ -42,7 +45,11 @@ export function PlanetVisual({
   dormant = false,
   accentClass,
   priority = false,
+  emojiFallback,
 }: PlanetVisualProps) {
+  const [failed, setFailed] = useState(false);
+  const renderEmoji = failed && !!emojiFallback;
+
   const inner = (
     <div
       className={cn("relative rounded-full select-none", className)}
@@ -67,15 +74,27 @@ export function PlanetVisual({
           dormant && "opacity-40 saturate-50",
         )}
       >
-        <Image
-          src={src}
-          alt={alt}
-          width={size}
-          height={size}
-          priority={priority}
-          draggable={false}
-          className="size-full object-contain"
-        />
+        {renderEmoji ? (
+          <div
+            className="flex size-full items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-transparent"
+            role="img"
+            aria-label={alt}
+            style={{ fontSize: size * 0.5 }}
+          >
+            {emojiFallback}
+          </div>
+        ) : (
+          <Image
+            src={src}
+            alt={alt}
+            width={size}
+            height={size}
+            priority={priority}
+            draggable={false}
+            onError={() => setFailed(true)}
+            className="size-full object-contain"
+          />
+        )}
         {accentClass && (
           <div
             className={cn(

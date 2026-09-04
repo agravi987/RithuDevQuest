@@ -1,10 +1,11 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { LessonLoading } from "@/components/lesson/lesson-loading";
 
 const LessonPlayer = dynamic(
   () => import("@/components/lesson/lesson-player").then((mod) => mod.LessonPlayer),
-  { ssr: false, loading: () => <div className="animate-pulse h-96 w-full" /> }
+  { ssr: false, loading: () => <LessonLoading /> }
 );
 
 interface LessonPlayerClientProps {

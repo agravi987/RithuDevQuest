@@ -20,6 +20,7 @@ import { ConstellationMap } from "@/components/dashboard/constellation-map";
 import { PlanetVisual } from "@/components/galaxy/planet-visual";
 import { SpaceshipPlayer } from "@/components/galaxy/spaceship-player";
 import { getPlanetForCareer } from "@/lib/galaxy-assets";
+import { getPathVisual, getCareer, getModuleIcon } from "@/lib/career-metadata";
 
 type DashboardClientProps = {
   firstName: string;
@@ -60,47 +61,6 @@ type DashboardClientProps = {
   }[];
   dailyChallengeStatus: "pending" | "in_progress" | "completed";
 };
-
-const pathMeta: Record<string, { emoji: string; color: string }> = {
-  linux: { emoji: "🐧", color: "#10b981" },
-  git: { emoji: "🔀", color: "#3b82f6" },
-  docker: { emoji: "🐳", color: "#06b6d4" },
-  kubernetes: { emoji: "☸️", color: "#8b5cf6" },
-  networking: { emoji: "🌐", color: "#38bdf8" },
-  aws: { emoji: "☁️", color: "#f59e0b" },
-  gcp: { emoji: "💎", color: "#60a5fa" },
-  "ai-agent-fundamentals": { emoji: "🤖", color: "#d946ef" },
-  "prompt-engineering": { emoji: "✍️", color: "#ec4899" },
-  "rag-memory": { emoji: "🧠", color: "#6366f1" },
-  "agent-frameworks-tools": { emoji: "🧰", color: "#f97316" },
-  "html-css-js": { emoji: "🎨", color: "#fb7185" },
-  "node-backend": { emoji: "⚙️", color: "#10b981" },
-  react: { emoji: "⚛️", color: "#22d3ee" },
-  nextjs: { emoji: "🔷", color: "#818cf8" },
-  "system-design-foundations": { emoji: "🏗️", color: "#a8a29e" },
-  "system-design-hld": { emoji: "🧭", color: "#2dd4bf" },
-  "system-design-lld": { emoji: "🔬", color: "#7dd3fc" },
-  "system-design-scalability": { emoji: "📈", color: "#fb7185" },
-};
-
-const careerColors: Record<string, string> = {
-  devops: "text-emerald-600 border-emerald-600/30 bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30",
-  cloud: "text-sky-600 border-sky-600/30 bg-sky-500/10 dark:text-sky-400 dark:border-sky-500/30",
-  "ai-agents": "text-fuchsia-600 border-fuchsia-600/30 bg-fuchsia-500/10 dark:text-fuchsia-400 dark:border-fuchsia-500/30",
-  "web-dev": "text-amber-600 border-amber-600/30 bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/30",
-  "system-design": "text-teal-600 border-teal-600/30 bg-teal-500/10 dark:text-teal-400 dark:border-teal-500/30",
-};
-
-function getModuleIcon(icon: string): string {
-  const icons: Record<string, string> = {
-    Terminal: "🐚",
-    FolderTree: "📁",
-    Shield: "🔐",
-    Activity: "⚙️",
-    Network: "🌐",
-  };
-  return icons[icon] ?? "📚";
-}
 
 function getMasteryColor(score: number): string {
   if (score >= 80) return "oklch(0.72 0.19 142)";
@@ -156,7 +116,7 @@ export function DashboardClient({
 
   const constellationPaths =
     selectedCareer?.paths.map((p) => {
-      const meta = pathMeta[p.slug] ?? { emoji: "🚀", color: "#10b981" };
+      const meta = getPathVisual(p.slug);
       return {
         name: p.title,
         emoji: meta.emoji,
@@ -203,7 +163,7 @@ export function DashboardClient({
                 whileTap={{ scale: 0.95 }}
                 className={`shrink-0 snap-start rounded-full border px-3 py-1.5 text-[11px] font-bold transition-all ${
                   active
-                    ? careerColors[career.slug] ?? "text-foreground border-border bg-background"
+                    ? getCareer(career.slug)?.tabClass ?? "text-foreground border-border bg-background"
                     : "text-muted-foreground border-border/60 bg-background/40 hover:text-foreground hover:border-foreground/20"
                 }`}
               >

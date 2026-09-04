@@ -1,12 +1,11 @@
 "use client";
 
-import { LogOut } from "lucide-react";
+import { LogOut, Heart } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 import { SoundToggle } from "@/components/shared/sound-toggle";
-import { MobileMenuButton } from "@/components/shared/mobile-menu-button";
 import { handleSignOut } from "@/app/(main)/logout-action";
-import { useSidebar } from "@/lib/sidebar-context";
+import { calculateLevel } from "@/lib/gamification/levels";
 
 type HeaderProps = {
   userName: string;
@@ -16,9 +15,8 @@ type HeaderProps = {
   userHearts: number;
 };
 
-export function Header({ userName, userXp, userLevel, currentStreak, userHearts }: HeaderProps) {
-  const { width: sidebarWidth } = useSidebar();
-
+export function Header({ userName, userXp, currentStreak, userHearts }: HeaderProps) {
+  const { level, progressPercentage } = calculateLevel(userXp);
   const initials = userName
     .split(" ")
     .map((part: string) => part[0])
@@ -29,16 +27,9 @@ export function Header({ userName, userXp, userLevel, currentStreak, userHearts 
   return (
     <header
       className="fixed top-0 right-0 z-30 border-b border-border/50 bg-background/80 backdrop-blur-xl no-print transition-[left] duration-300"
-      style={{ left: `${sidebarWidth}px` }}
+      style={{ left: "var(--sidebar-width, 0px)" }}
     >
       <div className="flex h-14 items-center justify-between gap-4 px-4 lg:px-6">
-        {/* Left: Mobile menu (only on mobile) */}
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="lg:hidden">
-            <MobileMenuButton />
-          </div>
-        </div>
-
         {/* Right: Stats + Actions */}
         <div className="flex items-center gap-1.5 sm:gap-2 ml-auto min-w-0">
           {/* Stats badges */}
@@ -69,22 +60,22 @@ export function Header({ userName, userXp, userLevel, currentStreak, userHearts 
               }`}
               title={`${userHearts} hearts`}
             >
-              <span>❤️</span>
+              <Heart className="size-3.5 fill-current" aria-hidden="true" />
               <span>{userHearts}</span>
             </div>
 
             <div
               className="flex flex-col items-center gap-0.5 rounded-lg bg-level/10 px-2.5 py-1 text-xs font-bold text-level"
-              title={`Level ${userLevel} — ${userXp} XP`}
+              title={`Level ${level} — ${userXp} XP`}
             >
               <div className="flex items-center gap-1">
                 <span>⭐</span>
-                <span>Lv.{userLevel}</span>
+                <span>Lv.{level}</span>
               </div>
               <div className="w-full h-1 rounded-full bg-level/20 overflow-hidden">
                 <div
                   className="h-full bg-level rounded-full transition-all duration-500"
-                  style={{ width: `${Math.min((userXp % 100), 100)}%` }}
+                  style={{ width: `${progressPercentage}%` }}
                 />
               </div>
             </div>
@@ -104,6 +95,9 @@ export function Header({ userName, userXp, userLevel, currentStreak, userHearts 
                 {initials}
               </AvatarFallback>
             </Avatar>
+            <span className="hidden xl:block max-w-[9rem] truncate text-sm font-semibold text-foreground">
+              {userName}
+            </span>
             <form action={handleSignOut}>
               <button
                 type="submit"

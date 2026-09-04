@@ -700,6 +700,78 @@ html, body {
   }
 }
 
+/* ── Custom animation utilities (defined once, used across components) ── */
+
+@keyframes correct-flash {
+  0% { box-shadow: 0 0 0 0 oklch(0.72 0.21 142 / 0.6); }
+  50% { box-shadow: 0 0 0 6px oklch(0.72 0.21 142 / 0.15); }
+  100% { box-shadow: 0 0 0 0 oklch(0.72 0.21 142 / 0); }
+}
+.animate-correct-flash { animation: correct-flash 0.5s ease-out; }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+.animate-shake { animation: shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 oklch(0.72 0.21 142 / 0.5); }
+  70% { box-shadow: 0 0 0 10px oklch(0.72 0.21 142 / 0); }
+  100% { box-shadow: 0 0 0 0 oklch(0.72 0.21 142 / 0); }
+}
+.animate-pulse-ring { animation: pulse-ring 2s ease-out infinite; }
+
+@keyframes heartbreak {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.4) rotate(-12deg); }
+  50% { transform: scale(0.8) rotate(8deg); }
+  75% { transform: scale(1.1) rotate(-4deg); }
+  100% { transform: scale(0) rotate(0deg); }
+}
+.animate-heartbreak { animation: heartbreak 0.6s ease-in forwards; }
+
+.typing-cursor {
+  display: inline-block;
+  width: 0.15em;
+  height: 1.1em;
+  margin-left: 0.1em;
+  vertical-align: -0.15em;
+  background: currentColor;
+  animation: typing-blink 1s step-end infinite;
+}
+@keyframes typing-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* 3D flip card */
+.perspective-1000 { perspective: 1000px; }
+.flip-card-inner {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.flip-card-inner.flipped { transform: rotateY(180deg); }
+.flip-card-front,
+.flip-card-back {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.flip-card-back { position: absolute; inset: 0; transform: rotateY(180deg); }
+
+/* Focus glow for text/command inputs */
+.input-focus-glow {
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.input-focus-glow:focus {
+  border-color: oklch(0.72 0.21 142 / 0.7);
+  box-shadow: 0 0 0 3px oklch(0.72 0.21 142 / 0.18), 0 0 20px oklch(0.72 0.21 142 / 0.2);
+}
+
 @keyframes twinkle {
   0%, 100% { opacity: 0.3; }
   50% { opacity: 1; }

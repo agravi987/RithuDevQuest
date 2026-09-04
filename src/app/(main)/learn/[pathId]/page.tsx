@@ -26,107 +26,7 @@ import { getLessonStatuses } from "@/lib/curriculum/navigation";
 import { getGamificationProfile } from "@/lib/gamification/queries";
 import { PlanetVisual } from "@/components/galaxy/planet-visual";
 import { getPlanetForCareer } from "@/lib/galaxy-assets";
-
-const pathPlanets: Record<
-  string,
-  { emoji: string; subtitle: string; color: string }
-> = {
-  linux: {
-    emoji: "🐧",
-    subtitle: "The Command Planet",
-    color: "from-emerald-500 to-green-600",
-  },
-  git: {
-    emoji: "🔀",
-    subtitle: "The Branch Moon",
-    color: "from-blue-500 to-indigo-600",
-  },
-  docker: {
-    emoji: "🐳",
-    subtitle: "The Container World",
-    color: "from-cyan-500 to-sky-600",
-  },
-  kubernetes: {
-    emoji: "☸️",
-    subtitle: "Deep Space Station",
-    color: "from-purple-500 to-violet-600",
-  },
-  networking: {
-    emoji: "🌐",
-    subtitle: "The Network Nebula",
-    color: "from-sky-500 to-cyan-600",
-  },
-  aws: {
-    emoji: "☁️",
-    subtitle: "The Amazon Dominion",
-    color: "from-orange-500 to-amber-600",
-  },
-  gcp: {
-    emoji: "💎",
-    subtitle: "The Google Orbit",
-    color: "from-blue-500 to-indigo-600",
-  },
-  "ai-agent-fundamentals": {
-    emoji: "🤖",
-    subtitle: "The Agent Core",
-    color: "from-fuchsia-500 to-purple-600",
-  },
-  "prompt-engineering": {
-    emoji: "✍️",
-    subtitle: "The Prompt Forge",
-    color: "from-pink-500 to-rose-500",
-  },
-  "rag-memory": {
-    emoji: "🧠",
-    subtitle: "The Memory Archive",
-    color: "from-indigo-500 to-blue-600",
-  },
-  "agent-frameworks-tools": {
-    emoji: "🧰",
-    subtitle: "The Toolkit Cluster",
-    color: "from-amber-500 to-orange-600",
-  },
-  "html-css-js": {
-    emoji: "🎨",
-    subtitle: "The Web Seed",
-    color: "from-orange-400 to-pink-500",
-  },
-  "node-backend": {
-    emoji: "⚙️",
-    subtitle: "The Server Core",
-    color: "from-green-500 to-emerald-700",
-  },
-  react: {
-    emoji: "⚛️",
-    subtitle: "The Component Storm",
-    color: "from-cyan-400 to-blue-500",
-  },
-  nextjs: {
-    emoji: "🔷",
-    subtitle: "The App Router",
-    color: "from-indigo-400 to-violet-600",
-  },
-  "system-design-foundations": {
-    emoji: "🏗️",
-    subtitle: "The Blueprint Planet",
-    color: "from-stone-400 to-neutral-600",
-  },
-  "system-design-hld": {
-    emoji: "🧭",
-    subtitle: "The Architect Compass",
-    color: "from-teal-400 to-emerald-600",
-  },
-  "system-design-lld": {
-    emoji: "🔬",
-    subtitle: "The Precision Lab",
-    color: "from-sky-400 to-slate-500",
-  },
-  "system-design-scalability": {
-    emoji: "📈",
-    subtitle: "The Exponential Moon",
-    color: "from-red-400 to-rose-600",
-  },
-};
+import { getPathVisual, getCareer } from "@/lib/career-metadata";
 
 export default async function PathPage({
   params,
@@ -175,8 +75,8 @@ export default async function PathPage({
   const mins = totalMinutes % 60;
   const estimatedTime = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
 
-  const planet = pathPlanets[path.slug] ?? pathPlanets.linux;
-  const careerPlanet = getPlanetForCareer(path.careerId ? path.slug : "fallback");
+  const planet = getPathVisual(path.slug);
+  const careerPlanet = getPlanetForCareer(path.careerId ?? "fallback");
 
   // Build module zones with lesson states
   const moduleZones = path.modules.map((mod) => {
@@ -234,6 +134,7 @@ export default async function PathPage({
                 glow
                 float
                 priority
+                emojiFallback={getCareer(path.careerId ?? "")?.emoji ?? "🪐"}
               />
             </div>
 

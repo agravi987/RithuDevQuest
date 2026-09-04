@@ -7,7 +7,9 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative flex min-h-svh flex-col items-center justify-center gap-10 overflow-hidden bg-gradient-to-b from-sky-50 via-indigo-50/60 to-background px-4 py-12 dark:bg-background">
+    <div className="relative flex min-h-svh flex-col items-center justify-center gap-10 overflow-hidden bg-background px-4 py-12">
+      {/* Deep-space gradient backdrop */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_120%_65%_at_50%_-10%,oklch(0.20_0.04_255_/_0.55),transparent_60%),radial-gradient(ellipse_90%_50%_at_85%_110%,oklch(0.17_0.03_142_/_0.22),transparent_55%)]" />
       {/* Stars backdrop */}
       <StarsCanvas
         density={80}
@@ -48,7 +50,7 @@ export default function AuthLayout({
 
       {/* Content */}
       <div className="relative z-10 w-full max-w-sm">
-        <div className="rounded-3xl border border-white/20 dark:border-white/5 bg-white/60 dark:bg-card/60 backdrop-blur-xl p-6 sm:p-8 shadow-xl shadow-black/5">
+        <div className="rounded-3xl border border-border/60 bg-card/70 backdrop-blur-xl p-6 sm:p-8 shadow-xl shadow-black/40">
           {children}
         </div>
       </div>

@@ -4,15 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
-import { BookOpen, GraduationCap, Target, Trophy, Award } from "lucide-react";
-
-const navItems = [
-  { href: "/dashboard", label: "Home", icon: BookOpen, activeColor: "text-primary", glowColor: "shadow-primary/30" },
-  { href: "/learn", label: "Learn", icon: GraduationCap, activeColor: "text-primary", glowColor: "shadow-primary/30" },
-  { href: "/practice", label: "Practice", icon: Target, activeColor: "text-xp", glowColor: "shadow-xp/30" },
-  { href: "/leaderboard", label: "League", icon: Trophy, activeColor: "text-xp", glowColor: "shadow-xp/30" },
-  { href: "/achievements", label: "Badges", icon: Award, activeColor: "text-achievement", glowColor: "shadow-achievement/30" },
-];
+import { MAIN_NAV_ITEMS } from "@/lib/navigation";
 
 export function MobileNav() {
   const pathname = usePathname();
@@ -22,7 +14,7 @@ export function MobileNav() {
       {/* Cosmic top edge glow */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
       <div className="flex items-center justify-around h-16 px-2">
-        {navItems.map((item) => {
+        {MAIN_NAV_ITEMS.map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + "/");
           const Icon = item.icon;

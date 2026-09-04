@@ -11,6 +11,7 @@ import { SpaceshipPlayer } from "@/components/galaxy/spaceship-player";
 import { MilestoneNode } from "@/components/galaxy/milestone-node";
 import { LockedTooltip } from "@/components/galaxy/locked-tooltip";
 import { RithuMessage, RITHU_MESSAGES } from "@/components/galaxy/rithu-message";
+import { getPathTheme, getModuleIcon, CORE_PATH_THEMES } from "@/lib/career-metadata";
 
 type LessonNode = {
   id: string;
@@ -41,21 +42,6 @@ type GalaxyPathProps = {
 function seeded(s: number) {
   return Math.abs(Math.sin(s * 127.1 + 311.7) * 43758.5453 % 1);
 }
-
-const MODULE_ICONS: Record<string, string> = {
-  Terminal: "🐚", FolderTree: "📁", Shield: "🔐", Activity: "⚙️",
-  Network: "🌐", Brain: "🧠", Code: "💻", Database: "🗄️",
-  Cloud: "☁️", Container: "🐳", GitBranch: "🔀", Server: "🖥️",
-};
-
-const THEMES: Record<string, { primary: string; glow: string; sphere: string; label: string }> = {
-  linux: { primary: "#34d399", glow: "rgba(52,211,153,0.3)", sphere: "radial-gradient(circle at 30% 25%, #6ee7b7, #10b981 40%, #047857 78%, #064e3b)", label: "Command Nebula" },
-  git: { primary: "#60a5fa", glow: "rgba(96,165,250,0.3)", sphere: "radial-gradient(circle at 30% 25%, #93c5fd, #3b82f6 40%, #1d4ed8 78%, #1e3a8a)", label: "Branch Galaxy" },
-  docker: { primary: "#22d3ee", glow: "rgba(34,211,238,0.3)", sphere: "radial-gradient(circle at 30% 25%, #67e8f9, #06b6d4 40%, #0e7490 78%, #164e63)", label: "Container Cluster" },
-  kubernetes: { primary: "#a78bfa", glow: "rgba(167,139,250,0.3)", sphere: "radial-gradient(circle at 30% 25%, #c4b5fd, #8b5cf6 40%, #6d28d9 78%, #4c1d95)", label: "Orbit Station" },
-};
-
-const CYCLE = ["linux", "git", "docker", "kubernetes"] as const;
 const PLANETS = ["/png_images/mars.png", "/png_images/saturn.png", "/png_images/planets/devops.png", "/png_images/planets/cloud.png"];
 
 /* ═══════════════════════════════════════
@@ -464,10 +450,7 @@ export function GalaxyPath({ modules, streak }: GalaxyPathProps) {
     return li !== -1 ? { modIdx: mi, lessonIdx: li, found: true } : a;
   }, { modIdx: -1, lessonIdx: -1, found: false });
 
-  const themeOf = (slug: string, i: number) => {
-    const k = THEMES[slug] !== undefined ? slug as keyof typeof THEMES : CYCLE[i % CYCLE.length];
-    return THEMES[k];
-  };
+  const themeOf = (slug: string) => CORE_PATH_THEMES[slug] ?? getPathTheme(slug);
 
   if (modules.length === 0) {
     return (
@@ -532,8 +515,8 @@ export function GalaxyPath({ modules, streak }: GalaxyPathProps) {
             MODULES
         ═══════════════════════════════════════ */}
         {modules.map((mod, mi) => {
-          const theme = themeOf(mod.slug, mi);
-          const emoji = MODULE_ICONS[mod.icon] ?? ["🪐", "⭐", "🚀", "🌙", "☄️", "🔭"][mi % 6];
+          const theme = themeOf(mod.slug);
+          const emoji = getModuleIcon(mod.icon, mi);
           const isCur = mi === firstAvail.modIdx;
           const isLast = mi === modules.length - 1;
           const deco = PLANETS[mi % PLANETS.length];

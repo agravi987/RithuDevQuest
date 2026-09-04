@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { MobileNav } from "@/components/shared/mobile-nav";
 import { SidebarWrapper } from "@/components/shared/sidebar-wrapper";
 import { Header } from "@/components/shared/header";
@@ -27,11 +27,27 @@ export function LayoutContent({
   children,
 }: LayoutContentProps) {
   const { collapsed } = useSidebar();
+  const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
-    const width = collapsed ? 68 : 220;
-    document.documentElement.style.setProperty("--sidebar-width", `${width}px`);
-  }, [collapsed]);
+    const media = window.matchMedia("(min-width: 1024px)");
+    const update = () => setIsDesktop(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+
+  useEffect(() => {
+    // Only offset content for the desktop sidebar. On mobile the sidebar is
+    // hidden, so leave the CSS default (0px) intact — otherwise an inline
+    // value here would override the media query and create a large empty gap.
+    if (isDesktop) {
+      const width = collapsed ? 68 : 220;
+      document.documentElement.style.setProperty("--sidebar-width", `${width}px`);
+    } else {
+      document.documentElement.style.setProperty("--sidebar-width", "0px");
+    }
+  }, [collapsed, isDesktop]);
 
   return (
     <ClientShell>

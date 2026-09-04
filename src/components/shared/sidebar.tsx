@@ -3,33 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Home,
-  BookOpen,
-  Target,
-  Trophy,
-  Award,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/lib/sidebar-context";
 import { SidebarTooltip } from "@/components/ui/sidebar-tooltip";
-
-type NavItem = {
-  href: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-};
-
-const navItems: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/learn", label: "Learn", icon: BookOpen },
-  { href: "/practice", label: "Practice", icon: Target },
-  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { href: "/achievements", label: "Achievements", icon: Award },
-];
+import { MAIN_NAV_ITEMS, type NavItem } from "@/lib/navigation";
 
 export function Sidebar() {
   const { collapsed, toggleCollapsed } = useSidebar();
@@ -68,7 +47,7 @@ export function Sidebar() {
 
       {/* Nav Links */}
       <nav className="flex-1 flex flex-col gap-1 px-3 py-4 overflow-y-auto scrollbar-hide" aria-label="Main navigation">
-        {navItems.map((item) => (
+        {MAIN_NAV_ITEMS.map((item) => (
           <SidebarNavItem
             key={item.href}
             item={item}
