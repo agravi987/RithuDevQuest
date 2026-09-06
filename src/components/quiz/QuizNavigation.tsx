@@ -69,7 +69,7 @@ export function QuizNavigation({
             variant="outline"
             size="sm"
             onClick={onPrevious}
-            disabled={isSubmitting || hasFeedback}
+            disabled={isSubmitting}
             className="gap-1.5"
             aria-label="Previous question"
           >

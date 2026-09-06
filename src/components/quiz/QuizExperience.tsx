@@ -303,6 +303,42 @@ export function QuizExperience({
     setState("active");
   }, []);
 
+  const handlePrevious = useCallback(() => {
+    if (submittingRef.current || currentIndex <= 0) return;
+
+    const prevIndex = currentIndex - 1;
+    const prevQuestion = questions[prevIndex];
+    if (!prevQuestion) return;
+
+    const wasAnswered = prevQuestion.isCorrect !== null || prevQuestion.answeredAt !== null;
+    const history = answerHistory.find((h) => h.questionId === prevQuestion.id);
+
+    setCurrentIndex(prevIndex);
+    setValue(prevQuestion.userAnswer ?? null);
+    setError(null);
+    setQuestionStartTime(Date.now());
+
+    if (wasAnswered) {
+      setFeedback({
+        questionId: prevQuestion.id,
+        lessonId: "",
+        isCorrect: prevQuestion.isCorrect === true,
+        attemptNumber: 1,
+        xpEarned: prevQuestion.xpEarned ?? 0,
+        correctAnswer: history?.correctAnswer ?? "",
+        explanation: "",
+        hint: prevQuestion.hint,
+        partIndex: null,
+        scenarioComplete: null,
+        totalParts: null,
+      });
+      setState("review");
+    } else {
+      setFeedback(null);
+      setState("active");
+    }
+  }, [currentIndex, questions, answerHistory]);
+
   const handleSkip = useCallback(() => {
     if (submittingRef.current) return;
 
@@ -372,13 +408,13 @@ export function QuizExperience({
 
       if (e.key === "ArrowLeft" && config.navigation.allowBack && currentIndex > 0) {
         e.preventDefault();
-        // Handle previous - would need to be implemented
+        handlePrevious();
       }
     };
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [feedback, submitting, currentQuestion, currentIndex, handleSubmit, handleRetry, handleContinue, config.navigation.allowBack, config.feedback.allowRetry]);
+  }, [feedback, submitting, currentQuestion, currentIndex, handleSubmit, handleRetry, handleContinue, handlePrevious, config.navigation.allowBack, config.feedback.allowRetry]);
 
   // Show landing if no questions yet
   if (state === "loading" && questions.length === 0) {
@@ -581,6 +617,7 @@ export function QuizExperience({
           isSubmitting={submitting}
           isLastQuestion={currentIndex === questions.length - 1}
           canSubmit={canSubmitValue(currentQuestion, value)}
+          onPrevious={handlePrevious}
           onNext={handleContinue}
           onSkip={handleSkip}
           onSubmit={handleSubmit}

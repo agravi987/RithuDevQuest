@@ -395,11 +395,13 @@ export interface QuizProgressState {
    ════════════════════════════════════════════════════════════════════ */
 
 export type DeepPartial<T> = {
-  [K in keyof T]?: T[K] extends (...args: never[]) => unknown
+  [K in keyof T]?: T[K] extends unknown[] | readonly unknown[]
     ? T[K]
-    : T[K] extends object
-      ? DeepPartial<T[K]>
-      : T[K];
+    : T[K] extends (...args: never[]) => unknown
+      ? T[K]
+      : T[K] extends object
+        ? DeepPartial<T[K]>
+        : T[K];
 };
 
 export function deepMerge<T extends object>(target: T, source: DeepPartial<T>): T {
