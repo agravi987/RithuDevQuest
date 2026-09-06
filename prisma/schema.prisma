@@ -216,6 +216,10 @@ model QuestionAttempt {
   partIndex       Int?          // 0-based part for scenario questions
   xpEarned        Int
   answeredAt      DateTime      @default(now())
+
+  @@index([userId, questionId])
+  @@index([userId, answeredAt])
+  @@index([questionId])
 }
 
 model UserProgress {
@@ -229,6 +233,7 @@ model UserProgress {
   lastAccessed DateTime @default(now())
 
   @@unique([userId, lessonId])
+  @@index([lessonId])
 }
 
 model Achievement {
