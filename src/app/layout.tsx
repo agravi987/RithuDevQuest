@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Space_Grotesk, Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
+import { HardLoadProgress } from "@/components/shared/hard-load-progress";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -38,6 +39,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       className={`${geistSans.variable} ${spaceGrotesk.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col overflow-x-hidden bg-background">
+        <HardLoadProgress />
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
