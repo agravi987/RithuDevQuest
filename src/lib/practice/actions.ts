@@ -143,8 +143,6 @@ export async function submitPracticeAnswer(
 
       await updateQuestProgress(session.user.id, "practice", 1);
       await updateQuestProgress(session.user.id, "earn_xp", xpEarned);
-      // League XP is already credited inside processLessonGamification; do not
-      // call updateLeagueXp again here or weekly XP gets double counted.
 
       return {
         success: true,

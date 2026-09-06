@@ -3,7 +3,6 @@ import "server-only";
 import { revalidateTag } from "next/cache";
 import { prisma } from "@/lib/db";
 import { calculateLevel } from "@/lib/gamification/levels";
-import { updateLeagueXp } from "@/lib/league/queries";
 
 type QuestTemplate = {
   type: string;
@@ -217,12 +216,6 @@ export async function updateQuestProgress(
       });
     }
   });
-
-  // Credit the quest XP to the league (outside the transaction; it is a
-  // separate membership increment and safe to apply once per completion).
-  if (totalBonusXp > 0) {
-    await updateLeagueXp(userId, totalBonusXp);
-  }
 
   return totalBonusXp;
 }

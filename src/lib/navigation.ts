@@ -2,7 +2,6 @@ import {
   Home,
   BookOpen,
   Target,
-  Trophy,
   Award,
   type LucideIcon,
 } from "lucide-react";
@@ -40,13 +39,6 @@ export const MAIN_NAV_ITEMS: NavItem[] = [
     href: "/practice",
     label: "Practice",
     icon: Target,
-    activeColor: "text-xp",
-    glowColor: "shadow-xp/30",
-  },
-  {
-    href: "/leaderboard",
-    label: "Leaderboard",
-    icon: Trophy,
     activeColor: "text-xp",
     glowColor: "shadow-xp/30",
   },

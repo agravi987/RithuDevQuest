@@ -6,7 +6,6 @@ import { prisma } from "@/lib/db";
 import { calculateLevel, type CalculatedLevel } from "@/lib/gamification/levels";
 import { evaluateStreakUpdate, type StreakTransition } from "@/lib/gamification/streaks";
 import { evaluateNewAchievements } from "@/lib/gamification/achievements";
-import { updateLeagueXp } from "@/lib/league/queries";
 
 export type GamificationResult = {
   earnedXp: number;
@@ -144,9 +143,6 @@ export async function processLessonGamification(
       }),
     ),
   ]);
-
-  // Update league XP
-  await updateLeagueXp(userId, baseEarnedXp + bonusAchievementXp);
 
   return {
     earnedXp: baseEarnedXp + bonusAchievementXp,

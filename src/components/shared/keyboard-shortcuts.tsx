@@ -8,8 +8,7 @@ const shortcuts: { key: string; ctrl?: boolean; action: string; href?: string }[
   { key: "1", action: "Go to Dashboard", href: "/dashboard" },
   { key: "2", action: "Go to Learn", href: "/learn" },
   { key: "3", action: "Go to Practice", href: "/practice" },
-  { key: "4", action: "Go to Leaderboard", href: "/leaderboard" },
-  { key: "5", action: "Go to Achievements", href: "/achievements" },
+  { key: "4", action: "Go to Achievements", href: "/achievements" },
   { key: "[", ctrl: true, action: "Toggle sidebar" },
 ];
 

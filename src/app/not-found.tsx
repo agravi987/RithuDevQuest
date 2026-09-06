@@ -95,7 +95,7 @@ export default function NotFound() {
             { href: "/learn", label: "🗺️ Learn" },
             { href: "/practice", label: "🎯 Practice" },
             { href: "/achievements", label: "🏆 Achievements" },
-            { href: "/leaderboard", label: "📊 Leaderboard" },
+            { href: "/practice", label: "📚 Practice Arena" },
           ].map((link) => (
             <Link
               key={link.href}

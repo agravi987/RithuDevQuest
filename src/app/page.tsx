@@ -22,6 +22,7 @@ import {
   Shield,
   Cpu,
   CheckCircle2,
+  Briefcase,
   Quote,
 } from "lucide-react";
 import { motion } from "motion/react";
@@ -218,7 +219,7 @@ export default function Home() {
               { step: "01", icon: <Target className="size-6" />, title: "Pick a Path", desc: "Choose from 5 career paths: DevOps, Cloud, AI, Web Dev, or System Design." },
               { step: "02", icon: <BookOpen className="size-6" />, title: "Learn & Quest", desc: "Dive into interactive lessons with hands-on labs and real scenarios." },
               { step: "03", icon: <Zap className="size-6" />, title: "Earn Rewards", desc: "Score points, build daily streaks, and unlock achievement badges." },
-              { step: "04", icon: <TrendingUp className="size-6" />, title: "Level Up", desc: "Track your progress, master skills, and climb the leaderboard." },
+              { step: "04", icon: <TrendingUp className="size-6" />, title: "Level Up", desc: "Track your progress, master skills, and stay streak-strong every day." },
             ].map((item, i) => (
               <Reveal key={item.step} delay={i * 0.1}>
                 <motion.div whileHover={{ y: -6 }} transition={{ type: "spring", stiffness: 300 }}>
@@ -393,7 +394,7 @@ export default function Home() {
               { icon: <Target className="size-5" />, title: "Interactive Quizzes", desc: "739+ questions with instant feedback to test your understanding.", color: "text-xp" },
               { icon: <TrendingUp className="size-5" />, title: "Progress Tracking", desc: "Visual dashboards show your growth across every skill path.", color: "text-level" },
               { icon: <Shield className="size-5" />, title: "Hands-On Labs", desc: "Real-world scenarios, not just theory — build actual skills.", color: "text-achievement" },
-              { icon: <Trophy className="size-5" />, title: "Leaderboards", desc: "Compete with other learners and climb the rankings.", color: "text-amber-500" },
+              { icon: <Briefcase className="size-5" />, title: "Interview Prep", desc: "Simulate real interviews with AI feedback, plus flashcard drills.", color: "text-amber-500" },
               { icon: <CheckCircle2 className="size-5" />, title: "Spaced Repetition", desc: "Smart review system that helps you retain what you learn.", color: "text-emerald-500" },
             ].map((feature, i) => (
               <Reveal key={feature.title} delay={i * 0.06}>
