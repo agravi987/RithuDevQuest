@@ -111,3 +111,75 @@ export async function getWeakSkills(
     .filter((s) => s.mastery.totalAttempts > 0 && s.mastery.score < threshold)
     .sort((a, b) => a.mastery.score - b.mastery.score);
 }
+
+export type TopUserSkill = {
+  skillId: string;
+  skillName: string;
+  mastery: CalculatedMastery;
+};
+
+/**
+ * Top-N skills by mastery for a user. Unlike getUserSkillsMastery this only
+ * reads the user's own attempts (indexed by userId) plus the small set of
+ * skills those attempts map to — it never drags the whole curriculum in.
+ */
+export async function getTopUserSkills(
+  userId: string,
+  limit = 4,
+): Promise<TopUserSkill[]> {
+  const attempts = await prisma.questionAttempt.findMany({
+    where: { userId },
+    select: {
+      questionId: true,
+      isCorrect: true,
+      attemptNumber: true,
+      answeredAt: true,
+      question: { select: { difficulty: true, skillId: true } },
+    },
+  });
+
+  if (attempts.length === 0) return [];
+
+  const attemptsBySkill = new Map<
+    string,
+    Array<{
+      isCorrect: boolean;
+      attemptNumber: number;
+      difficulty: "beginner" | "intermediate" | "advanced";
+      answeredAt: Date;
+    }>
+  >();
+
+  const skillIds = new Set<string>();
+  for (const attempt of attempts) {
+    const skillId = attempt.question.skillId;
+    if (!skillId) continue;
+    skillIds.add(skillId);
+
+    const list = attemptsBySkill.get(skillId) ?? [];
+    list.push({
+      isCorrect: attempt.isCorrect,
+      attemptNumber: attempt.attemptNumber,
+      difficulty: parseQuestionDifficulty(attempt.question.difficulty),
+      answeredAt: attempt.answeredAt,
+    });
+    attemptsBySkill.set(skillId, list);
+  }
+
+  if (skillIds.size === 0) return [];
+
+  const skills = await prisma.skill.findMany({
+    where: { id: { in: [...skillIds] } },
+    select: { id: true, name: true },
+  });
+  const nameById = new Map(skills.map((skill) => [skill.id, skill.name]));
+
+  return [...attemptsBySkill.entries()]
+    .map(([skillId, records]) => ({
+      skillId,
+      skillName: nameById.get(skillId) ?? "Unknown skill",
+      mastery: calculateMasteryScore(records),
+    }))
+    .sort((a, b) => b.mastery.score - a.mastery.score)
+    .slice(0, limit);
+}

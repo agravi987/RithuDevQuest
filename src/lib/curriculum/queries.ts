@@ -222,6 +222,103 @@ export async function getLessonWithActivities(
   });
 }
 
+export type CurriculumOverviewLesson = {
+  id: string;
+  order: number;
+  title: string;
+  slug: string;
+  estimatedMinutes: number;
+};
+
+export type CurriculumOverviewUnit = {
+  id: string;
+  order: number;
+  lessons: CurriculumOverviewLesson[];
+};
+
+export type CurriculumOverviewModule = {
+  id: string;
+  title: string;
+  slug: string;
+  icon: string | null;
+  order: number;
+  units: CurriculumOverviewUnit[];
+};
+
+export type CurriculumOverviewPath = {
+  id: string;
+  title: string;
+  slug: string;
+  order: number;
+  modules: CurriculumOverviewModule[];
+};
+
+export type CurriculumOverview = {
+  id: string;
+  title: string;
+  slug: string;
+  order: number;
+  paths: CurriculumOverviewPath[];
+};
+
+/**
+ * Lightweight snapshot of the whole curriculum (career -> path -> module ->
+ * unit -> lesson) with only the fields needed for progress/counts/navigation.
+ * Deliberately excludes lesson content and skills so the dashboard never
+ * drags the full curriculum into memory.
+ */
+export const getCurriculumOverview = unstable_cache(
+  async (): Promise<CurriculumOverview[]> => {
+    return prisma.career.findMany({
+      orderBy: { order: "asc" },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        order: true,
+        paths: {
+          orderBy: { order: "asc" },
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            order: true,
+            modules: {
+              orderBy: { order: "asc" },
+              select: {
+                id: true,
+                title: true,
+                slug: true,
+                icon: true,
+                order: true,
+                units: {
+                  orderBy: { order: "asc" },
+                  select: {
+                    id: true,
+                    order: true,
+                    lessons: {
+                      orderBy: { order: "asc" },
+                      select: {
+                        id: true,
+                        title: true,
+                        slug: true,
+                        order: true,
+                        estimatedMinutes: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  },
+  ["curriculum-overview"],
+  { tags: ["curriculum"], revalidate: 3600 },
+);
+
 export type LessonQuestions = Prisma.QuestionGetPayload<{
   select: {
     id: true;
