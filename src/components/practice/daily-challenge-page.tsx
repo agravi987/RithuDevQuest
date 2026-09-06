@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import {
   Timer,
   Zap,
@@ -16,8 +16,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { QuestionSection } from "@/components/lesson/question-section";
-import { FeedbackSection } from "@/components/lesson/feedback-section";
+import { QuizExperience, type QuizQuestion, type DeepPartial, type QuizModeConfig } from "@/components/quiz";
 import { buildRichPayload } from "@/lib/quiz/types";
 import type { LessonQuestionData, SubmitAnswerResult } from "@/lib/lesson/types";
 import { cn } from "@/lib/utils";
@@ -30,8 +29,6 @@ type ChallengeState =
   | "loading"
   | "landing"
   | "active"
-  | "submitting"
-  | "review"
   | "results"
   | "completed"
   | "expired";
@@ -62,38 +59,9 @@ type ChallengeStatus = {
   };
 };
 
-/* ─── Timer Hook ─── */
-
-function useChallengeTimer(expiresAt: Date | null, durationMs: number) {
-  const [remaining, setRemaining] = useState(0);
-  const [isExpired, setIsExpired] = useState(false);
-
-  useEffect(() => {
-    if (!expiresAt) return;
-    const tick = () => {
-      const diff = Math.max(0, expiresAt.getTime() - Date.now());
-      setRemaining(diff);
-      if (diff <= 0) setIsExpired(true);
-    };
-    tick();
-    const interval = setInterval(tick, 1000);
-    return () => clearInterval(interval);
-  }, [expiresAt]);
-
-  const minutes = Math.floor(remaining / 60000);
-  const seconds = Math.floor((remaining % 60000) / 1000);
-  const totalSeconds = Math.floor(remaining / 1000);
-  const total = durationMs > 0 ? durationMs : remaining;
-  const progress = expiresAt
-    ? Math.max(0, Math.min(1, total > 0 ? remaining / total : 1))
-    : 1;
-
-  return { minutes, seconds, totalSeconds, isExpired, progress };
-}
-
 /* ─── Helpers ─── */
 
-function toLessonQuestion(q: ChallengeQuestion): LessonQuestionData {
+function toQuizQuestion(q: ChallengeQuestion): QuizQuestion {
   const rich = buildRichPayload({
     type: q.type,
     options: q.options,
@@ -108,25 +76,12 @@ function toLessonQuestion(q: ChallengeQuestion): LessonQuestionData {
     options: q.options,
     parts: null,
     hint: q.hint,
+    order: q.order,
+    userAnswer: q.userAnswer ?? null,
+    isCorrect: q.isCorrect ?? null,
+    answeredAt: q.answeredAt ?? null,
     ...(rich?.payload ? { payload: rich.payload } : {}),
   };
-}
-
-function getTimerGradient(progress: number): string {
-  if (progress > 0.3) return "linear-gradient(90deg, #10b981, #22c55e)";
-  if (progress > 0.1) return "linear-gradient(90deg, #22c55e, #f59e0b)";
-  return "linear-gradient(90deg, #ef4444, #dc2626)";
-}
-
-function getTimerTextClass(totalSeconds: number): string {
-  if (totalSeconds < 60) return "text-red-400";
-  if (totalSeconds < 300) return "text-amber-400";
-  return "text-white/50";
-}
-
-function getTimerIconClass(totalSeconds: number): string {
-  if (totalSeconds < 60) return "text-red-400 animate-pulse";
-  return "text-emerald-400/70";
 }
 
 /* ─── Main Component ─── */
@@ -138,8 +93,7 @@ export function DailyChallengePage() {
   const [challengeId, setChallengeId] = useState<string | null>(null);
   const [questions, setQuestions] = useState<ChallengeQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [expiresAt, setExpiresAt] = useState<Date | null>(null);
-  const [durationMs, setDurationMs] = useState(30 * 60 * 1000);
+  const [remainingMs, setRemainingMs] = useState(30 * 60 * 1000);
   const [resultData, setResultData] = useState<{
     totalQuestions: number;
     correctCount: number;
@@ -149,34 +103,20 @@ export function DailyChallengePage() {
     level: number;
     levelTitle: string;
   } | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  // QuestionSection state
-  const [value, setValue] = useState<string | null>(null);
-  const [feedback, setFeedback] = useState<SubmitAnswerResult | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [combo, setCombo] = useState(0);
   const [answerHistory, setAnswerHistory] = useState<
     { question: string; isCorrect: boolean; correctAnswer: string }[]
   >([]);
   const [showReview, setShowReview] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const timer = useChallengeTimer(
-    state === "active" ? expiresAt : null,
-    durationMs,
-  );
-  const currentValueRef = useRef<string | null>(null);
-  const submittingRef = useRef(false);
   const completingRef = useRef(false);
-  const questionTopRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    questionTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [currentIndex]);
-
-  useEffect(() => {
-    currentValueRef.current = value;
-  }, [value]);
+  // Restrict the quiz countdown to the true server deadline on a resumed
+  // challenge; a fresh start simply uses the full window.
+  const quizConfig = useMemo<DeepPartial<QuizModeConfig>>(
+    () => ({ timer: { durationMs: remainingMs } }),
+    [remainingMs],
+  );
 
   const goBackToPractice = () => router.push("/practice");
 
@@ -191,8 +131,7 @@ export function DailyChallengePage() {
   }) => {
     setChallengeId(res.challengeId);
     setQuestions(res.questions);
-    setExpiresAt(new Date(res.expiresAt));
-    setDurationMs(res.durationMs ?? 30 * 60 * 1000);
+    setRemainingMs(Math.max(0, new Date(res.expiresAt).getTime() - Date.now()));
 
     const answered = res.questions
       .filter((q) => q.answeredAt != null || q.isCorrect != null)
@@ -214,9 +153,7 @@ export function DailyChallengePage() {
       (q) => q.answeredAt == null && q.isCorrect == null,
     );
     setCurrentIndex(firstUnanswered === -1 ? 0 : firstUnanswered);
-    setValue(null);
-    setFeedback(null);
-    setCombo(0);
+    setError(null);
     setState("active");
   };
 
@@ -269,77 +206,6 @@ export function DailyChallengePage() {
     };
   }, []);
 
-  // Auto-complete when timer expires
-  useEffect(() => {
-    if (timer.isExpired && state === "active" && challengeId && !completingRef.current) {
-      handleComplete();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timer.isExpired]);
-
-  // Keyboard shortcuts: number keys select MCQ, Enter checks/continues, R retries
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.repeat || submitting || submittingRef.current) return;
-
-      // Don't intercept while typing
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement
-      ) {
-        return;
-      }
-
-      // Let native activation handle interactive controls
-      if (
-        e.target instanceof HTMLButtonElement ||
-        e.target instanceof HTMLAnchorElement ||
-        e.target instanceof HTMLSelectElement
-      ) {
-        return;
-      }
-
-      const isActiveState = state === "active" || state === "review";
-      if (!isActiveState) return;
-
-      const q = questions[currentIndex];
-      if (!feedback && q) {
-        // Number keys 1-6 for MCQ options
-        const num = parseInt(e.key, 10);
-        if (num >= 1 && num <= 6 && q.options && q.options.length > 0) {
-          const optionIndex = num - 1;
-          if (optionIndex < q.options.length) {
-            e.preventDefault();
-            setValue(String(q.options[optionIndex]));
-            return;
-          }
-        }
-      }
-
-      if (e.key === "Enter") {
-        e.preventDefault();
-        if (feedback) {
-          if (feedback.isCorrect) {
-            handleContinue();
-          } else {
-            handleRetry();
-          }
-        } else if ((currentValueRef.current ?? "").trim()) {
-          handleSubmit();
-        }
-      }
-
-      if ((e.key === "r" || e.key === "R") && feedback && !feedback.isCorrect) {
-        e.preventDefault();
-        handleRetry();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, currentIndex, questions, feedback, value, submitting, challengeId]);
-
   const handleStart = async () => {
     setState("loading");
     setError(null);
@@ -359,15 +225,12 @@ export function DailyChallengePage() {
     }
   };
 
-  const handleSubmit = async () => {
-    const q = questions[currentIndex];
-    const answer = currentValueRef.current;
-    if (!answer?.trim() || !challengeId || !q) return;
-    if (submittingRef.current || completingRef.current) return;
-
-    submittingRef.current = true;
-    setSubmitting(true);
-    setState("submitting");
+  // Server-side grading + persistence for each submitted answer.
+  const submitToServer = async (
+    q: QuizQuestion,
+    answer: string,
+  ): Promise<SubmitAnswerResult> => {
+    if (!challengeId) throw new Error("Challenge not started");
 
     const response = await fetch("/api/daily-challenge/answer", {
       method: "POST",
@@ -377,7 +240,15 @@ export function DailyChallengePage() {
     const res = await response.json();
 
     if (res.success && res.isCorrect !== undefined) {
-      setFeedback({
+      setAnswerHistory((prev) => [
+        ...prev,
+        {
+          question: q.question,
+          isCorrect: res.isCorrect,
+          correctAnswer: res.correctAnswer ?? "",
+        },
+      ]);
+      return {
         questionId: q.id,
         lessonId: "daily-challenge",
         isCorrect: res.isCorrect,
@@ -389,88 +260,19 @@ export function DailyChallengePage() {
         partIndex: null,
         scenarioComplete: null,
         totalParts: null,
-      });
-      setCombo(res.isCorrect ? (res.combo ?? 0) : 0);
-      setAnswerHistory((prev) => [
-        ...prev,
-        {
-          question: q.question,
-          isCorrect: res.isCorrect,
-          correctAnswer: res.correctAnswer ?? "",
-        },
-      ]);
-      setState("review");
-    } else if (res.error === "Time's up!") {
+      };
+    }
+
+    if (res.error === "Time's up!") {
       setError("Time's up! Auto-completing your challenge...");
-      setState("active");
-      handleComplete();
-    } else if (res.error === "Already answered") {
-      // Defensive: advance to the next unanswered question.
-      const nextIndex = nextUnansweredIndex(currentIndex);
-      setFeedback(null);
-      setValue(null);
-      setCombo(0);
-      if (nextIndex !== -1) {
-        setCurrentIndex(nextIndex);
-        setState("active");
-      } else {
-        handleComplete();
-      }
-    } else if (res.error === "Question not found") {
-      setError("That question is no longer available.");
-      setState("active");
-    } else if (response.status === 429 || res.error === "Please wait a moment") {
-      setError("Please wait a moment before checking again.");
-      setState("active");
-    } else {
-      setError(res.error ?? "Failed to submit");
-      setState("active");
+      void handleComplete();
+      throw new Error("Time's up");
     }
 
-    submittingRef.current = false;
-    setSubmitting(false);
+    throw new Error(res.error ?? "Failed to submit answer");
   };
 
-  // Finds the next question index (after `from`) that still needs answering.
-  const nextUnansweredIndex = (from: number) =>
-    questions.findIndex((item, i) => i > from && item.answeredAt == null);
-
-  const handleContinue = () => {
-    if (!feedback?.isCorrect) return;
-
-    const nextIndex = nextUnansweredIndex(currentIndex);
-    if (nextIndex !== -1) {
-      setCurrentIndex(nextIndex);
-      setValue(null);
-      setFeedback(null);
-      setCombo(0);
-      setState("active");
-    } else {
-      handleComplete();
-    }
-  };
-
-  const handleRetry = () => {
-    setFeedback(null);
-    setValue(null);
-    setCombo(0);
-    setState("active");
-  };
-
-  const handleSkip = () => {
-    if (submittingRef.current || completingRef.current) return;
-    setFeedback(null);
-    setValue(null);
-    setCombo(0);
-    const nextIndex = nextUnansweredIndex(currentIndex);
-    if (nextIndex !== -1) {
-      setCurrentIndex(nextIndex);
-      setState("active");
-    } else {
-      handleComplete();
-    }
-  };
-
+  // Server-side completion: applies bonuses/gamification and drives results.
   const handleComplete = async () => {
     if (!challengeId) return;
     if (completingRef.current) return;
@@ -493,6 +295,7 @@ export function DailyChallengePage() {
           level: res.level ?? 1,
           levelTitle: res.levelTitle ?? "Newcomer",
         });
+        setError(null);
         setState("results");
       } else {
         setError(res.error ?? "Failed to complete challenge");
@@ -616,120 +419,19 @@ export function DailyChallengePage() {
     );
   }
 
-  /* ─── Render: Active / Submitting / Review ─── */
-  if (state === "active" || state === "submitting" || state === "review") {
-    const q = questions[currentIndex];
-    if (!q) return null;
-
-    const questionData = toLessonQuestion(q);
-
+  /* ─── Render: Active (QuizExperience) ─── */
+  if (state === "active") {
     return (
-      <div
-        ref={questionTopRef}
-        className={cn("relative overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/20", DEEP_SPACE_SUBTLE)}
-      >
-        {/* Timer bar */}
-        <div className="relative h-1.5 bg-white/5">
-          <motion.div
-            className="h-full rounded-full"
-            style={{
-              width: `${timer.progress * 100}%`,
-              background: getTimerGradient(timer.progress),
-            }}
-            transition={{ duration: 0.5 }}
-          />
-        </div>
-
-        <div className="p-5 sm:p-6">
-          {/* Top bar: timer + progress */}
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <Timer className={`size-4 ${getTimerIconClass(timer.totalSeconds)}`} />
-              <span className={`text-sm font-bold tabular-nums ${getTimerTextClass(timer.totalSeconds)}`}>
-                {String(timer.minutes).padStart(2, "0")}:
-                {String(timer.seconds).padStart(2, "0")}
-              </span>
-            </div>
-
-            <span className="text-[11px] font-bold text-white/30">
-              {currentIndex + 1}/{questions.length}
-            </span>
-          </div>
-
-          {/* Progress dots */}
-          <div className="flex flex-wrap items-center gap-1 mb-5">
-            {questions.map((_, i) => (
-              <div
-                key={i}
-                className={`h-1.5 flex-1 rounded-full transition-colors ${
-                  i < currentIndex
-                    ? "bg-emerald-400/60"
-                    : i === currentIndex
-                      ? "bg-emerald-400"
-                      : "bg-white/10"
-                }`}
-              />
-            ))}
-          </div>
-
-          {error && (
-            <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold flex items-center gap-2">
-              <AlertTriangle className="size-4 shrink-0" />
-              {error}
-            </div>
-          )}
-
-          {/* Combo indicator */}
-          {combo >= 2 && feedback?.isCorrect && (
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-amber-400/10 border border-amber-400/20 px-3 py-1 text-xs font-bold text-amber-300 animate-pulse">
-              🔥 {combo}x Combo
-            </div>
-          )}
-
-          {/* Question — reuse existing QuestionSection */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentIndex}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              {!feedback && (
-                <QuestionSection
-                  question={questionData}
-                  value={value}
-                  onValueChange={setValue}
-                  onSubmit={() => handleSubmit()}
-                  submitting={submitting}
-                  partIndex={null}
-                  error={error ?? undefined}
-                />
-              )}
-
-              {/* Feedback — reuse existing FeedbackSection */}
-              {feedback ? (
-                <FeedbackSection
-                  feedback={feedback}
-                  onContinue={handleContinue}
-                  onRetry={handleRetry}
-                />
-              ) : (
-                <div className="mt-3 flex justify-end">
-                  <button
-                    type="button"
-                    onClick={handleSkip}
-                    disabled={submitting}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-white/40 hover:text-white/70 transition-colors disabled:opacity-50"
-                  >
-                    Skip question
-                  </button>
-                </div>
-              )}
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </div>
+      <QuizExperience
+        mode="daily"
+        config={quizConfig}
+        questions={questions.map(toQuizQuestion)}
+        initialState={{ currentIndex }}
+        onSubmitAnswer={submitToServer}
+        onComplete={handleComplete}
+        onExit={handlePlayBack}
+        externalCompletion
+      />
     );
   }
 

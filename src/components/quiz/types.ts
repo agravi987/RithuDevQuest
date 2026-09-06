@@ -351,7 +351,7 @@ export type QuizState =
 
 export interface QuizExperienceProps {
   mode: QuizMode;
-  config?: Partial<QuizModeConfig>;
+  config?: DeepPartial<QuizModeConfig>;
   questions?: QuizQuestion[];
   onComplete?: (result: QuizResult) => void;
   onExit?: () => void;
@@ -359,6 +359,8 @@ export interface QuizExperienceProps {
     question: QuizQuestion,
     answer: string,
   ) => Promise<SubmitAnswerResult> | SubmitAnswerResult;
+  /** When true, the parent owns the results screen; QuizExperience skips its internal one. */
+  externalCompletion?: boolean;
   initialState?: Partial<QuizSession>;
   sessionId?: string;
   userXp?: number;
@@ -392,7 +394,15 @@ export interface QuizProgressState {
    UTILITIES
    ════════════════════════════════════════════════════════════════════ */
 
-export function deepMerge<T extends object>(target: T, source: Partial<T>): T {
+export type DeepPartial<T> = {
+  [K in keyof T]?: T[K] extends (...args: never[]) => unknown
+    ? T[K]
+    : T[K] extends object
+      ? DeepPartial<T[K]>
+      : T[K];
+};
+
+export function deepMerge<T extends object>(target: T, source: DeepPartial<T>): T {
   const result = { ...target } as T;
   for (const key of Object.keys(source) as Array<keyof T>) {
     const sourceValue = source[key];

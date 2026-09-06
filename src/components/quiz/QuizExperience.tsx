@@ -17,6 +17,7 @@ import { StreakIndicator } from "./QuizFeedback";
 import type { SubmitAnswerResult } from "@/lib/lesson/types";
 import { validateQuestionAnswer } from "@/lib/quiz/validation";
 import {
+  DeepPartial,
   QuizModeConfig,
   QuizQuestion,
   QuizSession,
@@ -49,6 +50,7 @@ export function QuizExperience({
   onComplete,
   onExit,
   onSubmitAnswer,
+  externalCompletion,
   initialState,
   sessionId,
   userXp = 0,
@@ -154,12 +156,14 @@ export function QuizExperience({
       };
 
       setResult(finalResult);
-      setState("results");
+      if (!externalCompletion) {
+        setState("results");
+      }
       onComplete?.(finalResult);
     } finally {
       completingRef.current = false;
     }
-  }, [questions, xpEarned, maxCombo, sessionId, mode, answerHistory, onComplete, config.theme.variant]);
+  }, [questions, xpEarned, maxCombo, sessionId, mode, answerHistory, onComplete, config.theme.variant, externalCompletion]);
 
   // Timer callbacks
   const handleTimerExpire = useCallback(() => {
@@ -274,8 +278,6 @@ export function QuizExperience({
 
   // Navigation
   const handleContinue = useCallback(() => {
-    if (!feedback?.isCorrect) return;
-
     const nextIndex = questions.findIndex(
       (q, i) => i > currentIndex && (q.isCorrect === null && q.answeredAt === null)
     );
@@ -290,7 +292,7 @@ export function QuizExperience({
     } else {
       handleComplete();
     }
-  }, [feedback, questions, currentIndex, handleComplete]);
+  }, [questions, currentIndex, handleComplete]);
 
   const handleRetry = useCallback(() => {
     setFeedback(null);
@@ -346,14 +348,14 @@ export function QuizExperience({
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         if (feedback) {
-          if (!feedback.isCorrect) handleRetry();
+          if (!feedback.isCorrect && config.feedback.allowRetry) handleRetry();
           else handleContinue();
         } else if (canSubmitValue(currentQuestion, valueRef.current)) {
           handleSubmit();
         }
       }
 
-      if ((e.key === "r" || e.key === "R") && feedback && !feedback.isCorrect) {
+      if ((e.key === "r" || e.key === "R") && feedback && !feedback.isCorrect && config.feedback.allowRetry) {
         e.preventDefault();
         handleRetry();
       }
@@ -376,7 +378,7 @@ export function QuizExperience({
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [feedback, submitting, currentQuestion, currentIndex, handleSubmit, handleRetry, handleContinue, config.navigation.allowBack]);
+  }, [feedback, submitting, currentQuestion, currentIndex, handleSubmit, handleRetry, handleContinue, config.navigation.allowBack, config.feedback.allowRetry]);
 
   // Show landing if no questions yet
   if (state === "loading" && questions.length === 0) {
@@ -610,7 +612,7 @@ const QuizContext = createContext<QuizContextValue | null>(null);
 interface QuizProviderProps {
   children: ReactNode;
   mode: QuizMode;
-  config?: Partial<QuizModeConfig>;
+  config?: DeepPartial<QuizModeConfig>;
 }
 
 export function QuizProvider({ children }: QuizProviderProps) {
