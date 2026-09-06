@@ -1,7 +1,7 @@
 import { SidebarProvider } from "@/lib/sidebar-context";
 import { LayoutContent } from "@/app/(main)/layout-content";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { getLayoutUserDataCached } from "@/lib/layout/queries";
 
 export default async function MainLayout({
   children,
@@ -18,25 +18,11 @@ export default async function MainLayout({
   let userHearts = 5;
 
   if (user?.id) {
-    const [userData, streakData] = await Promise.all([
-      prisma.user.findUnique({
-        where: { id: user.id },
-        select: { xp: true, level: true, hearts: true },
-      }),
-      prisma.streak.findUnique({
-        where: { userId: user.id },
-        select: { currentStreak: true, lastActiveDate: true },
-      }),
-    ]);
-
-    if (userData) {
-      userXp = userData.xp;
-      userLevel = userData.level;
-      userHearts = userData.hearts;
-    }
-    if (streakData) {
-      currentStreak = streakData.currentStreak;
-    }
+    const data = await getLayoutUserDataCached(user.id);
+    userXp = data.xp;
+    userLevel = data.level;
+    userHearts = data.hearts;
+    currentStreak = data.currentStreak;
   }
 
   return (
