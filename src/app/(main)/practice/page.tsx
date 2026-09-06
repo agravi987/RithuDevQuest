@@ -57,6 +57,33 @@ export default async function PracticePage() {
       {/* ═══ Daily Challenge — Hero ═══ */}
       <DailyChallengeCard />
 
+      {/* ═══ Quick Practice — Casual ═══ */}
+      <section className="rounded-3xl border border-primary/20 bg-card/60 p-5 sm:p-6 shadow-lg shadow-primary/5">
+        <div className="flex items-center gap-4">
+          <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-violet-400 via-primary to-emerald-500 shadow-lg shadow-primary/20">
+            <Sparkles className="size-6 text-white" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-primary/70">
+              Quick Practice
+            </span>
+            <h3 className="text-lg font-black text-white">Sharpen your skills</h3>
+            <p className="text-xs text-white/40 mt-0.5">
+              Pick a topic and answer a quick batch. Casual mode — no XP, no pressure.
+            </p>
+          </div>
+          <Button
+            asChild
+            size="sm"
+            className="h-9 shrink-0 rounded-xl font-bold text-xs gap-1 shadow-md shadow-primary/10 hover:shadow-lg hover:shadow-primary/20 transition-all duration-200"
+          >
+            <Link href="/practice/quick">
+              Practice <ArrowRight className="size-3" />
+            </Link>
+          </Button>
+        </div>
+      </section>
+
       {/* ═══ Focus Areas ═══ */}
       {recommendations.length > 0 && (
         <section className="flex flex-col gap-4">
