@@ -2,6 +2,7 @@ import {
   Home,
   BookOpen,
   Target,
+  MessageSquare,
   Award,
   type LucideIcon,
 } from "lucide-react";
@@ -41,6 +42,13 @@ export const MAIN_NAV_ITEMS: NavItem[] = [
     icon: Target,
     activeColor: "text-xp",
     glowColor: "shadow-xp/30",
+  },
+  {
+    href: "/interview-prep",
+    label: "Interview Prep",
+    icon: MessageSquare,
+    activeColor: "text-primary",
+    glowColor: "shadow-primary/30",
   },
   {
     href: "/achievements",

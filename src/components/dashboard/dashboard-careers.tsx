@@ -10,6 +10,7 @@ import {
   ChevronRight,
   Trophy,
   Sparkles,
+  MessageSquare,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { AnimatedNumber } from "@/components/ui/animated-number";
@@ -215,6 +216,17 @@ export function DashboardCareers({
           </AnimateOnScroll>
           <AnimateOnScroll delay={100}>
             <ActionTile
+              href="/interview-prep"
+              icon={<MessageSquare className="size-5" />}
+              title="Interview Prep"
+              subtitle="AI mock interviews and flashcards"
+              gradient="from-primary/10 to-sky-500/5"
+              borderHover="hover:border-primary/30"
+              iconBg="bg-primary/10 text-primary"
+            />
+          </AnimateOnScroll>
+          <AnimateOnScroll delay={150}>
+            <ActionTile
               href="/practice/quick"
               icon={<Target className="size-5" />}
               title="Quick Practice"
@@ -224,7 +236,7 @@ export function DashboardCareers({
               iconBg="bg-sky-500/10 text-sky-500"
             />
           </AnimateOnScroll>
-          <AnimateOnScroll delay={150}>
+          <AnimateOnScroll delay={200}>
             <ActionTile
               href="/achievements"
               icon={<Trophy className="size-5" />}

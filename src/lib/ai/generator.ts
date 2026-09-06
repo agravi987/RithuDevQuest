@@ -27,6 +27,22 @@ import { buildExplanationPrompt } from "@/lib/ai/prompts/explanation";
 import { buildHintPrompt } from "@/lib/ai/prompts/hint";
 import { buildMentorPrompt } from "@/lib/ai/prompts/mentor";
 import type { QuestionDifficulty, QuestionType } from "@/lib/quiz/validation";
+import {
+  interviewQuestionSchema,
+  interviewGradeSchema,
+  interviewSummarySchema,
+  type InterviewQuestion,
+  type InterviewGrade,
+  type InterviewSummary,
+} from "@/lib/ai/schemas/interview";
+import {
+  buildInterviewStartPrompt,
+  buildInterviewGradePrompt,
+  buildInterviewSummaryPrompt,
+  type InterviewStartContext,
+  type InterviewGradeContext,
+  type InterviewSummaryContext,
+} from "@/lib/ai/prompts/interview";
 
 const MAX_RETRIES = 3;
 
@@ -240,4 +256,73 @@ export async function generateMentorResponse(
   }
 
   throw new Error(`Failed to generate mentor response: ${lastError?.message}`);
+}
+
+/**
+ * Generate the opening (or next) interview question for the selected role.
+ */
+export async function startInterviewQuestion(
+  context: InterviewStartContext,
+): Promise<InterviewQuestion> {
+  const { system, user } = buildInterviewStartPrompt(context);
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const raw = await callGroqChat(system, user, GROQ_FAST_MODEL);
+      const parsedJson = JSON.parse(cleanJsonString(raw));
+      return interviewQuestionSchema.parse(parsedJson);
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      console.warn(`[AI Interview] Attempt ${attempt}/${MAX_RETRIES} failed: ${lastError.message}`);
+    }
+  }
+
+  throw new Error(`Failed to generate interview question: ${lastError?.message}`);
+}
+
+/**
+ * Grade a candidate's answer during an AI mock interview.
+ */
+export async function gradeInterviewAnswer(
+  context: InterviewGradeContext,
+): Promise<InterviewGrade> {
+  const { system, user } = buildInterviewGradePrompt(context);
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const raw = await callGroqChat(system, user, GROQ_FAST_MODEL);
+      const parsedJson = JSON.parse(cleanJsonString(raw));
+      return interviewGradeSchema.parse(parsedJson);
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      console.warn(`[AI Interview Grade] Attempt ${attempt}/${MAX_RETRIES} failed: ${lastError.message}`);
+    }
+  }
+
+  throw new Error(`Failed to grade interview answer: ${lastError?.message}`);
+}
+
+/**
+ * Generate the final interview summary after all rounds are complete.
+ */
+export async function summarizeInterview(
+  context: InterviewSummaryContext,
+): Promise<InterviewSummary> {
+  const { system, user } = buildInterviewSummaryPrompt(context);
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const raw = await callGroqChat(system, user, GROQ_FAST_MODEL);
+      const parsedJson = JSON.parse(cleanJsonString(raw));
+      return interviewSummarySchema.parse(parsedJson);
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      console.warn(`[AI Interview Summary] Attempt ${attempt}/${MAX_RETRIES} failed: ${lastError.message}`);
+    }
+  }
+
+  throw new Error(`Failed to summarize interview: ${lastError?.message}`);
 }
