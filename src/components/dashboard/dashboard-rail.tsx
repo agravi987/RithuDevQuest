@@ -2,61 +2,21 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
-import { ArrowUpRight, Bot, Target, Timer } from "lucide-react";
+import { ArrowUpRight, Timer, Target } from "lucide-react";
 import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
 import { DailyQuests } from "@/components/dashboard/daily-quests";
-import { ConstellationMap } from "@/components/dashboard/constellation-map";
-import { getPathVisual } from "@/lib/career-metadata";
 import type {
-  DashboardCareer,
-  DashboardProfile,
   DashboardQuest,
-  DashboardSkill,
   DailyChallengeStatus,
 } from "@/lib/dashboard/types";
 
-function getMasteryColor(score: number): string {
-  if (score >= 80) return "oklch(0.72 0.19 142)";
-  if (score >= 60) return "oklch(0.65 0.20 260)";
-  if (score >= 40) return "oklch(0.82 0.17 85)";
-  return "oklch(0.65 0.22 25)";
-}
-
-function getMasteryLabel(score: number): string {
-  if (score >= 80) return "Mastered";
-  if (score >= 60) return "Proficient";
-  if (score >= 40) return "Learning";
-  return "Beginner";
-}
-
 export function DashboardRail({
-  profile,
-  careers,
-  skills,
   dailyQuests,
   dailyChallengeStatus,
 }: {
-  profile: DashboardProfile;
-  careers: DashboardCareer[];
-  skills: DashboardSkill[];
   dailyQuests: DashboardQuest[];
   dailyChallengeStatus: DailyChallengeStatus;
 }) {
-  const selectedCareer = careers[0];
-
-  const constellationPaths =
-    selectedCareer?.paths.map((p) => {
-      const meta = getPathVisual(p.slug);
-      return {
-        name: p.title,
-        emoji: meta.emoji,
-        color: meta.color,
-        progress: p.courseProgress,
-        totalModules: p.moduleCount,
-        completedModules: p.completedModules,
-      };
-    }) ?? [];
-
   return (
     <div className="flex w-full flex-col gap-4 lg:w-80">
       {dailyChallengeStatus !== "completed" && (
@@ -74,98 +34,6 @@ export function DashboardRail({
             .filter((q) => q.completed)
             .reduce((sum, q) => sum + q.xpReward, 0)}
         />
-      </AnimateOnScroll>
-
-      <AnimateOnScroll delay={100}>
-        <ConstellationMap paths={constellationPaths} />
-      </AnimateOnScroll>
-
-      {/* Skill Mastery */}
-      <AnimateOnScroll delay={150}>
-        <div className="rounded-2xl border border-border/50 bg-card p-4 overflow-hidden shadow-lg shadow-black/5">
-          <div className="flex items-center justify-between mb-1">
-            <h3 className="text-sm font-bold flex items-center gap-1.5">
-              <span className="text-base">🎯</span>
-              Skill Mastery
-            </h3>
-            <span className="text-[10px] font-bold text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">
-              {skills.length} active
-            </span>
-          </div>
-          <p className="text-[10px] text-muted-foreground mb-3">
-            Your strongest areas of expertise
-          </p>
-          {skills.length > 0 ? (
-            <div className="flex flex-col gap-2.5">
-              {skills.map((skill) => (
-                <div key={skill.skillId} className="flex flex-col gap-1">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="text-xs font-semibold capitalize truncate">
-                        {skill.skillName.replace(/-/g, " ")}
-                      </span>
-                      <span className="text-[10px] font-medium text-muted-foreground shrink-0">
-                        · {getMasteryLabel(skill.score)}
-                      </span>
-                    </div>
-                    <span className="text-xs font-bold text-muted-foreground shrink-0">
-                      {skill.score}%
-                    </span>
-                  </div>
-                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${skill.score}%` }}
-                      transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
-                      className="h-full rounded-full"
-                      style={{ backgroundColor: getMasteryColor(skill.score) }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-4">
-              <p className="text-xs text-muted-foreground">
-                Complete lessons to build skills
-              </p>
-              <p className="text-[10px] text-muted-foreground/60 mt-1">
-                Your mastery scores will appear here
-              </p>
-            </div>
-          )}
-        </div>
-      </AnimateOnScroll>
-
-      {/* AI Mentor */}
-      <AnimateOnScroll delay={200}>
-        <div className="rounded-2xl border border-border/50 bg-card p-4 shadow-lg shadow-black/5">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-primary via-emerald-400 to-cyan-400 shadow-lg shadow-primary/20">
-              <Bot className="size-5 text-white" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-foreground">Rithu — AI Mentor</h3>
-              <p className="text-[10px] text-muted-foreground">Your personal learning guide</p>
-            </div>
-          </div>
-          <p className="text-xs text-muted-foreground leading-relaxed mb-3">
-            {profile.streak.isActiveToday
-              ? `Amazing ${profile.streak.currentStreak}-day streak! You've completed ${profile.stats.completedLessonsCount} lessons. Keep pushing forward! 💪`
-              : `You've earned ${profile.user.xp} XP and unlocked ${profile.stats.unlockedAchievementsCount} achievements. Start your next adventure! ⚡`}
-          </p>
-          <div className="flex items-center justify-between">
-            <p className="text-[10px] text-muted-foreground/60">
-              Level {profile.user.level} · {profile.user.levelTitle}
-            </p>
-            <Link
-              href="/practice"
-              className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
-            >
-              Practice <ArrowUpRight className="size-3" />
-            </Link>
-          </div>
-        </div>
       </AnimateOnScroll>
     </div>
   );

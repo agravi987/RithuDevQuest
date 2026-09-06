@@ -4,13 +4,11 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/lib/auth";
 import {
-  ContinueQuestSection,
   DashboardHeroSection,
   DashboardCareersSection,
   DashboardRailSection,
 } from "./dashboard-sections";
 import {
-  ContinueQuestSkeleton,
   HeroSkeleton,
   CareersSkeleton,
   RailSkeleton,
@@ -28,16 +26,12 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 min-h-0">
-      {/* Next mission — streams in first, it's the primary CTA */}
-      <Suspense fallback={<ContinueQuestSkeleton />}>
-        <ContinueQuestSection userId={session.user.id} />
-      </Suspense>
-
+      {/* Greeting + key stats — streams in first */}
       <Suspense fallback={<HeroSkeleton />}>
         <DashboardHeroSection userId={session.user.id} />
       </Suspense>
 
-      {/* Main grid: learning paths (left) + quests/constellation/skills (right) */}
+      {/* Main grid: current mission (left) + daily quests (right) */}
       <div className="flex flex-1 gap-5 min-h-0 flex-col lg:flex-row">
         <Suspense fallback={<CareersSkeleton />}>
           <DashboardCareersSection userId={session.user.id} />

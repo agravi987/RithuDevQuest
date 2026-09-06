@@ -9,6 +9,7 @@ import {
   Target,
   ChevronRight,
   Trophy,
+  Sparkles,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { AnimatedNumber } from "@/components/ui/animated-number";
@@ -192,16 +193,38 @@ export function DashboardCareers({
         <div className="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 gap-3">
           <AnimateOnScroll delay={0}>
             <ActionTile
+              href={`/learn/${currentPath?.slug ?? "linux"}`}
+              icon={<BookOpen className="size-5" />}
+              title="Learn"
+              subtitle="Explore paths and unlock worlds"
+              gradient="from-primary/10 to-emerald-500/5"
+              borderHover="hover:border-primary/30"
+              iconBg="bg-primary/10 text-primary"
+            />
+          </AnimateOnScroll>
+          <AnimateOnScroll delay={50}>
+            <ActionTile
               href="/practice"
-              icon={<Target className="size-5" />}
-              title="Practice Arena"
-              subtitle="Test your skills with AI challenges"
+              icon={<Sparkles className="size-5" />}
+              title="AI Practice"
+              subtitle="Generate AI practice questions"
               gradient="from-xp/10 to-amber-500/5"
               borderHover="hover:border-xp/30"
               iconBg="bg-xp/10 text-xp"
             />
           </AnimateOnScroll>
-          <AnimateOnScroll delay={50}>
+          <AnimateOnScroll delay={100}>
+            <ActionTile
+              href="/practice/quick"
+              icon={<Target className="size-5" />}
+              title="Quick Practice"
+              subtitle="Casual topic practice, no XP"
+              gradient="from-sky-500/10 to-cyan-500/5"
+              borderHover="hover:border-sky-500/30"
+              iconBg="bg-sky-500/10 text-sky-500"
+            />
+          </AnimateOnScroll>
+          <AnimateOnScroll delay={150}>
             <ActionTile
               href="/achievements"
               icon={<Trophy className="size-5" />}
@@ -210,17 +233,6 @@ export function DashboardCareers({
               gradient="from-achievement/10 to-purple-500/5"
               borderHover="hover:border-achievement/30"
               iconBg="bg-achievement/10 text-achievement"
-            />
-          </AnimateOnScroll>
-          <AnimateOnScroll delay={100}>
-            <ActionTile
-              href={`/learn/${currentPath?.slug ?? "linux"}`}
-              icon={<BookOpen className="size-5" />}
-              title="Skill Tree"
-              subtitle="Explore paths and unlock worlds"
-              gradient="from-primary/10 to-emerald-500/5"
-              borderHover="hover:border-primary/30"
-              iconBg="bg-primary/10 text-primary"
             />
           </AnimateOnScroll>
         </div>
