@@ -2,6 +2,7 @@
 
 import "server-only";
 
+import { revalidateTag } from "next/cache";
 import type { Session } from "next-auth";
 
 import { auth } from "@/lib/auth";
@@ -385,6 +386,10 @@ export async function completeLesson(
   // Update daily quest progress for lesson completion
   await updateQuestProgress(userId, "complete_lessons", 1);
   await updateQuestProgress(userId, "earn_xp", summary.xpEarned);
+
+  // Dashboard/layout caches are rebuilt on the next visit with fresh progress.
+  revalidateTag(`dashboard:${userId}`);
+  revalidateTag(`layout:${userId}`);
 
   return {
     lessonId,

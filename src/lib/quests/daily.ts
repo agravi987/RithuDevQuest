@@ -1,5 +1,6 @@
 import "server-only";
 
+import { revalidateTag } from "next/cache";
 import { prisma } from "@/lib/db";
 import { calculateLevel } from "@/lib/gamification/levels";
 import { updateLeagueXp } from "@/lib/league/queries";
@@ -164,6 +165,10 @@ export async function updateQuestProgress(
 ): Promise<number> {
   const today = getTodayDate();
   const safeAmount = Math.max(0, amount);
+
+  // Progress changed for this user — next dashboard/layout visit must be fresh.
+  revalidateTag(`dashboard:${userId}`);
+  revalidateTag(`layout:${userId}`);
 
   const quests = await prisma.dailyQuest.findMany({
     where: { userId, questDate: today, type, completed: false },
