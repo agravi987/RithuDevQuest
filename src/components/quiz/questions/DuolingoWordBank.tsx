@@ -100,9 +100,9 @@ export function DuolingoWordBank({
   return (
     <div className="flex flex-col gap-3 sm:gap-4 w-full select-none">
       {/* ── 1. Upper Target Drop Area ── */}
-      <div className="min-h-[72px] sm:min-h-[82px] w-full p-2.5 sm:p-3 rounded-xl border-2 border-dashed border-white/20 bg-white/[0.02] flex flex-wrap items-center gap-2 content-start">
+      <div className="min-h-[72px] sm:min-h-[82px] w-full p-3 sm:p-3.5 rounded-2xl border-2 border-dashed border-cyan-500/30 bg-[#090e22]/90 shadow-inner flex flex-wrap items-center gap-2 content-start">
         {placedIds.length === 0 ? (
-          <div className="w-full text-center py-3 text-xs sm:text-sm text-white/40 font-medium">
+          <div className="w-full text-center py-3 font-display text-xs sm:text-sm text-cyan-300/40 font-bold tracking-wide">
             Tap the command tokens below to assemble in order
           </div>
         ) : (
@@ -123,16 +123,16 @@ export function DuolingoWordBank({
                   disabled={disabled}
                   onClick={() => handleRecallToken(id)}
                   className={cn(
-                    "px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl font-mono text-sm sm:text-base font-black",
-                    "bg-cyan-500/25 border-2 border-b-[3px] border-cyan-400 border-b-cyan-500 text-cyan-100 shadow-md shadow-cyan-500/25",
-                    "cursor-pointer hover:bg-cyan-500/35 active:translate-y-[1px] active:border-b-[2px] transition-all duration-75 select-none",
+                    "px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl font-mono text-sm sm:text-base font-black",
+                    "bg-gradient-to-r from-cyan-500/30 to-teal-500/25 border-2 border-b-[3px] border-cyan-400 border-b-cyan-500 text-cyan-100 shadow-[0_0_16px_rgba(6,182,212,0.35)]",
+                    "cursor-pointer hover:bg-cyan-500/40 active:translate-y-[1px] active:border-b-[2px] transition-all duration-75 select-none",
                     disabled && "cursor-not-allowed opacity-60",
                   )}
                   title="Click to remove"
                 >
                   <span className="inline-flex items-center gap-1.5">
                     <span>{token.text}</span>
-                    <span className="text-cyan-400/60 text-xs font-sans">✕</span>
+                    <span className="text-cyan-400 text-xs font-sans font-bold">✕</span>
                   </span>
                 </motion.button>
               );
@@ -142,7 +142,7 @@ export function DuolingoWordBank({
       </div>
 
       {/* Subtle Divider */}
-      <div className="h-px w-full bg-white/10" />
+      <div className="h-px w-full bg-cyan-500/20" />
 
       {/* ── 2. Lower Word Bank Area with Zero-CLS Silhouettes ── */}
       <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5">
@@ -178,11 +178,11 @@ export function DuolingoWordBank({
               disabled={disabled}
               onClick={() => handlePlaceToken(token)}
               className={cn(
-                "min-h-[42px] sm:min-h-[46px] px-3.5 sm:px-4 py-2 rounded-xl font-mono text-sm sm:text-base font-black",
-                "bg-[#0d1527] border-2 border-b-[4px] border-slate-700/80 border-b-slate-900 text-white/95 shadow-md",
-                "hover:border-cyan-400 hover:border-b-cyan-500 hover:bg-[#111c35] hover:text-white cursor-pointer select-none",
-                "active:translate-y-[2px] active:border-b-[2px] transition-all duration-75 touch-manipulation",
-                disabled && "cursor-not-allowed opacity-60",
+                "min-h-[42px] sm:min-h-[46px] px-4 sm:px-5 py-2 rounded-xl font-mono text-sm sm:text-base font-black",
+                "bg-[#0d162d] border-2 border-b-[4px] border-slate-700/80 border-b-slate-900 text-white/95 shadow-md",
+                "hover:border-cyan-400 hover:border-b-cyan-500 hover:bg-[#111c35] hover:text-white hover:scale-105 active:scale-95 cursor-pointer select-none",
+                "active:translate-y-[2px] active:border-b-[2px] transition-all duration-150 touch-manipulation",
+                disabled && "cursor-not-allowed opacity-60 hover:scale-100",
               )}
             >
               {token.text}

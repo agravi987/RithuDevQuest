@@ -4,6 +4,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import type { DuolingoMCQPayload } from "../types";
 import { playTapPopSound } from "@/lib/sounds";
+import { FormattedText } from "../FormattedText";
 
 export interface DuolingoMCQProps {
   payload: DuolingoMCQPayload;
@@ -80,23 +81,23 @@ export function DuolingoMCQ({
             className={cn(
               "group relative flex items-center justify-between w-full min-h-[52px] sm:min-h-[58px] px-4 sm:px-5 py-2.5 sm:py-3",
               "rounded-xl sm:rounded-2xl border-2 border-b-[4px] text-left cursor-pointer select-none",
-              "transition-all duration-75 touch-manipulation",
+              "transition-all duration-150 touch-manipulation hover:scale-[1.015]",
               isSelected
-                ? "bg-cyan-500/20 border-cyan-400 border-b-cyan-500 text-white shadow-[0_0_24px_rgba(6,182,212,0.3)] ring-2 ring-cyan-400/40"
-                : "bg-[#0d1527] border-slate-700/80 border-b-slate-900 text-white/90 hover:border-slate-500 hover:bg-[#111c35] hover:text-white shadow-md",
+                ? "bg-gradient-to-r from-cyan-500/25 to-teal-500/20 border-cyan-400 border-b-cyan-500 text-white shadow-[0_0_26px_rgba(6,182,212,0.35)] ring-2 ring-cyan-400/40"
+                : "bg-[#0d1527] border-slate-700/80 border-b-slate-900 text-white/95 hover:border-cyan-500/60 hover:bg-[#111c35] hover:text-white shadow-md hover:shadow-cyan-950/30",
               "active:translate-y-[2px] active:border-b-[2px]",
-              disabled && "cursor-not-allowed opacity-60",
+              disabled && "cursor-not-allowed opacity-60 hover:scale-100",
             )}
           >
-            {/* Left Content: Option Text / Code */}
+            {/* Left Content: Option Text / Code with Space Grotesk */}
             <div className="flex items-center gap-2.5 sm:gap-3 flex-1 pr-2 min-w-0">
               {option.code ? (
-                <code className="font-mono text-xs sm:text-sm font-bold text-cyan-200 bg-black/50 px-2.5 py-1 rounded-lg border border-cyan-500/30 tracking-tight break-all shadow-inner">
+                <code className="font-mono text-xs sm:text-sm font-bold text-cyan-200 bg-black/60 px-2.5 py-1 rounded-lg border border-cyan-500/40 tracking-tight break-all shadow-inner">
                   {option.text}
                 </code>
               ) : (
-                <span className="font-bold text-sm sm:text-base leading-snug line-clamp-2">
-                  {option.text}
+                <span className="font-display font-bold text-sm sm:text-base leading-snug line-clamp-2 text-white group-hover:text-cyan-100 transition-colors">
+                  <FormattedText text={option.text} />
                 </span>
               )}
             </div>
@@ -104,10 +105,10 @@ export function DuolingoMCQ({
             {/* Right Badge: Keyboard Hotkey / Selected State */}
             <div
               className={cn(
-                "grid size-7 sm:size-8 shrink-0 place-items-center rounded-xl border-2 text-xs font-black transition-all",
+                "grid size-7 sm:size-8 shrink-0 place-items-center rounded-xl border-2 font-mono text-xs font-black transition-all shadow-sm",
                 isSelected
                   ? "border-cyan-400 bg-cyan-400 text-slate-950 shadow-md shadow-cyan-400/30 scale-105"
-                  : "border-slate-700/80 bg-slate-800/80 text-slate-400 group-hover:border-slate-500 group-hover:text-white",
+                  : "border-slate-700/80 bg-slate-800/80 text-slate-400 group-hover:border-cyan-500/50 group-hover:text-cyan-200 group-hover:bg-slate-800",
               )}
             >
               {isSelected ? "✓" : hotkey}

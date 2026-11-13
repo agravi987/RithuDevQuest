@@ -3,6 +3,7 @@
 import * as React from "react";
 import { motion } from "motion/react";
 import { CosmicCharacter } from "./CosmicCharacter";
+import { FormattedText } from "../FormattedText";
 import type { CharacterId, CharacterMood } from "../types";
 import { playCharacterVoice } from "@/lib/sounds";
 import { cn } from "@/lib/utils";
@@ -116,9 +117,9 @@ export function CharacterSpeechBubble({
             </span>
           </div>
 
-          {/* Prompt Message */}
-          <p className="text-sm sm:text-base md:text-lg font-black text-white tracking-tight leading-snug">
-            {message}
+          {/* Prompt Message with Space Grotesk & Illuminated Syntax Highlighting */}
+          <p className="font-display text-base sm:text-lg md:text-xl font-extrabold text-white tracking-tight leading-snug drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
+            <FormattedText text={message} />
           </p>
         </div>
       </motion.div>

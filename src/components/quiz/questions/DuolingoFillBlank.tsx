@@ -46,8 +46,8 @@ export function DuolingoFillBlank({
   return (
     <div className="flex flex-col gap-3 sm:gap-4 w-full select-none">
       {/* ── 1. Code / Sentence Block with Interactive Blank ── */}
-      <div className="p-3.5 sm:p-4 rounded-xl border border-white/10 bg-[#0c1022]/90 backdrop-blur-md">
-        <div className="font-mono text-base sm:text-lg flex flex-wrap items-center gap-2 leading-relaxed text-white">
+      <div className="p-4 sm:p-5 rounded-2xl border-2 border-cyan-500/25 bg-[#090e22]/95 backdrop-blur-md shadow-xl shadow-cyan-950/20">
+        <div className="font-display font-bold text-base sm:text-lg flex flex-wrap items-center gap-2 leading-relaxed text-white">
           <span>{parts.prefix}</span>
 
           {/* Interactive Blank Slot */}
@@ -60,18 +60,18 @@ export function DuolingoFillBlank({
               onClick={handleClearBlank}
               disabled={disabled}
               className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-sm sm:text-base font-black",
-                "bg-cyan-500/25 border-2 border-b-[3px] border-cyan-400 border-b-cyan-500 text-cyan-100 shadow-md shadow-cyan-500/25",
-                "cursor-pointer hover:bg-cyan-500/35 active:translate-y-[1px] active:border-b-[2px] transition-all duration-75",
+                "inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-display font-black text-sm sm:text-base",
+                "bg-gradient-to-r from-cyan-500/30 to-teal-500/25 border-2 border-b-[3px] border-cyan-400 border-b-cyan-500 text-cyan-100 shadow-[0_0_16px_rgba(6,182,212,0.35)]",
+                "cursor-pointer hover:bg-cyan-500/40 active:translate-y-[1px] active:border-b-[2px] transition-all duration-75",
                 disabled && "cursor-not-allowed",
               )}
               title="Click to remove"
             >
               <span>{selectedOption}</span>
-              <span className="text-cyan-400/80 hover:text-cyan-200 text-xs ml-1 font-sans font-bold">✕</span>
+              <span className="text-cyan-400 hover:text-cyan-200 text-xs ml-1 font-sans font-bold">✕</span>
             </motion.button>
           ) : (
-            <span className="inline-block min-w-[70px] sm:min-w-[90px] h-8 rounded-xl border-2 border-dashed border-cyan-400/80 bg-cyan-500/15 animate-pulse" />
+            <span className="inline-block min-w-[75px] sm:min-w-[95px] h-8 rounded-xl border-2 border-dashed border-cyan-400/90 bg-cyan-500/20 animate-pulse shadow-[0_0_12px_rgba(6,182,212,0.3)]" />
           )}
 
           <span>{parts.suffix}</span>
@@ -90,13 +90,13 @@ export function DuolingoFillBlank({
               disabled={disabled}
               onClick={() => (isSelected ? handleClearBlank() : handlePickOption(option))}
               className={cn(
-                "min-h-[44px] sm:min-h-[48px] px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-mono text-sm sm:text-base font-black",
-                "border-2 border-b-[4px] transition-all duration-75 touch-manipulation cursor-pointer select-none",
+                "min-h-[44px] sm:min-h-[48px] px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-display font-bold text-sm sm:text-base",
+                "border-2 border-b-[4px] transition-all duration-150 touch-manipulation cursor-pointer select-none hover:scale-105 active:scale-95",
                 isSelected
-                  ? "bg-cyan-500/25 border-cyan-400 border-b-cyan-500 text-cyan-100 shadow-[0_0_16px_rgba(6,182,212,0.35)] ring-2 ring-cyan-400/40"
-                  : "bg-[#0d1527] border-slate-700/80 border-b-slate-900 text-white/95 hover:border-slate-500 hover:bg-[#111c35] hover:text-white shadow-md",
+                  ? "bg-cyan-500/25 border-cyan-400 border-b-cyan-500 text-cyan-100 shadow-[0_0_18px_rgba(6,182,212,0.35)] ring-2 ring-cyan-400/40 scale-105"
+                  : "bg-[#0d1527] border-slate-700/80 border-b-slate-900 text-white/95 hover:border-cyan-400 hover:bg-[#111c35] hover:text-white shadow-md",
                 "active:translate-y-[2px] active:border-b-[2px]",
-                disabled && "cursor-not-allowed opacity-60",
+                disabled && "cursor-not-allowed opacity-60 hover:scale-100",
               )}
             >
               <span className="inline-flex items-center gap-2">

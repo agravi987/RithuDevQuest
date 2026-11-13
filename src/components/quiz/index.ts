@@ -11,6 +11,7 @@ export { QuizExperience, QuizProvider, useQuiz } from "./QuizExperience";
 // Duolingo 3D Tactile Primitives
 export { DuoButton } from "./duo-button";
 export type { DuoButtonProps, DuoButtonVariant, DuoButtonSize } from "./duo-button";
+export { FormattedText } from "./FormattedText";
 
 // Header HUD & Bottom Sliding Drawer
 export { DuolingoHeader } from "./DuolingoHeader";
