@@ -10,6 +10,8 @@ import type {
   DailyChallengeStatus,
 } from "@/lib/dashboard/types";
 
+import { CosmicCharacter } from "@/components/quiz/characters/CosmicCharacter";
+
 export function DashboardRail({
   dailyQuests,
   dailyChallengeStatus,
@@ -19,6 +21,23 @@ export function DashboardRail({
 }) {
   return (
     <div className="flex w-full flex-col gap-4 lg:w-80">
+      {/* Cosmic Mentor Motivation (Duolingo Style) */}
+      <div className="duo-card-3d relative overflow-hidden rounded-3xl border-2 border-emerald-500/30 bg-[#0d1527] p-4 shadow-xl">
+        <div className="flex items-center gap-3">
+          <div className="size-12 shrink-0 flex items-center justify-center rounded-2xl bg-emerald-500/15 border border-emerald-500/30 p-1">
+            <CosmicCharacter characterId="rithu" mood="happy_jump" size="xs" className="size-full" />
+          </div>
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">
+              Commander Rithu
+            </span>
+            <p className="text-xs font-bold text-slate-200 mt-0.5 leading-snug">
+              Keep your cosmic streak alive! Complete a quest today for bonus XP. 🔥
+            </p>
+          </div>
+        </div>
+      </div>
+
       {dailyChallengeStatus !== "completed" && (
         <AnimateOnScroll delay={0}>
           <DailyChallengeBanner status={dailyChallengeStatus} />
@@ -35,6 +54,28 @@ export function DashboardRail({
             .reduce((sum, q) => sum + q.xpReward, 0)}
         />
       </AnimateOnScroll>
+
+      {/* Diamond League Standings (Duolingo Style) */}
+      <div className="duo-card-3d relative overflow-hidden rounded-3xl border-2 border-purple-500/30 bg-[#0d1527] p-4 sm:p-5 shadow-xl">
+        <div className="flex items-center justify-between mb-2.5">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">🏆</span>
+            <h4 className="text-xs font-black uppercase tracking-wider text-white">Diamond League</h4>
+          </div>
+          <span className="rounded-lg bg-purple-500/20 px-2 py-0.5 text-[10px] font-black uppercase text-purple-300">
+            Top 5
+          </span>
+        </div>
+        <p className="text-xs text-slate-300 font-medium leading-relaxed">
+          You are currently in the promotion zone! Keep completing lessons to secure your trophy.
+        </p>
+        <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-2 text-[11px] font-black">
+          <span className="text-slate-400 text-[10px]">Weekly Tournament</span>
+          <Link href="/achievements" className="text-emerald-400 hover:underline uppercase text-[10px]">
+            View Standings →
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

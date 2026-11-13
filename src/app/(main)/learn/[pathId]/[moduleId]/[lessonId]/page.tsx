@@ -66,7 +66,13 @@ export default async function LessonPage({ params }: LessonPageProps) {
   ]);
 
   const selected = selectQuestionRun(
-    questions.map((question) => ({
+    questions
+      // Scenario questions are multi-part typed exercises; the Galaxy quiz
+      // engine is chip-based and single-part, so they would be unanswerable.
+      // They remain available via admin preview and are excluded from
+      // practice/interview flows as well.
+      .filter((question) => question.type !== "scenario")
+      .map((question) => ({
       id: question.id,
       type: question.type as Parameters<typeof selectQuestionRun>[0][number]["type"],
       difficulty: parseQuestionDifficulty(question.difficulty),
@@ -121,17 +127,19 @@ export default async function LessonPage({ params }: LessonPageProps) {
         type: question.type as LessonPlayerData["questions"][number]["type"],
         difficulty: parseQuestionDifficulty(question.difficulty),
         question: question.question,
-        options:
-          question.type === "scenario" || question.type === "true_false"
-            ? null
-            : Array.isArray(question.options)
-              ? (question.options as string[])
-              : null,
+    options:
+      question.type === "true_false"
+        ? null
+        : Array.isArray(question.options)
+          ? (question.options as string[])
+          : null,
         parts:
           question.type === "scenario"
             ? scenarioParts.map((part) => ({ prompt: part.prompt }))
             : null,
         hint: question.hint,
+        correctAnswer: question.correctAnswer,
+        explanation: question.explanation,
         payload: rich?.payload,
       };
     }),

@@ -53,7 +53,7 @@ function buildSteps(data: LessonPlayerData): Step[] {
   ];
 }
 
-const TYPED_TYPES = new Set(["command", "scenario"]);
+const TYPED_TYPES = new Set(["scenario"]);
 
 function isTypedQuestion(step: Step): boolean {
   return step.kind === "question" && TYPED_TYPES.has(step.type);
@@ -87,7 +87,7 @@ export function LessonPlayer({
 
   const canSubmitValue = useCallback((): boolean => {
     if (!step || step.kind !== "question") return false;
-    const isTyped = step.type === "command" || step.type === "scenario";
+    const isTyped = step.type === "scenario";
     return isTyped ? (value ?? "").trim().length > 0 : value !== null;
   }, [step, value]);
 

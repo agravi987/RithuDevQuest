@@ -44,7 +44,7 @@ export function QuestionSection({
   const [showHint, setShowHint] = useState(false);
 
   const isScenario = question.type === "scenario";
-  const isTyped = question.type === "command" || isScenario;
+  const isTyped = isScenario;
   const isRich = RICH_TYPES.has(question.type);
   const totalParts = question.parts?.length ?? 0;
 
@@ -151,17 +151,11 @@ export function QuestionSection({
                 aria-label={
                   isScenario
                     ? `Answer for part ${partIndex! + 1}`
-                    : question.type === "command"
-                      ? "Command answer"
-                      : "Your answer"
+                    : "Your answer"
                 }
                 aria-invalid={error ? true : undefined}
                 aria-describedby={error ? "question-error" : undefined}
-                placeholder={
-                  question.type === "command"
-                    ? "Type a command…"
-                    : "Type your answer…"
-                }
+                placeholder={"Type your answer…"}
                 disabled={submitting}
                 className="h-12 text-base font-mono rounded-xl border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 input-focus-glow"
               />

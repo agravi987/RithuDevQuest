@@ -9,19 +9,18 @@ import {
   Trophy,
   Play,
   ChevronLeft,
-  Target,
   AlertTriangle,
   RotateCcw,
   Clock,
   CheckCircle,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { DuoButton } from "@/components/quiz/duo-button";
+import { CosmicCharacter } from "@/components/quiz/characters/CosmicCharacter";
 import { QuizExperience, type QuizQuestion, type DeepPartial, type QuizModeConfig } from "@/components/quiz";
 import { buildRichPayload } from "@/lib/quiz/types";
 import type { LessonQuestionData, SubmitAnswerResult } from "@/lib/lesson/types";
 import { cn } from "@/lib/utils";
-import { DEEP_SPACE_CARD, DEEP_SPACE_SUBTLE, DEEP_SPACE_WARM } from "@/lib/theme";
-import { PlanetVisual } from "@/components/galaxy/planet-visual";
+import { DEEP_SPACE_CARD, DEEP_SPACE_SUBTLE } from "@/lib/theme";
 
 /* ─── Types ─── */
 
@@ -324,96 +323,98 @@ export function DailyChallengePage() {
   /* ─── Render: Landing ─── */
   if (state === "landing" || (state === "loading" && status)) {
     return (
-      <div className={cn("relative overflow-hidden rounded-3xl border border-emerald-500/20 p-5 sm:p-8 shadow-2xl shadow-emerald-500/5", DEEP_SPACE_CARD)}>
+      <div className="relative overflow-hidden rounded-3xl border-2 border-emerald-500/30 border-b-[8px] border-b-emerald-600/40 bg-card p-6 sm:p-8 shadow-2xl shadow-emerald-500/5">
         <div className="pointer-events-none absolute -right-20 -top-20 size-64 rounded-full bg-emerald-500/10 blur-[100px]" />
-        <div className="pointer-events-none absolute -bottom-16 -left-16 size-48 rounded-full bg-teal-500/5 blur-[80px]" />
-
-        {/* Decorative orbiting planet accent */}
-        <div className="pointer-events-none absolute -right-10 -top-6 hidden sm:block opacity-25">
-          <PlanetVisual
-            src="/png_images/planets/devops.png"
-            alt=""
-            size={160}
-            orbit
-            float
-          />
-        </div>
+        <div className="pointer-events-none absolute -bottom-16 -left-16 size-48 rounded-full bg-teal-500/10 blur-[80px]" />
 
         <button
           type="button"
           onClick={goBackToPractice}
-          className="relative z-10 mb-5 inline-flex items-center gap-1 text-sm text-white/50 hover:text-white transition-colors"
+          className="relative z-10 mb-5 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
         >
           <ChevronLeft className="size-4" />
-          Practice Arena
+          Back to Practice Arena
         </button>
 
         <div className="relative z-10">
-          <div className="flex items-start gap-4 mb-6">
-            <div className="grid size-14 sm:size-16 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-emerald-400 via-green-500 to-teal-500 shadow-lg shadow-emerald-500/20">
-              <Target className="size-7 sm:size-8 text-white" />
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 mb-6 text-center sm:text-left">
+            <div className="relative shrink-0">
+              <div className="relative size-20 sm:size-24 flex items-center justify-center rounded-3xl bg-emerald-500/15 border-2 border-b-4 border-emerald-500/40 shadow-lg shadow-emerald-500/10">
+                <CosmicCharacter
+                  characterId="nova"
+                  mood="happy_jump"
+                  size="custom"
+                  className="size-16 sm:size-20"
+                />
+              </div>
+              <span className="absolute -bottom-2 -right-2 flex size-7 items-center justify-center rounded-full bg-emerald-400 text-slate-950 font-black text-xs shadow-md">
+                ⚡
+              </span>
             </div>
+
             <div className="flex-1 min-w-0">
-              <div className="flex flex-wrap items-center gap-2 mb-1">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400/70">
-                  Daily Challenge
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1.5">
+                <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full border border-b-2 border-emerald-500/30 bg-emerald-500/15 text-emerald-400">
+                  Timed Blitz Challenge
                 </span>
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-400/10 text-emerald-400 border border-emerald-400/20">
-                  30 min
+                <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full border border-b-2 border-amber-500/30 bg-amber-500/15 text-amber-400">
+                  +30 Bonus XP
                 </span>
               </div>
-              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
-                Today&apos;s Challenge
+              <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
+                Today&apos;s Speed Run
               </h2>
-              <p className="text-xs sm:text-sm text-white/40 mt-1">
-                Random questions from all your courses. Beat the clock!
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1 font-medium">
+                15 rapid-fire questions sampled across all your active learning paths. Beat the countdown!
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 mb-6">
-            <div className="flex items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-3 py-1.5">
-              <Timer className="size-3.5 text-emerald-400/70" />
-              <span className="text-[11px] font-bold text-white/50">15 questions · 30 min</span>
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mb-6">
+            <div className="flex items-center gap-1.5 rounded-2xl bg-card border-2 border-b-3 border-border/80 px-3.5 py-2">
+              <Timer className="size-4 text-emerald-400" />
+              <span className="text-xs font-black text-foreground">15 Questions · 30 Min</span>
             </div>
-            <div className="flex items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-3 py-1.5">
-              <Zap className="size-3.5 text-emerald-400/70" />
-              <span className="text-[11px] font-bold text-white/50">10 XP per correct</span>
+            <div className="flex items-center gap-1.5 rounded-2xl bg-card border-2 border-b-3 border-border/80 px-3.5 py-2">
+              <Zap className="size-4 text-amber-400" />
+              <span className="text-xs font-black text-amber-400">10 XP + Combo Bonus</span>
             </div>
             {status?.previousBest && (
-              <div className="flex items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-3 py-1.5">
-                <Trophy className="size-3.5 text-emerald-400/70" />
-                <span className="text-[11px] font-bold text-white/50">
-                  Best: {status.previousBest.correctCount}/{status.previousBest.totalQuestions}
+              <div className="flex items-center gap-1.5 rounded-2xl bg-card border-2 border-b-3 border-border/80 px-3.5 py-2">
+                <Trophy className="size-4 text-yellow-400" />
+                <span className="text-xs font-black text-foreground">
+                  Personal Best: {status.previousBest.correctCount}/{status.previousBest.totalQuestions}
                 </span>
               </div>
             )}
           </div>
 
           {error && (
-            <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold flex items-center gap-2">
+            <div className="mb-4 p-3 rounded-2xl bg-red-500/10 border-2 border-b-3 border-red-500/20 text-red-400 text-xs font-black flex items-center gap-2">
               <AlertTriangle className="size-4 shrink-0" />
               {error}
             </div>
           )}
 
-          <Button
+          <DuoButton
+            variant="primary"
+            size="lg"
             onClick={handleStart}
             disabled={state === "loading"}
-            className="w-full font-bold py-5 sm:py-6 rounded-xl text-base shadow-lg shadow-emerald-500/20 hover:shadow-xl hover:shadow-emerald-500/30 bg-gradient-to-r from-emerald-400 to-green-600 hover:from-emerald-300 hover:to-green-500 text-white border-0 gap-2 transition-all duration-200"
+            className="w-full"
           >
             {state === "loading" ? (
               <>
-                <div className="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                Preparing questions...
+                <div className="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white mr-2" />
+                PREPARING SPEED RUN...
               </>
             ) : (
               <>
-                <Play className="size-5 fill-white" />
-                Start Daily Challenge
+                <Play className="size-5 fill-white mr-2" />
+                START DAILY CHALLENGE
               </>
             )}
-          </Button>
+          </DuoButton>
         </div>
       </div>
     );
@@ -572,13 +573,17 @@ export function DailyChallengePage() {
             </div>
           )}
 
-          <Button
-            onClick={handlePlayBack}
-            className="w-full font-bold py-3 rounded-xl bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white gap-2"
-          >
-            <RotateCcw className="size-4" />
-            Back to Practice
-          </Button>
+          <div className="mt-4">
+            <DuoButton
+              variant="primary"
+              size="lg"
+              onClick={handlePlayBack}
+              className="w-full"
+            >
+              <RotateCcw className="size-4 mr-2" />
+              RETURN TO PRACTICE ARENA
+            </DuoButton>
+          </div>
         </div>
       </div>
     );
@@ -587,7 +592,7 @@ export function DailyChallengePage() {
   /* ─── Render: Time's up (challenge expired while away) ─── */
   if (state === "expired") {
     return (
-      <div className={cn("relative overflow-hidden rounded-3xl border border-amber-500/20 p-5 sm:p-8 shadow-2xl shadow-amber-500/5", DEEP_SPACE_WARM)}>
+      <div className="relative overflow-hidden rounded-3xl border-2 border-amber-500/30 border-b-[8px] border-b-amber-600/40 bg-card p-6 sm:p-8 shadow-2xl shadow-amber-500/5">
         <div className="pointer-events-none absolute -right-20 -top-20 size-64 rounded-full bg-amber-500/10 blur-[100px]" />
         <div className="relative z-10 text-center">
           <motion.div
@@ -600,26 +605,29 @@ export function DailyChallengePage() {
               <Clock className="size-10 text-white drop-shadow-lg" />
             </div>
           </motion.div>
-          <h2 className="text-2xl font-black text-white">Time&apos;s up!</h2>
-          <p className="text-sm text-white/40 mt-2 mb-6">
-            Your challenge timer ran out while you were away. View your results
-            to see how you did.
+          <h2 className="text-2xl font-black text-foreground">Time&apos;s Up!</h2>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-2 mb-6 font-medium">
+            Your challenge countdown reached zero while away. Review your results to see your performance.
           </p>
-          <div className="flex flex-col gap-2">
-            <Button
+          <div className="flex flex-col gap-3">
+            <DuoButton
+              variant="primary"
+              size="lg"
               onClick={handleComplete}
-              className="w-full font-bold py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:opacity-90 gap-2"
+              className="w-full"
             >
-              <CheckCircle className="size-4" />
-              View Results
-            </Button>
-            <Button
+              <CheckCircle className="size-4 mr-2" />
+              VIEW RESULTS
+            </DuoButton>
+            <DuoButton
+              variant="neutral"
+              size="md"
               onClick={goBackToPractice}
-              className="w-full font-bold py-3 rounded-xl bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white gap-2"
+              className="w-full"
             >
-              <RotateCcw className="size-4" />
-              Back to Practice
-            </Button>
+              <RotateCcw className="size-4 mr-2" />
+              BACK TO PRACTICE
+            </DuoButton>
           </div>
         </div>
       </div>
@@ -629,30 +637,32 @@ export function DailyChallengePage() {
   /* ─── Render: Already completed today ─── */
   if (state === "completed") {
     return (
-      <div className={cn("relative overflow-hidden rounded-3xl border border-emerald-500/20 p-5 sm:p-8 shadow-2xl shadow-emerald-500/5", DEEP_SPACE_CARD)}>
+      <div className="relative overflow-hidden rounded-3xl border-2 border-emerald-500/30 border-b-[8px] border-b-emerald-600/40 bg-card p-6 sm:p-8 shadow-2xl shadow-emerald-500/5">
         <div className="pointer-events-none absolute -right-20 -top-20 size-64 rounded-full bg-emerald-500/10 blur-[100px]" />
         <div className="relative z-10 text-center">
-          <motion.div
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ type: "spring", stiffness: 200, damping: 15 }}
-            className="mb-5 flex justify-center"
-          >
-            <div className="relative grid size-20 place-items-center rounded-full bg-gradient-to-br from-emerald-400 via-green-500 to-teal-500 shadow-2xl shadow-emerald-400/30">
-              <Trophy className="size-10 text-white drop-shadow-lg" />
+          <div className="mb-5 flex justify-center">
+            <div className="relative size-20 flex items-center justify-center rounded-3xl bg-emerald-500/15 border-2 border-b-4 border-emerald-500/40 shadow-lg shadow-emerald-500/10">
+              <CosmicCharacter
+                characterId="rithu"
+                mood="celebrating"
+                size="custom"
+                className="size-16"
+              />
             </div>
-          </motion.div>
-          <h2 className="text-2xl font-black text-white">Today&apos;s challenge complete</h2>
-          <p className="text-sm text-white/40 mt-2 mb-6">
-            You already finished today&apos;s challenge. Come back tomorrow!
+          </div>
+          <h2 className="text-2xl font-black text-foreground">Today&apos;s Challenge Complete! 🎉</h2>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-2 mb-6 font-medium">
+            You&apos;ve conquered today&apos;s speed run. New challenges unlock tomorrow at midnight!
           </p>
-          <Button
+          <DuoButton
+            variant="primary"
+            size="lg"
             onClick={goBackToPractice}
-            className="w-full font-bold py-3 rounded-xl bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white gap-2"
+            className="w-full"
           >
-            <RotateCcw className="size-4" />
-            Back to Practice
-          </Button>
+            <RotateCcw className="size-4 mr-2" />
+            RETURN TO PRACTICE ARENA
+          </DuoButton>
         </div>
       </div>
     );

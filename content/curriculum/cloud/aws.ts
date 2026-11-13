@@ -5,6 +5,20 @@ export const awsPath: SeedPath = {
   description:
     "Compute, storage, databases, networking, and IAM on the world's largest cloud — the core services behind most deployments.",
   slug: "aws",
+  crossReferences: [
+    {
+      careerSlug: "devops",
+      pathSlug: "linux",
+      title: "Linux Fundamentals",
+      note: "Shell and SSH fluency for EC2 instances and troubleshooting.",
+    },
+    {
+      careerSlug: "cloud",
+      pathSlug: "networking",
+      title: "Cloud Networking",
+      note: "IP, DNS, and HTTP fundamentals before designing VPCs.",
+    },
+  ],
   modules: [
     {
       title: "Compute",
@@ -95,7 +109,7 @@ export const awsPath: SeedPath = {
                   difficulty: "intermediate",
                   question:
                     "An ___ (AMI) is a pre-built machine image containing the OS and software baked into the instance.",
-                  fillBlanks: [{ answer: "Amazon Machine Image" }, { answer: "AMI" }],
+                  fillBlanks: [{ answer: "Amazon Machine Image|AMI" }],
                   explanation:
                     "The Amazon Machine Image is the OS snapshot used to launch an instance.",
                 },
@@ -480,6 +494,20 @@ export const awsPath: SeedPath = {
                   ],
                   explanation:
                     "EBS is block storage, EFS is a shared FS, S3 is object storage, and snapshots back EBS up.",
+                },
+                {
+                  type: "sequence",
+                  difficulty: "intermediate",
+                  question: "Order the steps to move an EBS volume to another region using snapshots.",
+                  sequenceItems: [
+                    { id: "snapshot", text: "Create a snapshot of the source volume" },
+                    { id: "copy", text: "Copy the snapshot to the destination region" },
+                    { id: "restore", text: "Create a volume from the snapshot in the destination region" },
+                    { id: "attach", text: "Attach the new volume to an instance" },
+                  ],
+                  sequenceCorrectOrder: ["snapshot", "copy", "restore", "attach"],
+                  explanation:
+                    "Snapshots are region-scoped, so cross-region movement is snapshot, copy snapshot, restore a volume, then attach.",
                 },
               ],
             },

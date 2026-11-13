@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 
 import { prisma } from "@/lib/db";
@@ -17,6 +17,7 @@ export async function approveQuestionAction(formData: FormData): Promise<void> {
   });
   revalidatePath("/admin/ai");
   revalidatePath("/admin/content");
+  revalidateTag("curriculum");
 }
 
 export async function deleteQuestionAction(formData: FormData): Promise<void> {
@@ -25,4 +26,5 @@ export async function deleteQuestionAction(formData: FormData): Promise<void> {
   await prisma.question.delete({ where: { id } });
   revalidatePath("/admin/ai");
   revalidatePath("/admin/content");
+  revalidateTag("curriculum");
 }

@@ -11,7 +11,7 @@ export function buildQuestionGenerationPrompt(options: {
   const count = options.count ?? 1;
   const typeInstruction = options.questionType
     ? `Generate question(s) specifically of type "${options.questionType}".`
-    : `Generate a mix of question types ("mcq", "true_false", "command", "scenario").`;
+    : `Generate a mix of question types ("mcq", "true_false", "scenario").`;
 
   const system = `You are Rithu, an expert DevOps, Cloud, AI, and Software Engineering mentor creating bite-sized, gamified learning challenges for developers.
 
@@ -20,7 +20,7 @@ Respond ONLY with a valid JSON object matching this structure:
 {
   "questions": [
     {
-      "type": "mcq" | "true_false" | "command" | "scenario",
+      "type": "mcq" | "true_false" | "scenario",
       "difficulty": "beginner" | "intermediate" | "advanced",
       "question": "Clear, concise question or problem statement",
       "options": ["Option A", "Option B", "Option C", "Option D"], // Required for "mcq" (must include the correctAnswer exactly). Null for other types.
@@ -28,7 +28,7 @@ Respond ONLY with a valid JSON object matching this structure:
         { "prompt": "Part 1 question", "correctAnswer": "answer1" },
         { "prompt": "Part 2 question", "correctAnswer": "answer2" }
       ],
-      "correctAnswer": "exact answer string", // For mcq: must match one option. For true_false: "true" or "false". For command: command string, optionally with pipe alternatives like "ls -la|ls -al". For scenario: summary answer or first part.
+      "correctAnswer": "exact answer string", // For mcq: must match one option. For true_false: "true" or "false". For scenario: summary answer or first part.
       "explanation": "Clear 1-3 sentence explanation of the technical concept and why this answer is correct.",
       "hint": "Helpful nudge without giving away the full answer."
     }

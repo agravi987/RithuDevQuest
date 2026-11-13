@@ -16,7 +16,7 @@ function renderInline(text: string, index: number): ReactNode[] {
       return (
         <code
           key={`${index}-${partIndex}`}
-          className="rounded bg-muted px-1 py-0.5 font-mono text-[0.9em]"
+          className="rounded-lg bg-black/40 border border-cyan-500/30 px-1.5 py-0.5 font-mono text-[0.95em] text-cyan-300 font-bold shadow-sm"
         >
           {part.slice(1, -1)}
         </code>
@@ -50,7 +50,7 @@ export function MarkdownText({
   return (
     <>
       {paragraphs.map((paragraph, index) => (
-        <p key={index} className={cn("text-foreground/90", className)}>
+        <p key={index} className={cn("text-base sm:text-lg leading-relaxed text-foreground/90", className)}>
           {renderParagraph(paragraph, index)}
         </p>
       ))}

@@ -1,4 +1,4 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 @import "tw-animate-css";
 
 :root {
@@ -354,6 +354,37 @@ html, body {
   50% { transform: translateY(-12px) scale(1.2); opacity: 1; }
 }
 .animate-float-sparkle { animation: float-sparkle 2s ease-in-out infinite; }
+
+@keyframes wave {
+  0%, 100% { transform: rotate(0deg); }
+  10% { transform: rotate(14deg); }
+  20% { transform: rotate(-8deg); }
+  30% { transform: rotate(14deg); }
+  40% { transform: rotate(-4deg); }
+  50% { transform: rotate(10deg); }
+  55% { transform: rotate(0deg); }
+}
+.animate-wave {
+  display: inline-block;
+  transform-origin: 70% 70%;
+  animation: wave 2.4s ease-in-out infinite;
+}
+
+@keyframes orbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-orbit { animation: orbit 3s linear infinite; }
+
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 oklch(0.80 0.19 142 / 0.35), 0 0 16px oklch(0.80 0.19 142 / 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 6px oklch(0.80 0.19 142 / 0), 0 0 28px oklch(0.80 0.19 142 / 0.35);
+  }
+}
+.animate-glow-pulse { animation: glow-pulse 2s ease-in-out infinite; }
 
 @keyframes sparkle {
   0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
@@ -779,4 +810,55 @@ html, body {
 .animate-twinkle {
   animation: twinkle var(--duration, 3s) ease-in-out infinite;
   animation-delay: var(--delay, 0s);
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   DUOLINGO GALAXY 3D UTILITIES
+   ════════════════════════════════════════════════════════════════════ */
+
+.duo-card-3d {
+  border-bottom-width: 4px;
+  border-bottom-color: rgba(255, 255, 255, 0.15);
+  transition: transform 75ms ease, border-color 75ms ease, background-color 75ms ease;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.duo-card-3d:active:not([aria-disabled="true"]):not(:disabled) {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+.duo-card-3d-selected {
+  border-color: rgba(6, 182, 212, 0.6) !important;
+  border-bottom-color: rgb(8, 145, 178) !important;
+  background-color: rgba(6, 182, 212, 0.12) !important;
+  box-shadow: 0 0 24px rgba(6, 182, 212, 0.25);
+  transform: translateY(2px);
+}
+
+.duo-card-3d-correct {
+  border-color: rgba(16, 185, 129, 0.6) !important;
+  border-bottom-color: rgb(5, 150, 105) !important;
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  box-shadow: 0 0 24px rgba(16, 185, 129, 0.3);
+}
+
+.duo-card-3d-incorrect {
+  border-color: rgba(244, 63, 94, 0.6) !important;
+  border-bottom-color: rgb(225, 29, 72) !important;
+  background-color: rgba(244, 63, 94, 0.15) !important;
+  box-shadow: 0 0 24px rgba(244, 63, 94, 0.3);
+}
+
+@keyframes heart-shatter {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.3) rotate(-12deg); filter: brightness(1.5); }
+  50% { transform: scale(0.9) rotate(8deg); }
+  75% { transform: scale(1.1) rotate(-4deg); opacity: 0.8; }
+  100% { transform: scale(0.8); opacity: 0.4; filter: grayscale(1); }
+}
+
+.heart-crack {
+  animation: heart-shatter 400ms ease-in-out forwards;
 }

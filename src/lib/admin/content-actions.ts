@@ -2,12 +2,15 @@
 
 import "server-only";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { requireAdmin } from "@/lib/admin/auth";
 import { prisma } from "@/lib/db";
+import { encodeRichQuestion } from "@/lib/quiz/types";
+import { Prisma } from "@/generated/prisma/client";
+import type { SeedQuestion } from "@/lib/curriculum/seed";
 import {
   activitySchema,
   achievementInputSchema,
@@ -27,6 +30,7 @@ function revalidateContent() {
   revalidatePath("/admin/content");
   revalidatePath("/dashboard");
   revalidatePath("/");
+  revalidateTag("curriculum");
 }
 
 // ---------- Career ----------
@@ -396,32 +400,73 @@ export async function addQuestionAction(
     await requireAdmin();
     const lessonId = idSchema.parse(formData.get("lessonId"));
 
-    const rawOptions = formData.get("options");
-    const options = rawOptions
-      ? rawOptions
-          .toString()
-          .split("\n")
-          .map((o) => o.trim())
-          .filter(Boolean)
-      : undefined;
-    const rawParts = formData.get("parts");
-    const parts = rawParts ? JSON.parse(rawParts.toString()) : undefined;
-
-    const parsed = questionInputSchema.safeParse({
+    const input: Record<string, unknown> = {
       type: formData.get("type"),
       difficulty: formData.get("difficulty"),
       question: formData.get("question"),
-      correctAnswer: formData.get("correctAnswer"),
       explanation: formData.get("explanation"),
       hint: formData.get("hint") || undefined,
-      options,
-      parts,
       source: formData.get("source") || "curriculum",
-    });
+    };
+
+    try {
+      switch (input.type) {
+        case "mcq": {
+          const rawOptions = formData.get("options");
+          input.options = rawOptions
+            ? rawOptions
+                .toString()
+                .split("\n")
+                .map((o) => o.trim())
+                .filter(Boolean)
+            : undefined;
+          input.correctAnswer = formData.get("correctAnswer");
+          break;
+        }
+        case "true_false":
+          input.correctAnswer = formData.get("correctAnswer");
+          break;
+        case "scenario":
+          input.parts = parseJsonField(formData.get("parts"));
+          break;
+        case "fill_blank":
+          input.fillBlanks = parseJsonField(formData.get("fillBlanks"));
+          break;
+        case "multi_select":
+          input.multiSelectOptions = parseJsonField(
+            formData.get("multiSelectOptions"),
+          );
+          break;
+        case "match":
+          input.matchPairs = parseJsonField(formData.get("matchPairs"));
+          break;
+        case "sequence":
+          input.sequenceItems = parseJsonField(formData.get("sequenceItems"));
+          input.sequenceCorrectOrder =
+            parseJsonField(formData.get("sequenceCorrectOrder")) ?? undefined;
+          break;
+        case "code_completion":
+          input.codeBlanks = parseJsonField(formData.get("codeBlanks"));
+          input.codeLanguage = formData.get("codeLanguage") || undefined;
+          break;
+        case "word_scramble":
+          input.scrambledWord = formData.get("scrambledWord");
+          break;
+        case "flip_cards":
+          input.flipCards = parseJsonField(formData.get("flipCards"));
+          break;
+      }
+    } catch {
+      return { error: "One of the structured payload fields is not valid JSON." };
+    }
+
+    const parsed = questionInputSchema.safeParse(input);
 
     if (!parsed.success) {
       return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
     }
+
+    const encoded = encodeRichQuestion(parsed.data as SeedQuestion);
 
     await prisma.question.create({
       data: {
@@ -429,11 +474,15 @@ export async function addQuestionAction(
         type: parsed.data.type,
         difficulty: parsed.data.difficulty,
         question: parsed.data.question,
-        correctAnswer: parsed.data.correctAnswer,
+        correctAnswer: encoded.correctAnswer,
         explanation: parsed.data.explanation,
         hint: parsed.data.hint,
-        options: parsed.data.options,
-        parts: parsed.data.parts,
+        options: encoded.options
+          ? (encoded.options as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
+        parts: encoded.parts
+          ? (encoded.parts as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
         source: parsed.data.source,
       },
     });
@@ -444,6 +493,11 @@ export async function addQuestionAction(
     if (err instanceof Error) return { error: err.message };
     throw err;
   }
+}
+
+function parseJsonField(value: FormDataEntryValue | null): unknown {
+  if (!value || !value.toString().trim()) return undefined;
+  return JSON.parse(value.toString());
 }
 
 export async function deleteQuestionAction(formData: FormData): Promise<void> {

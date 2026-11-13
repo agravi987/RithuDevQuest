@@ -10,6 +10,7 @@ import {
 export type NavItem = {
   href: string;
   label: string;
+  shortLabel?: string;
   icon: LucideIcon;
   /** Active color applied to the icon/label when the route is current. */
   activeColor: string;
@@ -25,6 +26,7 @@ export const MAIN_NAV_ITEMS: NavItem[] = [
   {
     href: "/dashboard",
     label: "Dashboard",
+    shortLabel: "Home",
     icon: Home,
     activeColor: "text-primary",
     glowColor: "shadow-primary/30",
@@ -32,6 +34,7 @@ export const MAIN_NAV_ITEMS: NavItem[] = [
   {
     href: "/learn",
     label: "Learn",
+    shortLabel: "Learn",
     icon: BookOpen,
     activeColor: "text-primary",
     glowColor: "shadow-primary/30",
@@ -39,6 +42,7 @@ export const MAIN_NAV_ITEMS: NavItem[] = [
   {
     href: "/practice",
     label: "Practice",
+    shortLabel: "Practice",
     icon: Target,
     activeColor: "text-xp",
     glowColor: "shadow-xp/30",
@@ -46,6 +50,7 @@ export const MAIN_NAV_ITEMS: NavItem[] = [
   {
     href: "/interview-prep",
     label: "Interview Prep",
+    shortLabel: "Interview",
     icon: MessageSquare,
     activeColor: "text-primary",
     glowColor: "shadow-primary/30",
@@ -53,6 +58,7 @@ export const MAIN_NAV_ITEMS: NavItem[] = [
   {
     href: "/achievements",
     label: "Achievements",
+    shortLabel: "Badges",
     icon: Award,
     activeColor: "text-achievement",
     glowColor: "shadow-achievement/30",

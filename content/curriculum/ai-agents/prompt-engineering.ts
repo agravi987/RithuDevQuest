@@ -256,6 +256,19 @@ export const promptEngineeringPath: SeedPath = {
                   explanation:
                     "Roles frame professional tasks and tone; they never replace task detail, and bypassing system instructions is abuse, not prompting.",
                 },
+                {
+                  type: "match",
+                  difficulty: "intermediate",
+                  question: "Match each persona role to the framing it is best used for.",
+                  matchPairs: [
+                    { left: "Code reviewer", right: "Find logic bugs and style issues" },
+                    { left: "Security auditor", right: "Surface threats and mitigations" },
+                    { left: "Support agent", right: "Set a helpful, empathetic tone" },
+                    { left: "Performance-focused DBA", right: "Flag missing indexes and cost-heavy scans" },
+                  ],
+                  explanation:
+                    "Each role primes different vocabulary and priorities — reviewers hunt flaws, auditors hunt threats, support softens tone, and a DBA hunts slow queries.",
+                },
               ],
             },
           ],

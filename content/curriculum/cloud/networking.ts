@@ -5,6 +5,14 @@ export const networkingPath: SeedPath = {
   description:
     "Understand the network fundamentals every cloud engineer relies on: IP, DNS, HTTP, and the tools used to troubleshoot connectivity.",
   slug: "networking",
+  crossReferences: [
+    {
+      careerSlug: "devops",
+      pathSlug: "linux",
+      title: "Linux Fundamentals",
+      note: "The command line and SSH skills you'll use to troubleshoot cloud networks.",
+    },
+  ],
   modules: [
     {
       title: "Networking Basics",
@@ -83,11 +91,12 @@ export const networkingPath: SeedPath = {
                     "32 total bits minus 24 network bits leaves 8 host bits.",
                 },
                 {
-                  type: "command",
+                  type: "mcq",
                   difficulty: "beginner",
                   question:
-                    "Type the command that shows your machine's IP addresses (the interface configuration).",
-                  correctAnswer: "ip addr|ipconfig|ifconfig",
+                    "Which command shows your machine's IP addresses and interface configuration?",
+                  options: ["ip addr", "df -h", "lsblk", "du -sh"],
+                  correctAnswer: "ip addr",
                   explanation:
                     "On Linux, ip addr (or ifconfig) shows interfaces and their addresses; Windows uses ipconfig.",
                 },
@@ -174,11 +183,12 @@ export const networkingPath: SeedPath = {
                     "CNAMEs create aliases — useful when a service's IP can change (e.g. behind a load balancer).",
                 },
                 {
-                  type: "command",
+                  type: "mcq",
                   difficulty: "intermediate",
                   question:
-                    "Type the command that looks up the IP address for the host api.example.com.",
-                  correctAnswer: "dig api.example.com|nslookup api.example.com|host api.example.com",
+                    "Which command looks up the IP address for the host api.example.com?",
+                  options: ["dig api.example.com", "ping api.example.com", "traceroute api.example.com", "ss api.example.com"],
+                  correctAnswer: "dig api.example.com",
                   explanation:
                     "dig, nslookup, and host all query DNS and print the resolved addresses.",
                 },
@@ -262,11 +272,12 @@ export const networkingPath: SeedPath = {
                     "404 Not Found is a 4xx client error — the resource does not exist (or is hidden).",
                 },
                 {
-                  type: "command",
+                  type: "mcq",
                   difficulty: "beginner",
                   question:
-                    "Type the command that sends a GET request and prints only the HTTP status code.",
-                  correctAnswer: "curl -o /dev/null -s -w '%{http_code}' https://api.example.com|curl -o /dev/null -w '%{http_code}' https://api.example.com",
+                    "Which command sends a GET request and prints only the HTTP status code?",
+                  options: ["curl -o /dev/null -s -w '%{http_code}' https://api.example.com", "curl -i https://api.example.com", "wget -q https://api.example.com", "curl -v https://api.example.com"],
+                  correctAnswer: "curl -o /dev/null -s -w '%{http_code}' https://api.example.com",
                   explanation:
                     "curl -w prints a custom format; %{http_code} yields just the status. -o /dev/null discards the body and -s silences progress.",
                 },
@@ -442,20 +453,22 @@ export const networkingPath: SeedPath = {
                     "ping sends ICMP echo-request packets and expects echo-replies.",
                 },
                 {
-                  type: "command",
+                  type: "mcq",
                   difficulty: "beginner",
                   question:
-                    "Type the command that sends 4 ping probes to the host db.internal.",
+                    "Which command sends exactly 4 ping probes to the host db.internal?",
+                  options: ["ping -c 4 db.internal", "ping -w 4 db.internal", "traceroute db.internal", "nmap db.internal"],
                   correctAnswer: "ping -c 4 db.internal",
                   explanation:
                     "-c 4 limits the count to four probes, which is friendly to logs and scripts.",
                 },
                 {
-                  type: "command",
+                  type: "mcq",
                   difficulty: "intermediate",
                   question:
-                    "Type the command that traces every network hop between you and web.internal.",
-                  correctAnswer: "traceroute web.internal|tracert web.internal",
+                    "Which command traces every network hop between you and web.internal?",
+                  options: ["traceroute web.internal", "ping web.internal", "dig web.internal", "ss web.internal"],
+                  correctAnswer: "traceroute web.internal",
                   explanation:
                     "traceroute (tracert on Windows) lists each hop with its latency.",
                 },
@@ -513,13 +526,14 @@ export const networkingPath: SeedPath = {
                     "ss (or netstat) with -tulpn lists TCP and UDP listening sockets and process names (as root).",
                 },
                 {
-                  type: "command",
+                  type: "mcq",
                   difficulty: "intermediate",
                   question:
-                    "Type the command that lists listening sockets and filters for port 3306 (MySQL).",
-                  correctAnswer: "ss -tulpn | grep 3306|netstat -tulpn | grep 3306",
+                    "Which command shows which process is listening on TCP port 3306 (MySQL)?",
+                  options: ["ss -tulpn", "curl localhost:3306", "ping 3306", "df -h"],
+                  correctAnswer: "ss -tulpn",
                   explanation:
-                    "Piping ss output through grep narrows it to lines mentioning the port.",
+                    "ss with -tulpn lists TCP/UDP listening sockets together with the owning process, letting you see exactly which PID holds port 3306.",
                 },
                 {
                   type: "true_false",
@@ -595,10 +609,16 @@ export const networkingPath: SeedPath = {
                     "-i includes the response headers in the output; -o writes to a file, -s silences progress, -L follows redirects.",
                 },
                 {
-                  type: "command",
+                  type: "mcq",
                   difficulty: "intermediate",
                   question:
-                    "Type the command that POSTs JSON {\"name\":\"demo\"} to https://api.example.com/items.",
+                    "Which command POSTs JSON {\"name\":\"demo\"} to https://api.example.com/items?",
+                  options: [
+                    "curl -X POST -H 'Content-Type: application/json' -d '{\"name\":\"demo\"}' https://api.example.com/items",
+                    "curl https://api.example.com/items",
+                    "wget -O- https://api.example.com/items",
+                    "curl -X DELETE https://api.example.com/items",
+                  ],
                   correctAnswer:
                     "curl -X POST -H 'Content-Type: application/json' -d '{\"name\":\"demo\"}' https://api.example.com/items",
                   explanation:
@@ -618,7 +638,7 @@ export const networkingPath: SeedPath = {
                   difficulty: "beginner",
                   question:
                     "The curl flag that follows HTTP redirects (3xx) automatically is ___.",
-                  fillBlanks: [{ answer: "-L" }, { answer: "--location" }],
+                  fillBlanks: [{ answer: "-L|--location" }],
                   explanation:
                     "-L (--location) makes curl re-issue the request at the redirect target.",
                 },
@@ -714,10 +734,16 @@ export const networkingPath: SeedPath = {
                     "DNS first, then TCP, then the TLS handshake, certificate verification, and finally encrypted HTTP.",
                 },
                 {
-                  type: "command",
+                  type: "mcq",
                   difficulty: "advanced",
                   question:
-                    "Type the command that prints the TLS certificate presented by api.example.com on port 443.",
+                    "Which command prints the TLS certificate presented by api.example.com on port 443?",
+                  options: [
+                    "openssl s_client -connect api.example.com:443 -servername api.example.com",
+                    "openssl x509 -in api.example.com.pem",
+                    "curl -v https://api.example.com",
+                    "dig api.example.com",
+                  ],
                   correctAnswer:
                     "openssl s_client -connect api.example.com:443 -servername api.example.com",
                   explanation:
@@ -728,7 +754,7 @@ export const networkingPath: SeedPath = {
                   difficulty: "beginner",
                   question:
                     "The ___ service signs certificates so clients can trust a server's identity.",
-                  fillBlanks: [{ answer: "certificate authority" }, { answer: "CA" }],
+                  fillBlanks: [{ answer: "certificate authority|CA" }],
                   explanation:
                     "A certificate authority signs and vouches for certificates, forming the chain of trust.",
                 },
@@ -897,7 +923,7 @@ export const networkingPath: SeedPath = {
                   difficulty: "intermediate",
                   question:
                     "A health check that returns ___ and fails three times marks the backend unhealthy.",
-                  fillBlanks: [{ answer: "500" }, { answer: "5xx" }, { answer: "503" }],
+                  fillBlanks: [{ answer: "500|5xx|503" }],
                   explanation:
                     "A 5xx (or any configured failure threshold) means the backend is not ready and will be drained.",
                 },

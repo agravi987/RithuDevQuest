@@ -1,21 +1,27 @@
 "use client";
 
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence, useInView } from "motion/react";
-import { Check, Lock, Play, Rocket, ArrowDown, Sparkles, Navigation, ChevronDown, ChevronUp } from "lucide-react";
+import { Check, Lock, Play, Rocket, Sparkles, ChevronDown, ChevronUp, ArrowDown, Navigation } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { LessonState } from "@/lib/curriculum/navigation";
 import { SpaceshipPlayer } from "@/components/galaxy/spaceship-player";
 import { MilestoneNode } from "@/components/galaxy/milestone-node";
-import { LockedTooltip } from "@/components/galaxy/locked-tooltip";
 import { RithuMessage, RITHU_MESSAGES } from "@/components/galaxy/rithu-message";
 import { getPathTheme, getModuleIcon, CORE_PATH_THEMES } from "@/lib/career-metadata";
+import { playComboFlameSound } from "@/lib/sounds";
+import { DuoButton } from "@/components/quiz/duo-button";
+import { CosmicCharacter } from "@/components/quiz/characters/CosmicCharacter";
+import { CosmicPlanet } from "@/components/learning-path/cosmic-planet";
 
 type LessonNode = {
   id: string;
   title: string;
+  description?: string | null;
+  skills?: string[];
   slug: string;
   estimatedMinutes: number;
   order: number;
@@ -44,104 +50,7 @@ function seeded(s: number) {
 }
 const PLANETS = ["/png_images/mars.png", "/png_images/saturn.png", "/png_images/planets/devops.png", "/png_images/planets/cloud.png"];
 
-/* ═══════════════════════════════════════
-   PLANET NODE — with hover effects
-   ═══════════════════════════════════════ */
-
-function Planet({
-  state, isCurrent, size, children,
-}: {
-  state: LessonState; isCurrent: boolean; size: number; children: React.ReactNode;
-}) {
-  const done = state === "completed";
-  const locked = state === "locked";
-  const available = state === "available" && !isCurrent;
-
-  const bg = done
-    ? "radial-gradient(circle at 30% 25%, #a7f3d0, #34d399 35%, #059669 70%, #047857)"
-    : isCurrent
-      ? "radial-gradient(circle at 30% 25%, #fef3c7, #fbbf24 35%, #f59e0b 70%, #d97706)"
-      : locked
-        ? "radial-gradient(circle at 30% 25%, rgba(71,85,105,0.25), rgba(51,65,85,0.15) 40%, rgba(30,41,59,0.25) 75%, rgba(15,23,42,0.35))"
-        : "radial-gradient(circle at 30% 25%, rgba(200,220,255,0.75), rgba(148,163,184,0.35) 40%, rgba(71,85,105,0.25) 75%, rgba(30,41,59,0.35))";
-
-  const bdr = done ? "border-emerald-300/50" : isCurrent ? "border-amber-300/60" : locked ? "border-white/5" : "border-white/15";
-
-  const glow = done
-    ? "0 0 20px rgba(52,211,153,0.4), 0 0 40px rgba(52,211,153,0.15)"
-    : isCurrent
-      ? "0 0 30px rgba(251,191,36,0.5), 0 0 60px rgba(251,191,36,0.2)"
-      : available
-        ? "0 0 12px rgba(200,220,255,0.15)"
-        : "";
-
-  return (
-    <motion.div
-      whileHover={!locked ? { scale: 1.15, y: -4 } : undefined}
-      whileTap={!locked ? { scale: 0.95 } : undefined}
-      transition={{ type: "spring", stiffness: 400, damping: 20 }}
-      className="relative group"
-      style={{ width: size, height: size }}
-    >
-      {/* Hover glow ring */}
-      {!locked && (
-        <div className="absolute -inset-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-          style={{ boxShadow: `0 0 20px ${done ? "rgba(52,211,153,0.3)" : isCurrent ? "rgba(251,191,36,0.3)" : "rgba(255,255,255,0.15)"}` }} />
-      )}
-
-      {/* Atmospheric glow */}
-      {(done || isCurrent) && (
-        <motion.div
-          animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.1, 0.3] }}
-          transition={{ duration: isCurrent ? 2.5 : 4, repeat: Infinity }}
-          className="absolute -inset-3 rounded-full blur-xl"
-          style={{ background: done ? "radial-gradient(circle, rgba(52,211,153,0.5), transparent 70%)" : "radial-gradient(circle, rgba(251,191,36,0.5), transparent 70%)" }}
-        />
-      )}
-
-      {/* Orbital ring */}
-      {!locked && (
-        <motion.div animate={{ rotate: 360 }} transition={{ duration: isCurrent ? 8 : 14, repeat: Infinity, ease: "linear" }}
-          className="absolute rounded-full border border-dashed"
-          style={{ inset: -size * 0.18, borderColor: done ? "rgba(52,211,153,0.25)" : isCurrent ? "rgba(251,191,36,0.3)" : "rgba(255,255,255,0.06)" }} />
-      )}
-
-      {/* Pulse ring for current */}
-      {isCurrent && (
-        <motion.div animate={{ scale: [1, 1.6, 1], opacity: [0.4, 0, 0.4] }}
-          transition={{ duration: 2.5, repeat: Infinity }}
-          className="absolute rounded-full border-2 border-amber-400/30"
-          style={{ inset: -size * 0.28 }} />
-      )}
-
-      {/* Planet sphere */}
-      <div className={cn("relative size-full rounded-full border-2 transition-shadow duration-300", bdr)}
-        style={{ background: bg, boxShadow: `${glow}, inset -${size * 0.1}px -${size * 0.12}px ${size * 0.2}px rgba(0,0,0,0.45), inset ${size * 0.07}px ${size * 0.08}px ${size * 0.15}px rgba(255,255,255,0.25)` }}>
-        <div className="absolute inset-0 grid place-items-center transition-transform duration-300 group-hover:scale-110">{children}</div>
-        {/* Specular */}
-        <div className="pointer-events-none absolute rounded-full bg-white/35 blur-[1px]"
-          style={{ left: "20%", top: "14%", width: size * 0.14, height: size * 0.14 }} />
-        {/* Crescent */}
-        <div className="pointer-events-none absolute inset-0 rounded-full"
-          style={{ background: "radial-gradient(circle at 70% 75%, rgba(0,0,0,0.5), transparent 55%)" }} />
-      </div>
-
-      {/* Active badge */}
-      {available && (
-        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}
-          className="absolute -right-0.5 -top-0.5 grid place-items-center rounded-full bg-white/15 text-white backdrop-blur-sm border border-white/15"
-          style={{ width: size * 0.3, height: size * 0.3, fontSize: size * 0.12 }}>✦</motion.div>
-      )}
-
-      {/* Locked icon overlay */}
-      {locked && (
-        <div className="absolute inset-0 grid place-items-center">
-          <Lock className="text-white/10" style={{ width: size * 0.25, height: size * 0.25 }} />
-        </div>
-      )}
-    </motion.div>
-  );
-}
+/* Cosmic procedural planets are rendered via <CosmicPlanet /> from @/components/learning-path/cosmic-planet */
 
 /* ═══════════════════════════════════════
    FLOATING PLANET
@@ -185,77 +94,65 @@ function ModuleBanner({
       initial={{ opacity: 0, y: 20, scale: 0.98 }}
       animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
       transition={{ delay: idx * 0.05, duration: 0.5 }}
-      className="relative rounded-2xl overflow-hidden backdrop-blur-md mb-3 group/banner"
+      className="relative rounded-3xl overflow-hidden mb-6 group/banner shadow-xl border-b-[6px]"
       style={{
-        background: `linear-gradient(135deg, ${theme.primary}0c, ${theme.primary}04)`,
-        border: `1px solid ${theme.primary}20`,
-        boxShadow: isCurrent ? `0 0 40px ${theme.glow}, inset 0 1px 0 rgba(255,255,255,0.06)` : `inset 0 1px 0 rgba(255,255,255,0.03)`,
+        background: `linear-gradient(135deg, ${theme.primary}25, ${theme.primary}10)`,
+        borderColor: `${theme.primary}55`,
+        boxShadow: isCurrent ? `0 10px 30px -10px ${theme.glow}` : undefined,
       }}>
       {/* Background glow */}
-      <div className="pointer-events-none absolute -right-10 -top-10 size-32 rounded-full blur-3xl transition-opacity duration-500 group-hover/banner:opacity-80 opacity-50"
+      <div className="pointer-events-none absolute -right-10 -top-10 size-36 rounded-full blur-3xl opacity-60"
         style={{ background: `radial-gradient(circle, ${theme.glow}, transparent 70%)` }} />
-      <div className="pointer-events-none absolute -left-6 -bottom-6 size-24 rounded-full blur-2xl opacity-30"
-        style={{ background: `radial-gradient(circle, ${theme.primary}40, transparent 70%)` }} />          <div className="relative z-10 p-4 sm:p-5">
-            <div className="flex items-center gap-4">
-              {/* Expand/collapse toggle */}
-              <button onClick={onToggle}
-                className="absolute right-3 top-3 grid size-7 place-items-center rounded-lg bg-white/[0.05] text-white/30 hover:text-white/50 hover:bg-white/[0.08] transition-all"
-                aria-label={isExpanded ? "Collapse module" : "Expand module"}>
-                {isExpanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
-              </button>
-          {/* Planet orb */}
-          <motion.div whileHover={{ rotate: 360, scale: 1.1 }} transition={{ duration: 0.8 }}
-            className="relative shrink-0 cursor-pointer">
-            <div className="absolute -inset-2.5 rounded-full border border-dashed animate-[spin_25s_linear_infinite]"
-              style={{ borderColor: `${theme.primary}20` }} />
-            <div className="relative grid size-14 sm:size-16 place-items-center rounded-full"
-              style={{ background: theme.sphere, boxShadow: `inset -5px -7px 12px rgba(0,0,0,0.5), inset 3px 5px 9px rgba(255,255,255,0.2), 0 3px 16px ${theme.glow}` }}>
-              <span className="text-2xl sm:text-3xl drop-shadow-lg">{emoji}</span>
-              <div className="pointer-events-none absolute left-[22%] top-[15%] size-2 rounded-full bg-white/25 blur-[1px]" />
-            </div>
-            {complete && (
-              <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }}
-                className="absolute -bottom-1 -right-1 grid size-5 place-items-center rounded-full bg-emerald-500 text-[9px] font-black text-white shadow-lg shadow-emerald-500/30">✓</motion.div>
-            )}
-          </motion.div>
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/25">{theme.label}</p>
-              {isCurrent && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/10 px-2 py-0.5 text-[9px] font-bold text-amber-400/80">
-                  <span className="size-1 rounded-full bg-amber-400 animate-pulse" /> Active
-                </span>
-              )}
-            </div>
-            <h3 className="font-black text-base sm:text-lg text-white tracking-tight">{mod.title}</h3>
-            {mod.description && <p className="text-xs text-white/25 mt-0.5 line-clamp-1">{mod.description}</p>}
-
-            {/* Progress bar */}
-            <div className="mt-2.5 flex items-center gap-2.5">
-              <div className="flex-1 h-2 rounded-full bg-white/[0.06] overflow-hidden max-w-[200px]">
-                <motion.div initial={{ width: 0 }} animate={inView ? { width: `${pct}%` } : {}}
-                  transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
-                  className="h-full rounded-full relative"
-                  style={{ background: `linear-gradient(90deg, ${theme.primary}cc, ${theme.primary}88)` }}>
-                  {/* Shimmer */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                </motion.div>
+      <div className="relative z-10 p-5 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            {/* Planet orb */}
+            <motion.div whileHover={{ rotate: 360, scale: 1.1 }} transition={{ duration: 0.8 }}
+              className="relative shrink-0 cursor-pointer">
+              <div className="relative grid size-16 place-items-center rounded-2xl bg-white/10 border-2 border-white/20 shadow-inner">
+                <span className="text-3xl drop-shadow-md">{emoji}</span>
               </div>
-              <span className="text-[10px] font-bold text-white/30 tabular-nums">{done}/{total} · {pct}%</span>
+              {complete && (
+                <div className="absolute -bottom-1.5 -right-1.5 grid size-6 place-items-center rounded-full bg-emerald-500 text-xs font-black text-white shadow-lg border-2 border-[#070b14]">✓</div>
+              )}
+            </motion.div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="rounded-lg bg-white/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-emerald-300">
+                  Unit {idx + 1}
+                </span>
+                {isCurrent && (
+                  <span className="inline-flex items-center gap-1 rounded-lg bg-amber-400/20 px-2 py-0.5 text-[10px] font-black uppercase text-amber-300">
+                    <span className="size-1.5 rounded-full bg-amber-400 animate-ping" /> Current Unit
+                  </span>
+                )}
+              </div>
+              <h3 className="font-black text-lg sm:text-xl text-white tracking-tight mt-1">{mod.title}</h3>
+              {mod.description && <p className="text-xs text-slate-300 mt-0.5 line-clamp-1 font-medium">{mod.description}</p>}
+
+              {/* Progress bar */}
+              <div className="mt-3 flex items-center gap-3 max-w-xs">
+                <div className="flex-1 h-2.5 rounded-full bg-black/40 overflow-hidden border border-white/10">
+                  <motion.div initial={{ width: 0 }} animate={inView ? { width: `${pct}%` } : {}}
+                    transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+                    className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500" />
+                </div>
+                <span className="text-xs font-black text-emerald-400 tabular-nums">{pct}%</span>
+              </div>
             </div>
           </div>
 
-          {/* Lesson constellation dots */}
-          <div className="hidden sm:flex flex-col gap-1.5">
-            {mod.lessons.map((l, i) => (
-              <motion.div key={l.id} initial={{ scale: 0 }} animate={inView ? { scale: 1 } : {}}
-                transition={{ delay: 0.2 + i * 0.05 }}
-                className={cn("rounded-full transition-all duration-300",
-                  l.state === "completed" ? "size-2 bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]"
-                    : l.state === "available" ? "size-2 bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.5)]"
-                      : "size-1.5 bg-white/8")} />
-            ))}
+          {/* Right: Duolingo Guidebook Action Button */}
+          <div className="flex items-center gap-2 self-end sm:self-center">
+            <button
+              onClick={onToggle}
+              className="duo-card-3d flex items-center gap-2 rounded-2xl border-2 border-white/20 bg-white/10 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-white shadow-md active:translate-y-1 hover:bg-white/15 transition-all"
+            >
+              <span>{isExpanded ? "Collapse" : "Expand"}</span>
+              {isExpanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+            </button>
           </div>
         </div>
       </div>
@@ -268,10 +165,20 @@ function ModuleBanner({
    ═══════════════════════════════════════ */
 
 function LessonRow({
-  lesson, pt, snakeW, isCurrent, size, icon, firstAvail, curRef, prevLesson,
+  lesson,
+  pt,
+  snakeW,
+  isCurrent,
+  size,
+  firstAvail,
+  curRef,
+  prevLesson,
 }: {
-  lesson: LessonNode; pt: { x: number; y: number }; snakeW: number;
-  isCurrent: boolean; size: number; icon: React.ReactNode;
+  lesson: LessonNode;
+  pt: { x: number; y: number };
+  snakeW: number;
+  isCurrent: boolean;
+  size: number;
   firstAvail: { modIdx: number; lessonIdx: number; found: boolean };
   curRef: React.RefObject<HTMLDivElement | null>;
   prevLesson: LessonNode | null;
@@ -282,112 +189,226 @@ function LessonRow({
   const done = lesson.state === "completed";
   const locked = lesson.state === "locked";
 
-  /* Floating label offset — varies per node so labels don't stack */
-  const floatY = ((pt.x * 7 + pt.y * 3) % 30) - 15;
-
   return (
-    <motion.div ref={ref}
-      initial={{ opacity: 0, scale: 0.7, y: 20 }}
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, scale: 0.8, y: 24 }}
       animate={inView ? { opacity: 1, scale: 1, y: 0 } : {}}
-      transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.05 }}
+      transition={{ type: "spring", stiffness: 260, damping: 22, delay: 0.04 }}
       className="absolute z-10 group/node"
-      style={{ left: `${(pt.x / snakeW) * 100}%`, top: pt.y, transform: "translate(-50%, -50%)" }}>
+      style={{
+        left: `${(pt.x / snakeW) * 100}%`,
+        top: pt.y,
+        transform: "translate(-50%, -50%)",
+      }}
+    >
+      {/* Duolingo START Floating Crown & Spaceship for Active Target */}
+      {isCurrent && (
+        <motion.div
+          animate={{ y: [0, -6, 0] }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-14 left-1/2 -translate-x-1/2 z-30 pointer-events-none flex flex-col items-center"
+        >
+          <div className="relative rounded-full border-2 border-amber-400 bg-amber-400 px-3 py-0.5 font-black text-[10px] uppercase tracking-wider text-slate-950 shadow-lg shadow-amber-400/40 flex items-center gap-1">
+            <Sparkles className="size-2.5 fill-slate-950" />
+            START
+            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 size-2 rotate-45 bg-amber-400" />
+          </div>
+          <SpaceshipPlayer size={32} state="current" direction="right" className="mt-1" />
+        </motion.div>
+      )}
 
-      {/* Planet */}
-      <div ref={isCurrent && firstAvail.found ? curRef : undefined}>
+      {/* Cosmic Planet Body */}
+      <div
+        id={`lesson-node-${lesson.id}`}
+        ref={isCurrent && firstAvail.found ? curRef : undefined}
+        className="relative z-10"
+      >
         {locked ? (
-          <Planet state={lesson.state} isCurrent={isCurrent} size={size}>{icon}</Planet>
+          <CosmicPlanet
+            archetypeIndex={lesson.order}
+            state={lesson.state}
+            isCurrent={isCurrent}
+            size={size}
+          />
         ) : (
           <Link
             href={lesson.href}
             aria-label={lesson.title}
-            className="block cursor-pointer rounded-full outline-none no-underline focus-visible:ring-2 focus-visible:ring-white/60"
+            className="block cursor-pointer rounded-full outline-none no-underline focus-visible:ring-4 focus-visible:ring-cyan-400/60"
           >
-            <Planet state={lesson.state} isCurrent={isCurrent} size={size}>{icon}</Planet>
+            <CosmicPlanet
+              archetypeIndex={lesson.order}
+              state={lesson.state}
+              isCurrent={isCurrent}
+              size={size}
+            />
           </Link>
         )}
       </div>
 
-      {/* Spaceship */}
-      {isCurrent && (
-        <motion.div initial={{ opacity: 0, x: isLeft ? -20 : 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="absolute -top-12 left-1/2 -translate-x-1/2">
-          <SpaceshipPlayer size={36} state="current" direction="right" />
-        </motion.div>
-      )}
+      {/* Clean Planet Name Label — visible by default, fades out on hover */}
+      <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 pointer-events-none text-center w-max max-w-[140px] sm:max-w-[170px] z-10 transition-opacity duration-200 group-hover/node:opacity-0 group-focus-within/node:opacity-0">
+        <span
+          className={cn(
+            "inline-block px-3 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-bold leading-tight truncate shadow-md backdrop-blur-md border transition-all duration-200",
+            isCurrent
+              ? "bg-amber-400/20 text-amber-300 border-amber-400/50 shadow-[0_0_12px_rgba(251,191,36,0.25)]"
+              : done
+              ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+              : locked
+              ? "bg-slate-900/70 text-slate-400 border-white/5"
+              : "bg-slate-900/80 text-white/90 border-white/15",
+          )}
+        >
+          {lesson.title}
+        </span>
+      </div>
 
+      {/* Luminous Cosmic Tether Line — appears only on hover */}
       <div
         className={cn(
-          "absolute top-1/2 -translate-y-1/2 transition-all duration-300 z-20",
-          "pointer-events-none",
-          "overflow-hidden max-w-[calc(100vw-2rem)]",
-          isLeft ? "left-[calc(100%+14px)]" : "right-[calc(100%+14px)] text-right",
+          "pointer-events-none absolute top-1/2 -translate-y-1/2 h-[2px] hidden sm:block z-40 transition-opacity duration-200",
+          "opacity-0 group-hover/node:opacity-100 group-focus-within/node:opacity-100",
+          isLeft
+            ? "left-[calc(100%+4px)] w-4 bg-gradient-to-r from-cyan-400/50 via-cyan-400/20 to-transparent"
+            : "right-[calc(100%+4px)] w-4 bg-gradient-to-l from-cyan-400/50 via-cyan-400/20 to-transparent",
         )}
-        style={{ transform: `translate(-50%, calc(-50% + ${floatY}px))` }}
       >
-
-        {/* Title — floating glow text */}
-        <p className={cn(
-          "text-[11px] sm:text-xs font-bold leading-tight whitespace-nowrap truncate",
-          done && "text-emerald-300/70",
-          isCurrent && "text-amber-200 drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]",
-          !done && !isCurrent && !locked && "text-white/60",
-          locked && "text-white/10",
-        )}>
-          {lesson.title}
-        </p>
-
-        {/* Tiny floating badges — inline, no wrapper */}
-        <div className={cn(
-          "flex items-center gap-1 mt-0.5",
-          isLeft ? "" : "justify-end",
-        )}>
-          <span className={cn(
-            "text-[9px] tabular-nums",
-            locked ? "text-white/6" : done ? "text-emerald-400/40" : isCurrent ? "text-amber-400/60" : "text-white/18",
-          )}>
-            ~{lesson.estimatedMinutes}m
-          </span>
-          {done && <span className="text-[9px] text-emerald-400/40">✓</span>}
-          {isCurrent && <span className="text-[9px] text-amber-400/60 font-semibold">●</span>}
-          {locked && <span className="text-[9px] text-white/8">🔒</span>}
-        </div>
-
-        {/* Locked tooltip — tiny, floats */}
-        {locked && prevLesson && (
-          <div className="mt-0.5 pointer-events-auto">
-            <LockedTooltip prerequisiteTitle={prevLesson.title} />
-          </div>
-        )}
+        <div
+          className={cn(
+            "absolute top-1/2 -translate-y-1/2 size-1.5 rounded-full",
+            isCurrent
+              ? "bg-amber-400 shadow-[0_0_8px_#f59e0b]"
+              : done
+              ? "bg-emerald-400 shadow-[0_0_8px_#10b981]"
+              : "bg-cyan-400/60 shadow-[0_0_6px_#06b6d4]",
+            isLeft ? "left-0" : "right-0",
+          )}
+        />
       </div>
 
-      {/* ── Hover action — floating pill, no card ── */}
-      {lesson.state !== "locked" && (
-        <div className={cn(
-          "absolute z-30 transition-all duration-300",
-          "opacity-0 scale-90 group-hover/node:opacity-100 group-hover/node:scale-100",
-          "pointer-events-none group-hover/node:pointer-events-auto",
+      {/* Hover-Only Mission Briefing Popover Card — high z-index, zero overlap by default */}
+      <div
+        className={cn(
+          "absolute top-1/2 -translate-y-1/2 transition-all duration-200 ease-out z-50",
+          "opacity-0 scale-95 pointer-events-none",
+          "group-hover/node:opacity-100 group-hover/node:scale-100 group-hover/node:pointer-events-auto",
+          "group-focus-within/node:opacity-100 group-focus-within/node:scale-100 group-focus-within/node:pointer-events-auto",
+          "w-[210px] sm:w-[260px] max-w-[calc(100vw-100px)]",
           isLeft
-            ? "left-[calc(100%+14px)] top-[calc(100%+8px)]"
-            : "right-[calc(100%+14px)] top-[calc(100%+8px)] text-right",
-        )}>
-          <Link href={lesson.href}
+            ? "left-[calc(100%+8px)] sm:left-[calc(100%+14px)] text-left"
+            : "right-[calc(100%+8px)] sm:right-[calc(100%+14px)] text-left",
+        )}
+      >
+        <div
+          className={cn(
+            "relative rounded-2xl p-3 sm:p-3.5 backdrop-blur-2xl transition-all duration-200 border shadow-2xl",
+            isCurrent
+              ? "bg-[#0b1329]/95 border-amber-400/40 shadow-[0_10px_35px_-5px_rgba(251,191,36,0.3)] ring-1 ring-amber-400/30"
+              : done
+              ? "bg-[#071422]/95 border-emerald-500/30 shadow-[0_10px_30px_-5px_rgba(16,185,129,0.2)]"
+              : locked
+              ? "bg-[#070b16]/95 border-white/10 opacity-90"
+              : "bg-[#091126]/95 border-cyan-500/30 shadow-[0_10px_30px_-5px_rgba(6,182,212,0.2)]",
+          )}
+        >
+          {/* Subtle Corner Accent Glow */}
+          <div
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-bold",
-              "backdrop-blur-md transition-all duration-200 hover:scale-105",
-              "shadow-lg shadow-black/20",
-              isCurrent
-                ? "bg-amber-400/20 text-amber-300 border border-amber-400/25 hover:bg-amber-400/30"
-                : done
-                  ? "bg-emerald-400/15 text-emerald-300/70 border border-emerald-400/15 hover:bg-emerald-400/25"
-                  : "bg-white/10 text-white/50 border border-white/10 hover:bg-white/15",
-            )}>
-            {done ? "Review" : isCurrent ? "Start" : "Begin"}
-            {isCurrent ? <Rocket className="size-2.5" /> : <Play className="size-2" />}
-          </Link>
+              "pointer-events-none absolute -right-6 -top-6 size-20 rounded-full blur-xl opacity-30",
+              isCurrent ? "bg-amber-400" : done ? "bg-emerald-400" : "bg-cyan-400",
+            )}
+          />
+
+          {/* Card Header: Mission Badge + Duration/XP */}
+          <div className="flex items-center justify-between gap-2">
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider",
+                isCurrent
+                  ? "bg-amber-400/20 text-amber-300 border border-amber-400/40"
+                  : done
+                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                  : locked
+                  ? "bg-white/5 text-slate-400 border border-white/10"
+                  : "bg-cyan-500/20 text-cyan-300 border border-cyan-400/40",
+              )}
+            >
+              {isCurrent && <span className="size-1.5 rounded-full bg-amber-400 animate-ping" />}
+              {done && <Check className="size-2.5 stroke-[3]" />}
+              {locked && <Lock className="size-2.5" />}
+              {isCurrent ? "Target" : done ? "Cleared" : locked ? "Locked" : "Available"}
+            </span>
+
+            <span className="text-[10px] font-mono text-slate-400 font-semibold tabular-nums">
+              ~{lesson.estimatedMinutes}m · +50 XP
+            </span>
+          </div>
+
+          {/* Mission Title */}
+          <h4 className="mt-1.5 font-bold text-xs sm:text-sm text-white leading-snug tracking-tight line-clamp-1">
+            {lesson.title}
+          </h4>
+
+          {/* Mission Description (if present) */}
+          {lesson.description && (
+            <p className="mt-1 text-[11px] text-slate-300/80 line-clamp-2 leading-relaxed font-normal">
+              {lesson.description}
+            </p>
+          )}
+
+          {/* Skills Badges */}
+          {lesson.skills && lesson.skills.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1.5">
+              {lesson.skills.slice(0, 2).map((skill) => (
+                <span
+                  key={skill}
+                  className="px-1.5 py-0.5 rounded bg-white/[0.06] border border-white/10 text-[9px] font-mono text-cyan-200/90"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Action CTA Button */}
+          <div className="mt-2.5 pt-2 border-t border-white/[0.08]">
+            {isCurrent ? (
+              <Link
+                href={lesson.href}
+                className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 px-3 py-1.5 text-xs font-black text-slate-950 shadow-md shadow-amber-500/20 transition-all hover:scale-[1.02] active:scale-95"
+              >
+                <span>Launch Mission</span>
+                <Rocket className="size-3.5 fill-slate-950" />
+              </Link>
+            ) : done ? (
+              <Link
+                href={lesson.href}
+                className="flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 px-3 py-1.5 text-xs font-bold text-emerald-300 transition-all hover:scale-[1.02] active:scale-95"
+              >
+                <span>Review Orbit</span>
+                <Check className="size-3 stroke-[2.5]" />
+              </Link>
+            ) : locked ? (
+              <div className="flex items-center gap-1 text-[10px] text-slate-400 leading-tight">
+                <Lock className="size-3 text-slate-500 shrink-0" />
+                <span className="truncate">
+                  {prevLesson ? `Complete "${prevLesson.title}" to unlock` : "Coordinates locked"}
+                </span>
+              </div>
+            ) : (
+              <Link
+                href={lesson.href}
+                className="flex items-center justify-center gap-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/30 px-3 py-1.5 text-xs font-bold text-cyan-200 transition-all hover:scale-[1.02] active:scale-95"
+              >
+                <span>Enter Orbit</span>
+                <Play className="size-3 fill-current" />
+              </Link>
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </motion.div>
   );
 }
@@ -397,6 +418,24 @@ function LessonRow({
    ═══════════════════════════════════════ */
 
 export function GalaxyPath({ modules, streak }: GalaxyPathProps) {
+  const searchParams = useSearchParams();
+  const justCompletedId = searchParams.get("justCompleted");
+  const nextHrefParam = searchParams.get("nextHref");
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const [flightState, setFlightState] = useState<{
+    flying: boolean;
+    startX: number;
+    startY: number;
+    targetX: number;
+    targetY: number;
+    angle: number;
+    hasArrived: boolean;
+    nextLessonTitle: string;
+    nextLessonHref: string;
+    targetNodeId: string;
+  } | null>(null);
+
   const total = modules.reduce((s, m) => s + m.lessons.length, 0);
   const done = modules.reduce((s, m) => s + m.lessons.filter((l) => l.state === "completed").length, 0);
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
@@ -404,15 +443,61 @@ export function GalaxyPath({ modules, streak }: GalaxyPathProps) {
   const curRef = useRef<HTMLDivElement>(null);
   const [showBtn, setShowBtn] = useState(false);
 
+  // Identify completed module and destination lesson
+  const allLessons = useMemo(() => modules.flatMap((m) => m.lessons), [modules]);
+  const justCompletedIdx = allLessons.findIndex((l: LessonNode) => l.id === justCompletedId);
+  const nextSequentialLesson =
+    justCompletedIdx !== -1 && justCompletedIdx < allLessons.length - 1
+      ? allLessons[justCompletedIdx + 1]
+      : null;
+
+  const destinationLesson = useMemo(() => {
+    if (!justCompletedId) return null;
+    return (
+      allLessons.find((l: LessonNode) => l.href === nextHrefParam) ??
+      nextSequentialLesson ??
+      allLessons.find((l: LessonNode) => l.state === "available") ??
+      null
+    );
+  }, [justCompletedId, nextHrefParam, nextSequentialLesson, allLessons]);
+
+  const completedModIdx = useMemo(
+    () => modules.findIndex((m) => m.lessons.some((l: LessonNode) => l.id === justCompletedId)),
+    [modules, justCompletedId]
+  );
+
+  const destinationModIdx = useMemo(
+    () =>
+      destinationLesson
+        ? modules.findIndex((m) => m.lessons.some((l: LessonNode) => l.id === destinationLesson.id))
+        : -1,
+    [modules, destinationLesson]
+  );
+
+  const firstAvail = useMemo(
+    () =>
+      modules.reduce(
+        (a, mod, mi) => {
+          if (a.found) return a;
+          const li = mod.lessons.findIndex((l) => l.state === "available");
+          return li !== -1 ? { modIdx: mi, lessonIdx: li, found: true } : a;
+        },
+        { modIdx: -1, lessonIdx: -1, found: false }
+      ),
+    [modules]
+  );
+
   /* ─── Collapse/expand state ─── */
   const [expanded, setExpanded] = useState<Set<number>>(() => {
-    // Auto-expand current module, collapse completed ones
+    // Auto-expand current module and ensure completed/destination modules are expanded immediately
     const init = new Set<number>();
     modules.forEach((mod, i) => {
       const allDone = mod.lessons.every((l) => l.state === "completed");
       const hasCurrent = mod.lessons.some((l) => l.state === "available");
       if (!allDone || hasCurrent) init.add(i);
     });
+    if (completedModIdx !== -1) init.add(completedModIdx);
+    if (destinationModIdx !== -1) init.add(destinationModIdx);
     return init;
   });
 
@@ -444,11 +529,90 @@ export function GalaxyPath({ modules, streak }: GalaxyPathProps) {
     return () => window.removeEventListener("scroll", h);
   }, []);
 
-  const firstAvail = modules.reduce((a, mod, mi) => {
-    if (a.found) return a;
-    const li = mod.lessons.findIndex((l) => l.state === "available");
-    return li !== -1 ? { modIdx: mi, lessonIdx: li, found: true } : a;
-  }, { modIdx: -1, lessonIdx: -1, found: false });
+  // Ensure completed and destination modules remain open during flight
+  useEffect(() => {
+    if (justCompletedId) {
+      setExpanded((prev) => {
+        const next = new Set(prev);
+        if (completedModIdx !== -1) next.add(completedModIdx);
+        if (destinationModIdx !== -1) next.add(destinationModIdx);
+        if (firstAvail.modIdx !== -1) next.add(firstAvail.modIdx);
+        return next;
+      });
+    }
+  }, [justCompletedId, completedModIdx, destinationModIdx, firstAvail.modIdx]);
+
+  // Launch Spacecraft Flight Animation with auto-retrying layout detection
+  useEffect(() => {
+    if (!justCompletedId || !destinationLesson || !containerRef.current) return;
+
+    let attempts = 0;
+    const maxAttempts = 6;
+    let timerId: NodeJS.Timeout | null = null;
+
+    const tryLaunch = () => {
+      attempts++;
+      const startEl = document.getElementById(`lesson-node-${justCompletedId}`);
+      const targetEl = document.getElementById(`lesson-node-${destinationLesson.id}`);
+
+      if (!startEl || !targetEl || !containerRef.current) {
+        if (attempts < maxAttempts) {
+          timerId = setTimeout(tryLaunch, 150);
+        }
+        return;
+      }
+
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const startRect = startEl.getBoundingClientRect();
+      const targetRect = targetEl.getBoundingClientRect();
+
+      // Guard against zero dimensions during animation expansion
+      if (startRect.width === 0 || targetRect.width === 0) {
+        if (attempts < maxAttempts) {
+          timerId = setTimeout(tryLaunch, 150);
+        }
+        return;
+      }
+
+      const startX = startRect.left + startRect.width / 2 - containerRect.left;
+      const startY = startRect.top + startRect.height / 2 - containerRect.top;
+      const targetX = targetRect.left + targetRect.width / 2 - containerRect.left;
+      const targetY = targetRect.top + targetRect.height / 2 - containerRect.top;
+
+      const dx = targetX - startX;
+      const dy = targetY - startY;
+      const angle = (Math.atan2(dy, dx) * 180) / Math.PI + 90;
+
+      startEl.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      try {
+        playComboFlameSound();
+      } catch {
+        // non-fatal audio fallback
+      }
+
+      setFlightState({
+        flying: true,
+        startX,
+        startY,
+        targetX,
+        targetY,
+        angle,
+        hasArrived: false,
+        nextLessonTitle: destinationLesson.title,
+        nextLessonHref: destinationLesson.href,
+        targetNodeId: destinationLesson.id,
+      });
+
+      // Clear query params so page refresh does not replay
+      window.history.replaceState({}, "", window.location.pathname);
+    };
+
+    timerId = setTimeout(tryLaunch, 220);
+    return () => {
+      if (timerId) clearTimeout(timerId);
+    };
+  }, [justCompletedId, destinationLesson]);
 
   const themeOf = (slug: string) => CORE_PATH_THEMES[slug] ?? getPathTheme(slug);
 
@@ -469,7 +633,7 @@ export function GalaxyPath({ modules, streak }: GalaxyPathProps) {
   }
 
   return (
-    <div className="relative w-full max-w-2xl mx-auto py-6 px-4">
+    <div ref={containerRef} className="relative w-full max-w-3xl mx-auto py-6 px-4 sm:px-6">
       <div className="relative z-10 space-y-2">
         {/* Progress */}
         {total > 0 && (
@@ -521,18 +685,18 @@ export function GalaxyPath({ modules, streak }: GalaxyPathProps) {
           const isLast = mi === modules.length - 1;
           const deco = PLANETS[mi % PLANETS.length];
           const comp = mod.lessons.filter((l) => l.state === "completed").length;
-          const firstLocked = mod.lessons.find((l) => l.state === "locked");
-          const prevLesson = firstLocked
-            ? mod.lessons[mod.lessons.findIndex((l) => l.id === firstLocked.id) - 1]
-            : null;
 
-          const nodeH = 88;
-          const snakeW = 500;
-          const amp = 160;
-          const pts = mod.lessons.map((_, i) => ({
-            x: snakeW / 2 + Math.sin((i / 2) * Math.PI) * amp,
-            y: i * nodeH + 50,
-          }));
+          const nodeH = 145;
+          const snakeW = 560;
+          const amp = 155;
+          const pts = mod.lessons.map((_, i) => {
+            const side = i % 2 === 0 ? -1 : 1;
+            const organicWave = Math.sin(i * 1.3) * 18;
+            return {
+              x: snakeW / 2 + side * amp + organicWave,
+              y: i * nodeH + 75,
+            };
+          });
 
           let snakeD = "";
           if (pts.length >= 2) {
@@ -540,13 +704,13 @@ export function GalaxyPath({ modules, streak }: GalaxyPathProps) {
             for (let i = 1; i < pts.length; i++) {
               const p = pts[i - 1]!;
               const c = pts[i]!;
-              const n = pts[i + 1];
-              snakeD += ` C ${p.x} ${p.y + (c.y - p.y) * 0.5}, ${c.x} ${c.y - (n ? (n.y - c.y) * 0.5 : 0)}, ${c.x} ${c.y}`;
+              const midY = (p.y + c.y) / 2;
+              snakeD += ` C ${p.x} ${midY}, ${c.x} ${midY}, ${c.x} ${c.y}`;
             }
           }
 
           return (
-            <div key={mod.id} className="relative mb-10 last:mb-0">
+            <div key={mod.id} className="relative mb-12 last:mb-0">
               {mi > 0 && (
                 <div className="pointer-events-none z-0 flex justify-center my-2"
                   style={{ [mi % 2 === 0 ? "marginRight" : "marginLeft"]: "auto", [mi % 2 === 0 ? "marginLeft" : "marginRight"]: "auto" }}>
@@ -594,40 +758,61 @@ export function GalaxyPath({ modules, streak }: GalaxyPathProps) {
                     transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
                     className="overflow-hidden relative"
                   >
-              <div className="relative" style={{ height: pts.length * nodeH + 100 }}>
+              <div className="relative" style={{ height: pts.length * nodeH + 90 }}>
                 {snakeD && (
-                  <svg viewBox={`0 0 ${snakeW} ${pts.length * nodeH + 100}`}
+                  <svg viewBox={`0 0 ${snakeW} ${pts.length * nodeH + 90}`}
                     className="absolute inset-0 w-full h-full pointer-events-none"
                     preserveAspectRatio="xMidYMid meet">
                     <defs>
                       <linearGradient id={`sg-${mi}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={theme.primary} stopOpacity="0.5" />
-                        <stop offset="100%" stopColor={theme.primary} stopOpacity="0.15" />
+                        <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.85" />
+                        <stop offset="50%" stopColor={theme.primary} stopOpacity="0.9" />
+                        <stop offset="100%" stopColor="#34d399" stopOpacity="0.85" />
                       </linearGradient>
-                      <filter id={`gl-${mi}`}>
-                        <feGaussianBlur stdDeviation="6" result="b" />
+                      <filter id={`gl-nebula-${mi}`} x="-30%" y="-30%" width="160%" height="160%">
+                        <feGaussianBlur stdDeviation="14" result="b" />
+                        <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+                      </filter>
+                      <filter id={`gl-core-${mi}`} x="-15%" y="-15%" width="130%" height="130%">
+                        <feGaussianBlur stdDeviation="5" result="b" />
                         <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
                       </filter>
                     </defs>
-                    {/* Outer glow */}
-                    <path d={snakeD} fill="none" stroke={theme.primary} strokeWidth="20" strokeLinecap="round" opacity="0.04" filter={`url(#gl-${mi})`} />
-                    {/* Inner glow */}
-                    <path d={snakeD} fill="none" stroke={theme.primary} strokeWidth="6" strokeLinecap="round" opacity="0.08" />
-                    {/* Main path — solid, themed color */}
-                    <path d={snakeD} fill="none" stroke={`url(#sg-${mi})`} strokeWidth="2" strokeLinecap="round" />
-                    {/* Traveling pulse — glow along the path */}
-                    {isCur && firstAvail.lessonIdx !== -1 && pts[firstAvail.lessonIdx] && (
-                      <>
-                        <motion.circle r="8" fill={theme.primary}
-                          animate={{ opacity: [0.05, 0.15, 0.05] }}
-                          transition={{ duration: 2, repeat: Infinity }}
-                          cx={pts[firstAvail.lessonIdx]!.x} cy={pts[firstAvail.lessonIdx]!.y} />
-                        <motion.circle r="3" fill={theme.primary}
-                          animate={{ cy: [pts[firstAvail.lessonIdx]!.y - 6, pts[firstAvail.lessonIdx]!.y + 6], opacity: [0.3, 0.8, 0.3] }}
-                          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                          cx={pts[firstAvail.lessonIdx]!.x} />
-                      </>
-                    )}
+
+                    {/* Layer 1: Wide Deep-Space Nebula Dust Highway (36px soft aura) */}
+                    <path d={snakeD} fill="none" stroke={theme.primary} strokeWidth="36" strokeLinecap="round" opacity="0.12" filter={`url(#gl-nebula-${mi})`} />
+
+                    {/* Layer 2: Outer Magnetic Hyperlane Conduit (10px wide) */}
+                    <path d={snakeD} fill="none" stroke={theme.primary} strokeWidth="10" strokeLinecap="round" opacity="0.26" />
+
+                    {/* Layer 3: Brilliant Luminous Core Beam */}
+                    <path d={snakeD} fill="none" stroke={`url(#sg-${mi})`} strokeWidth="3.5" strokeLinecap="round" filter={`url(#gl-core-${mi})`} />
+
+                    {/* Layer 4: Streaming Stardust / Energy Pulse */}
+                    <motion.path
+                      d={snakeD}
+                      fill="none"
+                      stroke="#ffffff"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeDasharray="14 36"
+                      opacity="0.75"
+                      animate={{ strokeDashoffset: [0, -100] }}
+                      transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                    />
+
+                    {/* Waypoint beacons at curve midpoints */}
+                    {pts.slice(0, -1).map((p, idx) => {
+                      const nextP = pts[idx + 1]!;
+                      const midX = (p.x + nextP.x) / 2;
+                      const midY = (p.y + nextP.y) / 2;
+                      return (
+                        <g key={idx}>
+                          <circle cx={midX} cy={midY} r="7" fill={theme.primary} opacity="0.22" />
+                          <circle cx={midX} cy={midY} r="2.5" fill="#ffffff" opacity="0.7" />
+                        </g>
+                      );
+                    })}
                   </svg>
                 )}
 
@@ -635,21 +820,21 @@ export function GalaxyPath({ modules, streak }: GalaxyPathProps) {
                 {mod.lessons.map((lesson, li) => {
                   const pt = pts[li]!;
                   const isCurLesson = lesson.state === "available" && isCur && li === firstAvail.lessonIdx;
-                  const sz = isCurLesson ? 56 : lesson.state === "completed" ? 46 : lesson.state === "available" ? 40 : 32;
-
-                  const icon = lesson.state === "completed"
-                    ? <Check className="text-white" strokeWidth={3} style={{ width: sz * 0.28, height: sz * 0.28 }} />
-                    : isCurLesson
-                      ? <Play className="text-white fill-white/30" style={{ width: sz * 0.28, height: sz * 0.28 }} />
-                      : lesson.state === "available"
-                        ? <Play className="text-white/60 fill-white/15" style={{ width: sz * 0.24, height: sz * 0.24 }} />
-                        : null; // locked shows its own icon
+                  const sz = isCurLesson ? 72 : lesson.state === "completed" ? 64 : lesson.state === "available" ? 60 : 54;
+                  const prevLesson = li > 0 ? mod.lessons[li - 1] : null;
 
                   return (
-                    <LessonRow key={lesson.id} lesson={lesson} pt={pt} snakeW={snakeW}
-                      isCurrent={isCurLesson} size={sz} icon={icon}
-                      firstAvail={firstAvail} curRef={curRef}
-                      prevLesson={prevLesson} />
+                    <LessonRow
+                      key={lesson.id}
+                      lesson={lesson}
+                      pt={pt}
+                      snakeW={snakeW}
+                      isCurrent={isCurLesson}
+                      size={sz}
+                      firstAvail={firstAvail}
+                      curRef={curRef}
+                      prevLesson={prevLesson}
+                    />
                   );
                 })}
               </div>
@@ -735,6 +920,85 @@ export function GalaxyPath({ modules, streak }: GalaxyPathProps) {
           )}
         </AnimatePresence>
       </div>
+
+      {/* ── Dynamic Spacecraft Flight Animation ── */}
+      {flightState?.flying && (
+        <motion.div
+          initial={{
+            left: flightState.startX,
+            top: flightState.startY,
+            rotate: flightState.angle,
+            scale: 0.9,
+          }}
+          animate={{
+            left: flightState.targetX,
+            top: flightState.targetY,
+            rotate: flightState.angle,
+            scale: [0.9, 1.25, 1],
+          }}
+          transition={{ duration: 1.8, ease: [0.34, 1.2, 0.64, 1] }}
+          onAnimationComplete={() => {
+            const targetId = flightState.targetNodeId;
+            setFlightState((prev) => (prev ? { ...prev, flying: false, hasArrived: true } : null));
+            try {
+              playComboFlameSound();
+            } catch {
+              // fallback
+            }
+            const targetEl = document.getElementById(`lesson-node-${targetId}`);
+            targetEl?.scrollIntoView({ behavior: "smooth", block: "center" });
+          }}
+          className="absolute z-50 pointer-events-none -translate-x-1/2 -translate-y-1/2"
+        >
+          <div className="relative">
+            <SpaceshipPlayer size={52} state="current" direction="right" />
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 size-8 rounded-full bg-amber-400/50 blur-md animate-ping" />
+          </div>
+        </motion.div>
+      )}
+
+      {/* ── Arrival Next Mission Docking Banner ── */}
+      <AnimatePresence>
+        {flightState?.hasArrived && (
+          <motion.div
+            initial={{ opacity: 0, y: 30, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-md"
+          >
+            <div className="duo-card-3d rounded-3xl border-2 border-emerald-500/50 border-b-[6px] border-b-emerald-600 bg-[#0d1527]/95 p-5 shadow-2xl backdrop-blur-xl flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                <div className="size-12 shrink-0 flex items-center justify-center rounded-2xl bg-emerald-500/20 border border-emerald-500/40 p-1">
+                  <CosmicCharacter characterId="rithu" mood="happy_jump" size="xs" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">
+                    🚀 Spacecraft Docked!
+                  </span>
+                  <h4 className="text-sm sm:text-base font-black text-white truncate mt-0.5">
+                    {flightState.nextLessonTitle}
+                  </h4>
+                  <p className="text-xs text-slate-300 font-medium">
+                    Sector cleared! Your crew has arrived at the next planet.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setFlightState(null)}
+                  className="size-8 rounded-xl bg-white/10 hover:bg-white/20 text-white/50 hover:text-white flex items-center justify-center text-xs"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <Link href={flightState.nextLessonHref} className="w-full mt-1">
+                <DuoButton variant="primary" size="lg" fullWidth>
+                  START MISSION (+10 XP) 🚀
+                </DuoButton>
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

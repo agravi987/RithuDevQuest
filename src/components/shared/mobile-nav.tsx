@@ -54,11 +54,11 @@ export function MobileNav() {
               </div>
               <span
                 className={cn(
-                  "transition-all duration-200 truncate max-w-[60px]",
-                  isActive && "text-[11px] font-extrabold"
+                  "transition-all duration-200 tracking-tight text-center leading-none",
+                  isActive ? "text-[11px] font-extrabold" : "text-[10px] font-semibold"
                 )}
               >
-                {item.label}
+                {item.shortLabel ?? item.label}
               </span>
             </NavLink>
           );

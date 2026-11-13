@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const generatedQuestionSchema = z
   .object({
-    type: z.enum(["mcq", "true_false", "command", "scenario"]),
+    type: z.enum(["mcq", "true_false", "scenario"]),
     difficulty: z.enum(["beginner", "intermediate", "advanced"]),
     question: z.string().min(5, "Question prompt must be at least 5 characters"),
     options: z.array(z.string().min(1)).optional().nullable(),

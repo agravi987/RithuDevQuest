@@ -8,12 +8,14 @@ export type LessonActivityData = {
 
 export type LessonQuestionData = {
   id: string;
-  type: "mcq" | "true_false" | "command" | "scenario" | "fill_blank" | "multi_select" | "match" | "sequence" | "code_completion" | "word_scramble" | "flip_cards";
+  type: "mcq" | "true_false" | "scenario" | "fill_blank" | "multi_select" | "match" | "sequence" | "code_completion" | "word_scramble" | "flip_cards";
   difficulty: "beginner" | "intermediate" | "advanced";
   question: string;
   options: unknown[] | null;
   parts: { prompt: string }[] | null;
   hint: string | null;
+  correctAnswer?: string;
+  explanation?: string;
   /**
    * The encoded rich payload the renderer needs, carried verbatim from the
    * Prisma `options`/`parts` JSON columns.

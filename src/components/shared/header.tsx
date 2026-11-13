@@ -16,7 +16,7 @@ type HeaderProps = {
 };
 
 export function Header({ userName, userXp, currentStreak, userHearts }: HeaderProps) {
-  const { level, progressPercentage } = calculateLevel(userXp);
+  const { level } = calculateLevel(userXp);
   const initials = userName
     .split(" ")
     .map((part: string) => part[0])
@@ -33,51 +33,50 @@ export function Header({ userName, userXp, currentStreak, userHearts }: HeaderPr
         {/* Right: Stats + Actions */}
         <div className="flex items-center gap-1.5 sm:gap-2 ml-auto min-w-0">
           {/* Stats badges */}
-          <div className="hidden sm:flex items-center gap-1.5 shrink-0">
+          {/* Duolingo Signature Stats Pills */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Streak Pill */}
             <div
-              className={`flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-bold transition-all ${
-                currentStreak > 7
-                  ? "bg-streak/15 text-streak border border-streak/20"
-                  : "bg-streak/10 text-streak"
+              className={`flex items-center gap-1.5 rounded-2xl px-3 py-1.5 text-xs font-black transition-all ${
+                currentStreak > 0
+                  ? "bg-amber-500/15 text-amber-400 border border-amber-500/30 shadow-[0_2px_0_0_#d97706]"
+                  : "bg-white/5 text-slate-400 border border-white/10"
               }`}
               title={`${currentStreak} day streak`}
             >
-              <span className={currentStreak > 7 ? "animate-bounce" : ""}>🔥</span>
+              <span className={`text-sm ${currentStreak > 0 ? "animate-bounce" : ""}`}>🔥</span>
               <span>{currentStreak}</span>
             </div>
 
+            {/* XP / Stardust Gem Pill */}
             <div
-              className="flex items-center gap-1 rounded-lg bg-xp/10 px-2.5 py-1 text-xs font-bold text-xp"
-              title={`${userXp.toLocaleString()} XP`}
+              className="flex items-center gap-1.5 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 px-3 py-1.5 text-xs font-black text-cyan-400 shadow-[0_2px_0_0_#0284c7]"
+              title={`${userXp.toLocaleString()} Stardust XP`}
             >
-              <span>⚡</span>
+              <span className="text-sm">💎</span>
               <span>{userXp.toLocaleString()}</span>
             </div>
 
+            {/* Hearts Pill */}
             <div
-              className={`flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-bold text-red-500 ${
-                userHearts <= 2 ? "bg-red-500/15 animate-pulse" : "bg-red-500/10"
+              className={`flex items-center gap-1.5 rounded-2xl border px-3 py-1.5 text-xs font-black transition-all ${
+                userHearts <= 1
+                  ? "bg-red-500/20 text-red-400 border-red-500/40 shadow-[0_2px_0_0_#dc2626] animate-pulse"
+                  : "bg-red-500/15 text-red-400 border-red-500/30 shadow-[0_2px_0_0_#dc2626]"
               }`}
-              title={`${userHearts} hearts`}
+              title={`${userHearts} Cosmic Hearts remaining`}
             >
-              <Heart className="size-3.5 fill-current" aria-hidden="true" />
+              <Heart className="size-4 fill-current text-red-400" aria-hidden="true" />
               <span>{userHearts}</span>
             </div>
 
+            {/* Level Star Pill */}
             <div
-              className="flex flex-col items-center gap-0.5 rounded-lg bg-level/10 px-2.5 py-1 text-xs font-bold text-level"
+              className="hidden sm:flex items-center gap-1.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 px-3 py-1.5 text-xs font-black text-emerald-400 shadow-[0_2px_0_0_#059669]"
               title={`Level ${level} — ${userXp} XP`}
             >
-              <div className="flex items-center gap-1">
-                <span>⭐</span>
-                <span>Lv.{level}</span>
-              </div>
-              <div className="w-full h-1 rounded-full bg-level/20 overflow-hidden">
-                <div
-                  className="h-full bg-level rounded-full transition-all duration-500"
-                  style={{ width: `${progressPercentage}%` }}
-                />
-              </div>
+              <span className="text-sm">⭐</span>
+              <span>LVL {level}</span>
             </div>
           </div>
 

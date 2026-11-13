@@ -260,6 +260,16 @@ export const nodeBackendPath: SeedPath = {
                   explanation:
                     "Import → handler → createServer → listen → accept. The server exists once it is listening.",
                 },
+                {
+                  type: "mcq",
+                  difficulty: "beginner",
+                  question:
+                    "Which curl command requests the homepage from a Node server listening on port 3000?",
+                  options: ["curl localhost:3000", "curl localhost:300", "curl http://localhost:8080", "curl -X POST localhost:3000"],
+                  correctAnswer: "curl localhost:3000",
+                  explanation:
+                    "curl sends a GET to localhost:3000; http:// is implied, so curl localhost:3000 hits the server's listen port.",
+                },
               ],
             },
           ],
@@ -497,12 +507,12 @@ export const nodeBackendPath: SeedPath = {
                   question: "Match each invalid input to the right response.",
                   matchPairs: [
                     { left: "Missing required field", right: "400 Bad Request" },
-                    { left: "Wrong JSON shape", right: "400 Bad Request" },
+                    { left: "Wrong JSON shape", right: "422 Unprocessable Entity" },
                     { left: "Overlong text", right: "413 Payload Too Large" },
                     { left: "Unknown route", right: "404 Not Found" },
                   ],
                   explanation:
-                    "Shape and completeness problems are 400s, oversized payloads are 413, unknown routes are 404.",
+                    "Missing fields are 400s, malformed shapes are 422, oversized payloads are 413, unknown routes are 404.",
                 },
                 {
                   type: "fill_blank",

@@ -179,6 +179,20 @@ export const aiAgentFundamentalsPath: SeedPath = {
                   explanation:
                     "System sets behavior, user inputs, assistant responds, and tool messages feed tool results back in.",
                 },
+                {
+                  type: "mcq",
+                  difficulty: "beginner",
+                  question: "What turns a raw model into an assistant?",
+                  options: [
+                    "A structured loop using tools and memory",
+                    "More training data",
+                    "A faster GPU",
+                    "A longer context window",
+                  ],
+                  correctAnswer: "A structured loop using tools and memory",
+                  explanation:
+                    "Tools, memory, and a structured loop let a model act on the world instead of just completing text.",
+                },
               ],
             },
           ],
@@ -254,10 +268,10 @@ export const aiAgentFundamentalsPath: SeedPath = {
                   type: "fill_blank",
                   difficulty: "beginner",
                   question:
-                    "Chain-of-thought prompting asks the model to reason ___ by ___.",
-                  fillBlanks: [{ answer: "step" }, { answer: "step" }],
+                    "Chain-of-thought prompting asks the model to work through a problem one ___ at a time.",
+                  fillBlanks: [{ answer: "step" }],
                   explanation:
-                    "Two blanks: 'step' and 'step'. Step-by-step reasoning improves multi-step accuracy.",
+                    "Step-by-step reasoning improves accuracy on multi-step problems.",
                 },
                 {
                   type: "multi_select",

@@ -9,6 +9,7 @@ import { useSidebar } from "@/lib/sidebar-context";
 import { SidebarTooltip } from "@/components/ui/sidebar-tooltip";
 import { MAIN_NAV_ITEMS, type NavItem } from "@/lib/navigation";
 import { NavLink } from "@/components/shared/nav-link";
+import { CosmicCharacter } from "@/components/quiz/characters/CosmicCharacter";
 
 export function Sidebar() {
   const { collapsed, toggleCollapsed } = useSidebar();
@@ -17,18 +18,24 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "hidden lg:flex flex-col fixed inset-y-0 left-0 border-r border-border/50 bg-background/95 backdrop-blur-xl shadow-xl shadow-black/5 transition-all duration-300 z-40",
-        collapsed ? "w-[68px]" : "w-[220px]"
+        "hidden lg:flex flex-col fixed inset-y-0 left-0 border-r-2 border-white/10 bg-[#070b14] shadow-2xl transition-all duration-300 z-40",
+        collapsed ? "w-[80px]" : "w-[256px]"
       )}
     >
-      {/* Logo */}
-      <div className={cn(
-        "flex items-center border-b border-border/50 h-14 shrink-0",
-        collapsed ? "justify-center px-2" : "gap-2.5 px-5"
-      )}>
-        <NavLink href="/dashboard" className="flex items-center gap-2.5 group shrink-0" aria-label="RithuDevQuest Home">
-          <div className="relative grid size-7 place-items-center rounded-lg bg-gradient-to-br from-primary via-emerald-400 to-cyan-400 text-primary-foreground shadow-md shadow-primary/30 transition-all duration-300 group-hover:scale-110">
-            <span className="text-xs font-black">R</span>
+      {/* Duolingo Mascot Logo */}
+      <div
+        className={cn(
+          "flex items-center border-b-2 border-white/10 h-20 shrink-0",
+          collapsed ? "justify-center px-2" : "gap-3 px-6"
+        )}
+      >
+        <NavLink
+          href="/learn"
+          className="flex items-center gap-3 group shrink-0 min-w-0"
+          aria-label="RithuDevQuest Home"
+        >
+          <div className="relative size-9 shrink-0 flex items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-0.5 transition-transform duration-300 group-hover:scale-110">
+            <CosmicCharacter characterId="rithu" mood="idle" size="xs" className="size-full" />
           </div>
           <AnimatePresence>
             {!collapsed && (
@@ -36,17 +43,20 @@ export function Sidebar() {
                 initial={{ opacity: 0, width: 0 }}
                 animate={{ opacity: 1, width: "auto" }}
                 exit={{ opacity: 0, width: 0 }}
-                className="text-base font-black tracking-tight text-foreground overflow-hidden whitespace-nowrap"
+                className="text-lg font-black tracking-tight text-white uppercase overflow-hidden whitespace-nowrap"
               >
-                RithuDevQuest
+                Rithu<span className="text-emerald-400">Quest</span>
               </motion.span>
             )}
           </AnimatePresence>
         </NavLink>
       </div>
 
-      {/* Nav Links */}
-      <nav className="flex-1 flex flex-col gap-1 px-3 py-4 overflow-y-auto scrollbar-hide" aria-label="Main navigation">
+      {/* Nav Links — Duolingo 3D Pills */}
+      <nav
+        className="flex-1 flex flex-col gap-2 px-3 py-6 overflow-y-auto scrollbar-hide"
+        aria-label="Main navigation"
+      >
         {MAIN_NAV_ITEMS.map((item) => (
           <SidebarNavItem
             key={item.href}
@@ -58,10 +68,10 @@ export function Sidebar() {
       </nav>
 
       {/* Collapse toggle */}
-      <div className="border-t border-border/50 p-2 shrink-0">
+      <div className="border-t-2 border-white/10 p-3 shrink-0">
         <button
           onClick={toggleCollapsed}
-          className="w-full flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+          className="w-full flex items-center justify-center gap-2 rounded-2xl py-2.5 text-xs font-black uppercase tracking-wider text-slate-400 hover:text-white hover:bg-white/5 transition-all"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? (
@@ -90,34 +100,27 @@ function SidebarNavItem({
   const [hovered, setHovered] = useState(false);
   const Icon = item.icon;
   const isActive =
-    pathname === item.href || pathname.startsWith(item.href + "/");
+    pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href + "/"));
 
   return (
     <NavLink
       href={item.href}
       className={cn(
-        "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-200",
-        collapsed && "justify-center px-2",
+        "group relative flex items-center gap-3.5 rounded-2xl px-4 py-3 text-xs font-black uppercase tracking-wider transition-all duration-150 active:translate-y-0.5",
+        collapsed && "justify-center px-2.5",
         isActive
-          ? "bg-primary/10 text-primary shadow-sm shadow-primary/10"
-          : "text-muted-foreground hover:text-foreground hover:bg-muted/50 hover:shadow-sm hover:shadow-primary/5"
+          ? "border-2 border-emerald-500 bg-emerald-500/15 text-emerald-400 shadow-[0_3px_0_0_#059669]"
+          : "border-2 border-transparent text-slate-400 hover:bg-white/5 hover:text-white hover:border-white/10"
       )}
       aria-current={isActive ? "page" : undefined}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {isActive && (
-        <motion.div
-          layoutId="sidebar-active"
-          className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-full bg-primary"
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        />
-      )}
       {collapsed && <SidebarTooltip label={item.label} visible={hovered} />}
       <Icon
         className={cn(
-          "size-5 shrink-0 transition-colors",
-          isActive ? "text-primary" : "group-hover:text-foreground"
+          "size-5 shrink-0 transition-transform group-hover:scale-110",
+          isActive ? "text-emerald-400" : "text-slate-400 group-hover:text-white"
         )}
         aria-hidden="true"
       />
@@ -133,9 +136,6 @@ function SidebarNavItem({
           </motion.span>
         )}
       </AnimatePresence>
-      {isActive && !collapsed && (
-        <div className="ml-auto size-1.5 rounded-full bg-primary animate-pulse" />
-      )}
     </NavLink>
   );
 }

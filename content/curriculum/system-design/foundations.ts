@@ -92,6 +92,15 @@ export const systemDesignFoundationsPath: SeedPath = {
                   explanation:
                     "Clients ask, APIs orchestrate, databases persist, and balancers spread the load.",
                 },
+                {
+                  type: "fill_blank",
+                  difficulty: "beginner",
+                  question:
+                    "In a request/response exchange, the component that initiates the request is called the ___.",
+                  fillBlanks: [{ answer: "client" }],
+                  explanation:
+                    "Clients initiate requests; servers listen and return responses. The browser is the client in the classic web stack.",
+                },
               ],
             },
             {
@@ -626,6 +635,21 @@ export const systemDesignFoundationsPath: SeedPath = {
                   explanation:
                     "Likes, DNS, and caches tolerate brief staleness; monetary balance checks demand stronger guarantees.",
                 },
+                {
+                  type: "sequence",
+                  difficulty: "intermediate",
+                  question: "Order the steps of a replicated value converging.",
+                  sequenceItems: [
+                    { id: "write", text: "A write lands on replica A" },
+                    { id: "propagate", text: "The update propagates to replica B" },
+                    { id: "apply", text: "Replica B applies the update" },
+                    { id: "converge", text: "Both replicas hold the same value" },
+                    { id: "read", text: "A reader sees the converged value" },
+                  ],
+                  sequenceCorrectOrder: ["write", "propagate", "apply", "converge", "read"],
+                  explanation:
+                    "Write → propagate → apply → converge; reads after convergence see one value everywhere — eventual consistency in action.",
+                },
               ],
             },
           ],
@@ -709,6 +733,19 @@ export const systemDesignFoundationsPath: SeedPath = {
                   ],
                   explanation:
                     "Envelope math sizes orders of magnitude, storage, bandwidth, and peaks — precision comes later.",
+                },
+                {
+                  type: "match",
+                  difficulty: "intermediate",
+                  question: "Match each capacity input to what it sizes.",
+                  matchPairs: [
+                    { left: "Daily active users × actions per user", right: "Requests per second" },
+                    { left: "Bytes per request × write volume", right: "Storage and bandwidth" },
+                    { left: "Average load × burst factor", right: "Peak load" },
+                    { left: "Retention window", right: "How long data must be kept" },
+                  ],
+                  explanation:
+                    "Users × actions yield QPS, bytes and retention size storage, and average × burst sets the peak design point.",
                 },
               ],
             },

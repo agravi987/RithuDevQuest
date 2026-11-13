@@ -76,11 +76,17 @@ describe("AI Zod Schemas", () => {
       expect(result.success).toBe(false);
     });
 
-    it("accepts a valid Command question", () => {
+    it("accepts a valid MCQ question", () => {
       const validCmd = {
-        type: "command",
+        type: "mcq",
         difficulty: "intermediate",
-        question: "Build a docker image tagged myapp:1.0 from current directory.",
+        question: "Which command tags and builds a docker image from the current directory?",
+        options: [
+          "docker build -t myapp:1.0 .",
+          "docker run -t myapp:1.0 .",
+          "docker push -t myapp:1.0 .",
+          "docker commit myapp:1.0 .",
+        ],
         correctAnswer: "docker build -t myapp:1.0 .",
         explanation:
           "docker build with -t tags the image and . specifies context.",
@@ -144,11 +150,12 @@ describe("AI Zod Schemas", () => {
             explanation: "Port 443 is standard for TLS/HTTPS.",
           },
           {
-            type: "command",
+            type: "mcq",
             difficulty: "beginner",
-            question: "Display active network connections.",
-            correctAnswer: "netstat -tuln|ss -tuln",
-            explanation: "ss or netstat inspects socket listeners.",
+            question: "Which command shows active network connections?",
+            options: ["ss -tuln", "df -h", "uname -a", "cat /etc/hosts"],
+            correctAnswer: "ss -tuln",
+            explanation: "ss inspects socket listeners.",
           },
         ],
       };

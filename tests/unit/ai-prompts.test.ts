@@ -10,7 +10,7 @@ describe("AI Prompts and Utilities", () => {
     const { system, user } = buildQuestionGenerationPrompt({
       topic: "Docker Volumes",
       difficulty: "intermediate",
-      questionType: "command",
+      questionType: "true_false",
       count: 2,
     });
 
@@ -18,7 +18,7 @@ describe("AI Prompts and Utilities", () => {
     expect(system).toContain("questions");
     expect(user).toContain("Docker Volumes");
     expect(user).toContain("intermediate");
-    expect(user).toContain('"command"');
+    expect(user).toContain('"true_false"');
     expect(user).toContain("2");
   });
 

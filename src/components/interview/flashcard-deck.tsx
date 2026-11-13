@@ -140,18 +140,18 @@ export function FlashcardDeck({ careerTitle, cards }: Props) {
       </AnimatePresence>
 
       {/* Actions */}
-      <div className="flex justify-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 pb-12 sm:pb-4">
         <button
           onClick={() => mark(false)}
-          className="flex-1 rounded-xl border border-destructive/30 bg-destructive/10 px-5 py-3 text-sm font-bold text-destructive transition-colors hover:bg-destructive/20"
+          className="flex-1 min-h-[48px] rounded-2xl border-2 border-destructive/30 bg-destructive/10 px-5 py-3 text-sm sm:text-base font-extrabold text-destructive transition-all active:scale-[0.98] hover:bg-destructive/20 cursor-pointer"
         >
           Needs Review
         </button>
         <button
           onClick={() => mark(true)}
-          className="flex-1 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-3 text-sm font-bold text-emerald-500 transition-colors hover:bg-emerald-500/20"
+          className="flex-1 min-h-[48px] rounded-2xl border-2 border-emerald-500/30 bg-emerald-500/10 px-5 py-3 text-sm sm:text-base font-extrabold text-emerald-400 transition-all active:scale-[0.98] hover:bg-emerald-500/20 cursor-pointer shadow-lg shadow-emerald-500/10"
         >
-          <CheckCircle2 className="mr-1 inline size-4 align-text-bottom" />
+          <CheckCircle2 className="mr-1.5 inline size-5 align-text-bottom" />
           Got It
         </button>
       </div>

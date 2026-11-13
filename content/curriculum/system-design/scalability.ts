@@ -551,5 +551,382 @@ export const systemDesignScalabilityPath: SeedPath = {
         },
       ],
     },
+    {
+      title: "Caching & Performance",
+      description: "Fast reads through caching, CDNs, and edge strategies.",
+      slug: "caching-performance",
+      icon: "Gauge",
+      units: [
+        {
+          title: "Application Caching",
+          description: "In-memory and distributed caches.",
+          slug: "caching",
+          lessons: [
+            {
+              title: "Caching Strategies",
+              description: "Cache-aside, write-through, write-back, and TTL.",
+              slug: "caching-strategies",
+              estimatedMinutes: 7,
+              learningObjectives: [
+                "Explain cache-aside, write-through, and write-back",
+                "Describe TTL and invalidation trade-offs",
+                "Pick a caching strategy by workload",
+              ],
+              skills: [
+                {
+                  name: "caching-strategies",
+                  description: "Design effective caching strategies",
+                },
+              ],
+              activities: [
+                {
+                  title: "Avoid Repeated Work",
+                  body: "A **cache** stores frequently accessed data closer to the consumer, avoiding repeated slow operations. **Cache-aside** (lazy loading): app reads cache first, misses go to the DB and backfill the cache. **Write-through**: writes hit cache and DB synchronously — simple but adds write latency. **Write-back**: writes hit cache and acknowledge immediately, flushing to DB asynchronously — fast writes, risk of data loss on crash. **TTL** (time-to-live) marks data stale after a window; invalidation proactively removes cache entries on writes.",
+                },
+                {
+                  title: "Example",
+                  body: "An e-commerce catalogue uses cache-aside with a 60-second TTL: product pages read Redis first; on a miss the query hits Postgres and repopulates Redis. Product updates write through to Redis and the database.",
+                },
+              ],
+              questions: [
+                {
+                  type: "mcq",
+                  difficulty: "beginner",
+                  question:
+                    "Which caching pattern reads from the cache first and only queries the database on a miss?",
+                  options: [
+                    "Cache-aside",
+                    "Write-through",
+                    "Write-back",
+                    "Write-ahead logging",
+                  ],
+                  correctAnswer: "Cache-aside",
+                  explanation:
+                    "Cache-aside is also called lazy loading — the app owns the cache interaction and backfills after a miss.",
+                },
+                {
+                  type: "true_false",
+                  difficulty: "intermediate",
+                  question:
+                    "Write-through caching updates the cache before the database on every write.",
+                  correctAnswer: "true",
+                  explanation:
+                    "Writes go to both cache and database synchronously, keeping the cache current at the cost of extra write latency.",
+                },
+                {
+                  type: "fill_blank",
+                  difficulty: "beginner",
+                  question:
+                    "A cached value is guaranteed fresh only within its ___.",
+                  fillBlanks: [{ answer: "TTL" }],
+                  explanation:
+                    "Time-to-live defines the freshness window; after it expires the entry is evicted or re-fetched.",
+                },
+                {
+                  type: "match",
+                  difficulty: "intermediate",
+                  question: "Match the caching strategy to its trade-off.",
+                  matchPairs: [
+                    {
+                      left: "Cache-aside",
+                      right: "Simple read-first pattern",
+                    },
+                    {
+                      left: "Write-through",
+                      right: "Synchronous writes to cache and DB",
+                    },
+                    {
+                      left: "Write-back",
+                      right: "Fast writes, async DB flush",
+                    },
+                    {
+                      left: "TTL",
+                      right: "Automatic staleness window",
+                    },
+                  ],
+                  explanation:
+                    "Each strategy trades consistency, latency, and complexity differently.",
+                },
+                {
+                  type: "flip_cards",
+                  difficulty: "intermediate",
+                  question:
+                    "Flip the cards: match each caching strategy to its defining behavior.",
+                  flipCards: [
+                    {
+                      front: "Cache-aside",
+                      back: "Read cache, query DB on miss, backfill",
+                    },
+                    {
+                      front: "Write-through",
+                      back: "Writes go to cache and DB synchronously",
+                    },
+                    {
+                      front: "Write-back",
+                      back: "Acknowledge writes, flush to DB asynchronously",
+                    },
+                    {
+                      front: "TTL",
+                      back: "Bounded freshness window",
+                    },
+                  ],
+                  explanation:
+                    "Cache-aside is lazy, write-through is synchronous, write-back is async and fast, and TTL bounds staleness.",
+                },
+                {
+                  type: "sequence",
+                  difficulty: "intermediate",
+                  question:
+                    "Order the steps of a cache-aside read path on a cache miss.",
+                  sequenceItems: [
+                    {
+                      id: "read-cache",
+                      text: "App reads from the cache",
+                    },
+                    {
+                      id: "miss",
+                      text: "Cache miss is detected",
+                    },
+                    {
+                      id: "query-db",
+                      text: "App queries the database",
+                    },
+                    {
+                      id: "backfill",
+                      text: "Result is written into the cache",
+                    },
+                    {
+                      id: "return",
+                      text: "Value is returned to the caller",
+                    },
+                  ],
+                  sequenceCorrectOrder: [
+                    "read-cache",
+                    "miss",
+                    "query-db",
+                    "backfill",
+                    "return",
+                  ],
+                  explanation:
+                    "Read cache → miss → query DB → backfill cache → return value.",
+                },
+                {
+                  type: "multi_select",
+                  difficulty: "intermediate",
+                  question:
+                    "Which scenarios are good candidates for caching?",
+                  multiSelectOptions: [
+                    {
+                      text: "Read-heavy data that changes rarely",
+                      isCorrect: true,
+                    },
+                    {
+                      text: "Expensive computed results that can tolerate staleness",
+                      isCorrect: true,
+                    },
+                    {
+                      text: "User PII that must never be stored externally",
+                      isCorrect: false,
+                    },
+                    {
+                      text: "Configuration data fetched on every request",
+                      isCorrect: true,
+                    },
+                  ],
+                  explanation:
+                    "Hot read-heavy data, expensive computations, and config are ideal cache targets; PII in external stores is a security risk.",
+                },
+                {
+                  type: "scenario",
+                  difficulty: "advanced",
+                  question:
+                    "You are designing caching for a social feed: reads are frequent, writes are occasional but timely. Identify the right strategy for each concern.",
+                  parts: [
+                    {
+                      prompt:
+                        "Which pattern avoids querying the database on every feed read?",
+                      correctAnswer: "cache-aside",
+                    },
+                    {
+                      prompt:
+                        "What mechanism ensures stale feed content expires automatically?",
+                      correctAnswer: "TTL",
+                    },
+                    {
+                      prompt:
+                        "How should a new post update the cache to avoid serving stale data?",
+                      correctAnswer: "invalidation",
+                    },
+                  ],
+                  explanation:
+                    "Cache-aside serves reads fast, TTL bounds staleness, and invalidation keeps the cache fresh on writes.",
+                },
+              ],
+            },
+            {
+              title: "CDNs & Edge Caching",
+              description: "Distributed caches close to users.",
+              slug: "cdns-edge",
+              estimatedMinutes: 7,
+              learningObjectives: [
+                "Explain CDN origin and edge caches",
+                "Use Cache-Control headers effectively",
+                "Handle stale-while-revalidate",
+              ],
+              skills: [
+                {
+                  name: "cdn-edge",
+                  description: "Design CDN and edge caching strategies",
+                },
+              ],
+              activities: [
+                {
+                  title: "Cache at the Edge",
+                  body: "A **CDN** (content delivery network) places caches in **edge locations** close to users. When a user requests a static asset, the CDN serves it from the nearest edge instead of your origin server. **Cache-Control** headers tell both the browser and CDN how long a response is fresh (`max-age`), whether it can be stored (`public`/`private`), and how to handle stale content (`stale-while-revalidate`). **Origin servers** handle cache misses only, reducing load dramatically.",
+                },
+                {
+                  title: "Example",
+                  body: "`Cache-Control: public, max-age=86400, stale-while-revalidate=3600` tells the CDN to cache the response for 24 hours, and to serve a stale copy while revalidating for up to an hour after expiry.",
+                },
+              ],
+              questions: [
+                {
+                  type: "mcq",
+                  difficulty: "beginner",
+                  question:
+                    "What is the primary purpose of a CDN in a web application?",
+                  options: [
+                    "Cache and serve content from locations close to users",
+                    "Replace the origin database entirely",
+                    "Run application compute at the edge",
+                    "Encrypt all traffic between services",
+                  ],
+                  correctAnswer:
+                    "Cache and serve content from locations close to users",
+                  explanation:
+                    "CDNs reduce latency by serving cached assets from edge locations near the requesting user.",
+                },
+                {
+                  type: "true_false",
+                  difficulty: "intermediate",
+                  question:
+                    "A Cache-Control max-age directive is respected by both browsers and CDNs.",
+                  correctAnswer: "true",
+                  explanation:
+                    "Browsers and CDN proxies both honour standard Cache-Control headers from the origin.",
+                },
+                {
+                  type: "fill_blank",
+                  difficulty: "beginner",
+                  question:
+                    "The HTTP header that controls how responses may be cached is called ___.",
+                  fillBlanks: [{ answer: "Cache-Control" }],
+                  explanation:
+                    "Cache-Control is the standard HTTP header governing caching semantics for browsers and proxies.",
+                },
+                {
+                  type: "match",
+                  difficulty: "intermediate",
+                  question:
+                    "Match each Cache-Control directive to its meaning.",
+                  matchPairs: [
+                    {
+                      left: "max-age",
+                      right: "Freshness window in seconds",
+                    },
+                    {
+                      left: "public",
+                      right: "May be cached by any cache",
+                    },
+                    {
+                      left: "private",
+                      right: "Only the user's browser may cache",
+                    },
+                    {
+                      left: "stale-while-revalidate",
+                      right: "Serve stale while fetching fresh",
+                    },
+                  ],
+                  explanation:
+                    "max-age bounds freshness, public/private controls cache scope, and stale-while-revalidate smooths re-fetches.",
+                },
+                {
+                  type: "sequence",
+                  difficulty: "intermediate",
+                  question:
+                    "Order the steps of a CDN cache hit on a user's first visit to a popular page.",
+                  sequenceItems: [
+                    {
+                      id: "request",
+                      text: "User requests the asset",
+                    },
+                    {
+                      id: "edge",
+                      text: "CDN edge receives the request",
+                    },
+                    {
+                      id: "miss",
+                      text: "Edge cache miss — fetches from origin",
+                    },
+                    {
+                      id: "cache",
+                      text: "Edge caches the response locally",
+                    },
+                    {
+                      id: "serve",
+                      text: "Response is served to the user",
+                    },
+                  ],
+                  sequenceCorrectOrder: [
+                    "request",
+                    "edge",
+                    "miss",
+                    "cache",
+                    "serve",
+                  ],
+                  explanation:
+                    "Request → edge receives → miss → origin fetch → cache locally → serve. Next user hits the edge cache directly.",
+                },
+                {
+                  type: "multi_select",
+                  difficulty: "intermediate",
+                  question:
+                    "Which types of content benefit most from CDN caching?",
+                  multiSelectOptions: [
+                    {
+                      text: "Static images and CSS/JS bundles",
+                      isCorrect: true,
+                    },
+                    {
+                      text: "Frequently accessed product catalogue pages",
+                      isCorrect: true,
+                    },
+                    {
+                      text: "Real-time private banking transactions",
+                      isCorrect: false,
+                    },
+                    {
+                      text: "Publicly accessible documentation",
+                      isCorrect: true,
+                    },
+                  ],
+                  explanation:
+                    "Static assets, public catalogue pages, and documentation are ideal CDN targets; real-time private data should not be edge-cached.",
+                },
+                {
+                  type: "fill_blank",
+                  difficulty: "intermediate",
+                  question:
+                    "Serving a stale cached response while refreshing it in the background is called ___.",
+                  fillBlanks: [{ answer: "stale-while-revalidate" }],
+                  explanation:
+                    "stale-while-revalidate lets users see content immediately while the edge refreshes in the background.",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
   ],
 };

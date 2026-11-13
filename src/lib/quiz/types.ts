@@ -18,7 +18,6 @@ export type QuestionTypeLabel = {
 export const QUESTION_TYPE_META: Record<QuestionType, QuestionTypeLabel> = {
   mcq: { label: "Multiple Choice", color: "bg-primary/10 text-primary" },
   true_false: { label: "True or False", color: "bg-level/10 text-level" },
-  command: { label: "Type a Command", color: "bg-xp/10 text-xp" },
   scenario: { label: "Scenario", color: "bg-achievement/10 text-achievement" },
   fill_blank: { label: "Fill in the Blank", color: "bg-level/10 text-level" },
   multi_select: { label: "Select All", color: "bg-primary/10 text-primary" },

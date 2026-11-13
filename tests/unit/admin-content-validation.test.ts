@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { encodeRichQuestion } from "@/lib/quiz/types";
 import {
   activitySchema,
   achievementInputSchema,
@@ -112,16 +113,134 @@ describe("questionInputSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("accepts a scenario with parts", () => {
+  it("rejects an mcq with fewer than two options", () => {
     const result = questionInputSchema.safeParse({
-      type: "scenario",
-      difficulty: "advanced",
-      question: "Run the command",
-      correctAnswer: "ls",
+      type: "mcq",
+      difficulty: "beginner",
+      question: "q",
+      correctAnswer: "a",
       explanation: "e",
-      parts: [{ prompt: "Step 1", correctAnswer: "ls" }],
+      options: ["a"],
     });
-    expect(result.success).toBe(true);
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts all rich question types", () => {
+    const cases = [
+      {
+        type: "scenario",
+        parts: [{ prompt: "Step 1", correctAnswer: "ls" }, { prompt: "Step 2", correctAnswer: "pwd" }],
+      },
+      {
+        type: "fill_blank",
+        fillBlanks: [{ answer: "cold" }],
+      },
+      {
+        type: "multi_select",
+        multiSelectOptions: [
+          { text: "A", isCorrect: true },
+          { text: "B", isCorrect: false },
+          { text: "C", isCorrect: true },
+        ],
+      },
+      {
+        type: "match",
+        matchPairs: [
+          { left: "HPA", right: "Scales pods" },
+          { left: "Autoscaler", right: "Scales nodes" },
+        ],
+      },
+      {
+        type: "sequence",
+        sequenceItems: [
+          { id: "a", text: "Start" },
+          { id: "b", text: "End" },
+        ],
+        sequenceCorrectOrder: ["a", "b"],
+      },
+      {
+        type: "code_completion",
+        codeBlanks: [{ id: "a", answer: "console.log" }],
+        codeLanguage: "typescript",
+      },
+      { type: "word_scramble", scrambledWord: "google" },
+      {
+        type: "flip_cards",
+        flipCards: [{ front: "VM", back: "Virtual machine" }],
+      },
+    ];
+
+    for (const payload of cases) {
+      const result = questionInputSchema.safeParse({
+        difficulty: "intermediate",
+        question: "q",
+        explanation: "e",
+        ...payload,
+      });
+      expect(result.success, `expected ${payload.type} to succeed`).toBe(true);
+    }
+  });
+
+  it("rejects a rejected sequence id in correct order", () => {
+    const result = questionInputSchema.safeParse({
+      type: "sequence",
+      difficulty: "intermediate",
+      question: "q",
+      explanation: "e",
+      sequenceItems: [
+        { id: "a", text: "Start" },
+        { id: "b", text: "End" },
+      ],
+      sequenceCorrectOrder: ["a", "c"],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a multi-select with no correct option", () => {
+    const result = questionInputSchema.safeParse({
+      type: "multi_select",
+      difficulty: "intermediate",
+      question: "q",
+      explanation: "e",
+      multiSelectOptions: [
+        { text: "A", isCorrect: false },
+        { text: "B", isCorrect: false },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("rich question encoding", () => {
+  it("encodes a match question into options", () => {
+    const encoded = encodeRichQuestion({
+      type: "match",
+      question: "q",
+      explanation: "e",
+      matchPairs: [
+        { left: "A", right: "1" },
+        { left: "B", right: "2" },
+      ],
+    });
+    expect(encoded.options).toEqual([
+      { left: "A", right: "1" },
+      { left: "B", right: "2" },
+    ]);
+    expect(encoded.correctAnswer).toBe("1|2");
+  });
+
+  it("encodes a multi-select answer from correct options", () => {
+    const encoded = encodeRichQuestion({
+      type: "multi_select",
+      question: "q",
+      explanation: "e",
+      multiSelectOptions: [
+        { text: "A", isCorrect: true },
+        { text: "B", isCorrect: false },
+        { text: "C", isCorrect: true },
+      ],
+    });
+    expect(encoded.correctAnswer).toBe("A|C");
   });
 });
 

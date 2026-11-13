@@ -16,6 +16,7 @@ export function Field({
   required,
   type = "text",
   hint,
+  hidden = false,
 }: {
   label: string;
   name: string;
@@ -24,11 +25,12 @@ export function Field({
   required?: boolean;
   type?: string;
   hint?: string;
+  hidden?: boolean;
 }) {
   const uid = useId();
   const id = `${uid}-${name}`;
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-1.5" hidden={hidden}>
       <Label htmlFor={id}>
         {label}
         {required && <span className="text-destructive"> *</span>}
@@ -40,6 +42,7 @@ export function Field({
         defaultValue={defaultValue}
         placeholder={placeholder}
         required={required}
+        aria-hidden={hidden}
       />
       {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
     </div>

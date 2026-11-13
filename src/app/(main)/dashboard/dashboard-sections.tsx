@@ -10,7 +10,7 @@ export async function DashboardHeroSection({ userId }: { userId: string }) {
 
 export async function DashboardCareersSection({ userId }: { userId: string }) {
   const data = await getCachedDashboardData(userId);
-  return <DashboardCareers careers={data.careers} profile={data.profile} />;
+  return <DashboardCareers careers={data.careers} />;
 }
 
 export async function DashboardRailSection({ userId }: { userId: string }) {

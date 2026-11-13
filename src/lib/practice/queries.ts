@@ -5,12 +5,6 @@ import { prisma } from "@/lib/db";
    Pure read helpers; nothing is persisted or gamified here.
    ════════════════════════════════════════════════════════════════════ */
 
-export type PracticeTopic = {
-  id: string; // "all" | skill id (or "general" for questions without a skill)
-  name: string;
-  count: number;
-};
-
 export type QuickPracticeQuestion = {
   id: string;
   question: string;
@@ -23,48 +17,222 @@ export type QuickPracticeQuestion = {
   hint: string | null;
 };
 
+/* ─── Topic tree (Career → Path → Module → Skill) ─── */
+
+export type PracticeTopicSkill = {
+  id: string; // skill id, or "general" for questions without a skill
+  name: string;
+  count: number;
+};
+
+export type PracticeTopicModule = {
+  id: string;
+  name: string;
+  skills: PracticeTopicSkill[];
+};
+
+export type PracticeTopicPath = {
+  id: string;
+  name: string;
+  modules: PracticeTopicModule[];
+  questionCount: number;
+};
+
+export type PracticeTopicCareer = {
+  id: string;
+  name: string;
+  slug: string;
+  paths: PracticeTopicPath[];
+  questionCount: number;
+};
+
+export type PracticeTopicTree = {
+  careers: PracticeTopicCareer[];
+  /** Questions with no attached skill, pooled under a single "General" topic. */
+  general: PracticeTopicSkill | null;
+  totalCount: number;
+};
+
 /**
- * Available practice topics, grouped by the skill attached to each
- * curriculum question. Unskilled questions pool under "General".
+ * Practice topics organized by the curriculum hierarchy
+ * (Career → Path → Module → Skill) so the picker can render navigable,
+ * collapsible sections instead of one flat pill cloud. Skills are grouped
+ * under the module of the lesson that declares them; questions without a
+ * skill pool under "General".
  */
-export async function getPracticeTopics(): Promise<PracticeTopic[]> {
-  const grouped = await prisma.question.groupBy({
-    by: ["skillId"],
-    where: { source: "curriculum", type: { not: "scenario" } },
-    _count: { _all: true },
-  });
+export async function getPracticeTopicTree(): Promise<PracticeTopicTree> {
+  const [generalCount, skills] = await Promise.all([
+    prisma.question.count({
+      where: { source: "curriculum", type: { not: "scenario" }, skillId: null },
+    }),
+    prisma.skill.findMany({
+      select: {
+        id: true,
+        name: true,
+        _count: {
+          select: {
+            questions: { where: { source: "curriculum", type: { not: "scenario" } } },
+          },
+        },
+        lesson: {
+          select: {
+            unit: {
+              select: {
+                module: {
+                  select: {
+                    id: true,
+                    title: true,
+                    order: true,
+                    path: {
+                      select: {
+                        id: true,
+                        title: true,
+                        order: true,
+                        career: {
+                          select: { id: true, title: true, slug: true, order: true },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    }),
+  ]);
 
-  const skillIds = grouped
-    .map((g) => g.skillId)
-    .filter((id): id is string => id !== null);
-
-  const skills = await existingSkills(skillIds);
-
-  const topics = grouped
-    .map((group) => {
-      const name = group.skillId
-        ? skills.get(group.skillId) ?? "General"
-        : "General";
-      return {
-        id: group.skillId ?? "general",
-        name,
-        count: group._count._all,
-      };
-    })
-    .filter((topic) => topic.count > 0)
-    .sort((a, b) => b.count - a.count);
-
-  const total = topics.reduce((sum, topic) => sum + topic.count, 0);
-  return [{ id: "all", name: "All Topics", count: total }, ...topics];
+  return buildPracticeTopicTree(skills, generalCount);
 }
 
-async function existingSkills(ids: string[]): Promise<Map<string, string>> {
-  if (ids.length === 0) return new Map();
-  const skills = await prisma.skill.findMany({
-    where: { id: { in: ids } },
-    select: { id: true, name: true },
-  });
-  return new Map(skills.map((skill) => [skill.id, skill.name]));
+/* ─── Pure tree assembly (unit-tested without a database) ─── */
+
+export type SkillTreeRow = {
+  id: string;
+  name: string;
+  _count: { questions: number };
+  lesson: {
+    unit: {
+      module: {
+        id: string;
+        title: string;
+        order: number;
+        path: {
+          id: string;
+          title: string;
+          order: number;
+          career: { id: string; title: string; slug: string; order: number };
+        };
+      };
+    };
+  } | null;
+};
+
+/**
+ * Assemble the Career → Path → Module → Skill tree from raw skill rows.
+ * Pure function so the grouping/sorting rules can be unit-tested directly.
+ */
+export function buildPracticeTopicTree(
+  skills: SkillTreeRow[],
+  generalCount: number,
+): PracticeTopicTree {
+  type ModuleAcc = {
+    id: string;
+    title: string;
+    order: number;
+    skills: Map<string, PracticeTopicSkill>;
+  };
+  type PathAcc = {
+    title: string;
+    order: number;
+    modules: Map<string, ModuleAcc>;
+  };
+  type CareerAcc = {
+    title: string;
+    slug: string;
+    order: number;
+    paths: Map<string, PathAcc>;
+  };
+
+  const careers = new Map<string, CareerAcc>();
+
+  for (const skill of skills) {
+    const count = skill._count.questions;
+    if (count === 0) continue;
+
+    const skillModule = skill.lesson?.unit?.module;
+    if (!skillModule) continue;
+
+    const path = skillModule.path;
+    const career = path.career;
+
+    let careerAcc = careers.get(career.id);
+    if (!careerAcc) {
+      careerAcc = { title: career.title, slug: career.slug, order: career.order, paths: new Map() };
+      careers.set(career.id, careerAcc);
+    }
+
+    let pathAcc = careerAcc.paths.get(path.id);
+    if (!pathAcc) {
+      pathAcc = { title: path.title, order: path.order, modules: new Map() };
+      careerAcc.paths.set(path.id, pathAcc);
+    }
+
+    let moduleAcc = pathAcc.modules.get(skillModule.id);
+    if (!moduleAcc) {
+      moduleAcc = {
+        id: skillModule.id,
+        title: skillModule.title,
+        order: skillModule.order,
+        skills: new Map(),
+      };
+      pathAcc.modules.set(skillModule.id, moduleAcc);
+    }
+
+    moduleAcc.skills.set(skill.id, { id: skill.id, name: skill.name, count });
+  }
+
+  const careerList: PracticeTopicCareer[] = [...careers.entries()]
+    .sort((a, b) => a[1].order - b[1].order)
+    .map(([careerId, careerAcc]) => {
+      const pathList: PracticeTopicPath[] = [...careerAcc.paths.entries()]
+        .sort((a, b) => a[1].order - b[1].order)
+        .map(([pathId, pathAcc]) => {
+          const moduleList = [...pathAcc.modules.values()].sort(
+            (a, b) => a.order - b.order,
+          );
+          const modules: PracticeTopicModule[] = moduleList.map((m) => ({
+            id: m.id,
+            name: m.title,
+            skills: [...m.skills.values()].sort((a, b) => b.count - a.count),
+          }));
+          const questionCount = modules.reduce(
+            (sum, m) => sum + m.skills.reduce((s, skill) => s + skill.count, 0),
+            0,
+          );
+          return { id: pathId, name: pathAcc.title, modules, questionCount };
+        });
+
+      return {
+        id: careerId,
+        name: careerAcc.title,
+        slug: careerAcc.slug,
+        paths: pathList,
+        questionCount: pathList.reduce((sum, p) => sum + p.questionCount, 0),
+      };
+    });
+
+  const totalCount = careerList.reduce((sum, c) => sum + c.questionCount, 0);
+
+  return {
+    careers: careerList,
+    general:
+      generalCount > 0
+        ? { id: "general", name: "General", count: generalCount }
+        : null,
+    totalCount,
+  };
 }
 
 function shuffle<T>(items: T[]): T[] {

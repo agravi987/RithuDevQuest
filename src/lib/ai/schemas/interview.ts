@@ -20,6 +20,11 @@ export const interviewGradeSchema = z.object({
     .min(5, "Tips must be at least 5 characters long")
     .optional()
     .nullable(),
+  idealAnswer: z
+    .string()
+    .min(10, "Ideal answer must be at least 10 characters long")
+    .optional()
+    .nullable(),
   followUpQuestion: z
     .string()
     .min(10, "Follow-up question must be at least 10 characters long")

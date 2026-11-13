@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
 
     const excludeIds = recentCorrect.map((r) => r.questionId);
 
-    const SIMPLE_QUESTION_TYPES = ["mcq", "true_false", "command"];
+    const SIMPLE_QUESTION_TYPES = ["mcq", "true_false"];
 
     let pool = await prisma.question.findMany({
       where: {

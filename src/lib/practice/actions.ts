@@ -5,7 +5,11 @@ import { prisma } from "@/lib/db";
 import { processLessonGamification } from "@/lib/gamification/actions";
 import { getGamificationProfile } from "@/lib/gamification/queries";
 import { updateQuestProgress } from "@/lib/quests/daily";
-import { validateAcceptedAnswer } from "@/lib/quiz/validation";
+import {
+  cleanForComparison,
+  splitAcceptedAnswers,
+  validateAcceptedAnswer,
+} from "@/lib/quiz/validation";
 
 export type PracticeResult = {
   success: boolean;
@@ -42,9 +46,12 @@ function isPracticeAnswerCorrect(
   correctAnswer: string,
   userAnswer: string,
 ): boolean {
-  return validateAcceptedAnswer(
-    correctAnswer.toLowerCase(),
-    (userAnswer ?? "").trim().toLowerCase(),
+  const normAns = cleanForComparison(userAnswer);
+  if (!normAns) return false;
+  const accepted = splitAcceptedAnswers(correctAnswer).map(cleanForComparison);
+  return (
+    accepted.includes(normAns) ||
+    validateAcceptedAnswer(correctAnswer.toLowerCase(), normAns)
   );
 }
 
@@ -99,7 +106,7 @@ async function buildCurrentProfileResult(
 export async function submitPracticeAnswer(
   topic: string,
   difficulty: "beginner" | "intermediate" | "advanced",
-  questionType: "mcq" | "true_false" | "command",
+  questionType: "mcq" | "true_false",
   question: string,
   correctAnswer: string,
   userAnswer: string,

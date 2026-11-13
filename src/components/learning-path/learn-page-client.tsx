@@ -11,18 +11,20 @@ type LearnPageClientProps = {
     slug: string;
     moduleCount: number;
     lessonCount: number;
+    progress?: number;
+    isRecommended?: boolean;
   }[];
 };
 
 export function LearnPageClient({ paths }: LearnPageClientProps) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:gap-5 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-5 sm:gap-6 sm:grid-cols-2">
       {paths.map((path, i) => (
         <motion.div
           key={path.id}
-          initial={{ opacity: 0, y: 24 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.1, duration: 0.5, ease: "easeOut" }}
+          transition={{ delay: i * 0.08, duration: 0.4, ease: "easeOut" }}
           style={{ contentVisibility: "auto" }}
         >
           <PlanetCard
@@ -31,6 +33,8 @@ export function LearnPageClient({ paths }: LearnPageClientProps) {
             description={path.description}
             moduleCount={path.moduleCount}
             lessonCount={path.lessonCount}
+            progress={path.progress ?? 0}
+            isRecommended={path.isRecommended ?? false}
             href={`/learn/${path.slug}`}
           />
         </motion.div>

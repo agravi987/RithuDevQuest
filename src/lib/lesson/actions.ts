@@ -177,10 +177,15 @@ export async function submitAnswer(
 
   let resolvedPartIndex: number | null = null;
   if (isScenario) {
-    if (partIndex === undefined || partIndex >= (parts?.length ?? 0)) {
-      throw new Error("That part does not exist");
+    if (partIndex !== undefined && partIndex !== null) {
+      if (partIndex >= (parts?.length ?? 0)) {
+        throw new Error("That part does not exist");
+      }
+      resolvedPartIndex = partIndex;
+    } else {
+      // Whole-scenario submission from unified Duolingo quiz runner
+      resolvedPartIndex = null;
     }
-    resolvedPartIndex = partIndex;
   }
 
   const correctAnswerTarget =
@@ -194,10 +199,40 @@ export async function submitAnswer(
     questionId,
     resolvedPartIndex,
   )) + 1;
-  const isCorrect = validateQuestionAnswer(
-    { type: question.type as Parameters<typeof validateQuestionAnswer>[0]["type"], correctAnswer: correctAnswerTarget },
+  let isCorrect = validateQuestionAnswer(
+    {
+      type: question.type as Parameters<typeof validateQuestionAnswer>[0]["type"],
+      correctAnswer: correctAnswerTarget,
+      options: question.options,
+    },
     answer,
   );
+
+  // Fallback: If answer was an option ID or index (e.g. "opt-0" or "0") or option text
+  if (!isCorrect && Array.isArray(question.options)) {
+    const opts = question.options as Array<string | { text: string; isCorrect?: boolean }>;
+    const optIdx = answer.startsWith("opt-")
+      ? parseInt(answer.replace("opt-", ""), 10)
+      : parseInt(answer, 10);
+
+    if (!isNaN(optIdx) && optIdx >= 0 && optIdx < opts.length) {
+      const opt = opts[optIdx];
+      const optText = typeof opt === "string" ? opt : opt?.text ?? "";
+      if (optText) {
+        isCorrect = validateQuestionAnswer(
+          {
+            type: question.type as Parameters<typeof validateQuestionAnswer>[0]["type"],
+            correctAnswer: correctAnswerTarget,
+            options: question.options,
+          },
+          optText,
+        );
+      }
+      if (!isCorrect && typeof opt === "object" && opt?.isCorrect) {
+        isCorrect = true;
+      }
+    }
+  }
   const difficulty = parseQuestionDifficulty(question.difficulty);
 
   const createdAttempt = await prisma.questionAttempt.create({
@@ -225,7 +260,7 @@ export async function submitAnswer(
       if (effectiveAttempt !== null) {
         earnedXp = questionXp({ isCorrect: true, attemptNumber: effectiveAttempt, difficulty });
       }
-    } else if (!isScenario) {
+    } else {
       earnedXp = questionXp({ isCorrect: true, attemptNumber, difficulty });
     }
   }
@@ -247,7 +282,7 @@ export async function submitAnswer(
   // the whole scenario isn't solved yet (the client advances to the next part);
   // `true` means every part is now correct; `null` means not applicable.
   const scenarioComplete =
-    isScenario && isCorrect ? earnedXp > 0 : null;
+    isScenario && isCorrect ? (resolvedPartIndex === null || earnedXp > 0) : null;
 
   // Lose heart on wrong answer
   if (!isCorrect) {

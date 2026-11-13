@@ -40,7 +40,7 @@ export default function AuthLayout({
             </span>
           </div>
           <span className="text-2xl font-black tracking-tight text-foreground">
-            Rithu<span className="text-primary">Dev</span>Quest
+            Rithu<span className="bg-gradient-to-r from-primary via-emerald-400 to-achievement bg-clip-text text-transparent">Dev</span>Quest
           </span>
         </Link>
         <p className="-mt-2 text-center text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
@@ -50,8 +50,25 @@ export default function AuthLayout({
 
       {/* Content */}
       <div className="relative z-10 w-full max-w-sm">
-        <div className="rounded-3xl border border-border/60 bg-card/70 backdrop-blur-xl p-6 sm:p-8 shadow-xl shadow-black/40">
+        <div className="glass-shimmer rounded-3xl border border-border/60 bg-card/70 backdrop-blur-xl p-6 sm:p-8 shadow-xl shadow-black/40">
           {children}
+        </div>
+
+        {/* Social proof */}
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+          {[
+            { label: "171+ Lessons", emoji: "📚" },
+            { label: "905+ Questions", emoji: "⚡" },
+            { label: "AI Mentor", emoji: "🤖" },
+          ].map((item) => (
+            <span
+              key={item.label}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-card/60 px-3 py-1.5 text-[10px] font-bold text-muted-foreground backdrop-blur-sm transition-colors hover:border-primary/30 hover:text-foreground"
+            >
+              <span aria-hidden="true">{item.emoji}</span>
+              {item.label}
+            </span>
+          ))}
         </div>
       </div>
     </div>

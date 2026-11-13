@@ -43,7 +43,7 @@ export function AuthStage({
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15, duration: 0.5, ease: "easeOut" }}
-        className="relative mt-2 w-full rounded-3xl border border-border bg-card/80 p-6 shadow-2xl shadow-black/25 backdrop-blur-2xl sm:p-8"
+        className="cosmic-border relative mt-2 w-full rounded-3xl border border-border bg-card/80 p-6 shadow-2xl shadow-black/25 backdrop-blur-2xl sm:p-8"
       >
         <h1 className="text-2xl font-black tracking-tight text-foreground">
           {title}

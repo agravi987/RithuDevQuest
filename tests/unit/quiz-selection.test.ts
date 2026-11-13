@@ -18,9 +18,9 @@ describe("selectQuestionRun", () => {
   const bank = pool([
     ["b1", "mcq", "beginner"],
     ["b2", "scenario", "beginner"],
-    ["i1", "command", "intermediate"],
+    ["i1", "true_false", "intermediate"],
     ["i2", "scenario", "intermediate"],
-    ["a1", "command", "advanced"],
+    ["a1", "mcq", "advanced"],
     ["a2", "mcq", "advanced"],
   ]);
 
@@ -53,12 +53,12 @@ describe("selectQuestionRun", () => {
     const rich = pool([
       ["b1", "mcq", "beginner"],
       ["b2", "scenario", "beginner"],
-      ["b3", "command", "beginner"],
+      ["b3", "true_false", "beginner"],
       ["i1", "mcq", "intermediate"],
       ["i2", "scenario", "intermediate"],
-      ["i3", "command", "intermediate"],
+      ["i3", "true_false", "intermediate"],
       ["a1", "scenario", "advanced"],
-      ["a2", "command", "advanced"],
+      ["a2", "true_false", "advanced"],
       ["a3", "mcq", "advanced"],
     ]);
     const selected = selectQuestionRun(rich, {
@@ -72,7 +72,7 @@ describe("selectQuestionRun", () => {
   it("covers every type present in the bank", () => {
     const selected = selectQuestionRun(bank, { random: identityRandom });
     const types = new Set(selected.map((question) => question.type));
-    expect(types).toEqual(new Set(["mcq", "scenario", "command"]));
+    expect(types).toEqual(new Set(["mcq", "scenario", "true_false"]));
   });
 
   it("clamps the count to the pool size", () => {

@@ -420,7 +420,7 @@ function shade(hex: string, amount: number): string {
     .join("")}`;
 }
 
-export function getPathTheme(slug: string, index = 0): PathTheme {
+export function getPathTheme(slug: string): PathTheme {
   const visual = getPathVisual(slug);
   const primary = visual.color;
   return {

@@ -1,674 +1,918 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
-import { QuestionSection } from "@/components/lesson/question-section";
-import { Button } from "@/components/ui/button";
-import { QuizHeader } from "./QuizHeader";
-import type { QuizProgressState } from "./QuizProgress";
-import type { QuizTimerConfig } from "./QuizTimer";
-import { QuizNavigation } from "./QuizNavigation";
-import { QuizFeedback } from "./QuizFeedback";
-import { QuizResults, type QuizResult } from "./QuizResults";
-import { XpFly } from "@/components/gamification/xp-fly";
-import { HeartsDisplay } from "@/components/gamification/hearts-display";
-import { StreakIndicator } from "./QuizFeedback";
-import type { SubmitAnswerResult } from "@/lib/lesson/types";
-import { validateQuestionAnswer } from "@/lib/quiz/validation";
+import { resumeAudio, playCorrectSound, playWrongSound, playHeartLossSound, playComboFlameSound } from "@/lib/sounds";
 import {
-  DeepPartial,
-  QuizModeConfig,
-  QuizQuestion,
-  QuizSession,
-  QuizState,
+  createQuizQueue,
+  processQueueAnswer,
+  calculateSessionAccuracy,
+  type QueueEvaluationResult,
+} from "@/lib/quiz/queue";
+import type {
+  CharacterId,
+  CharacterMood,
+  DuolingoQuestion,
+  DuolingoQueueItem,
   QuizExperienceProps,
-  QuizMode,
-  QUIZ_MODE_PRESETS,
-  deepMerge,
+  QuizQuestion,
+  QuizResult,
 } from "./types";
+import { DuolingoHeader } from "./DuolingoHeader";
+import { CharacterSpeechBubble } from "./characters/CharacterSpeechBubble";
+import { DuolingoMCQ } from "./questions/DuolingoMCQ";
+import { DuolingoWordBank } from "./questions/DuolingoWordBank";
+import { DuolingoMatchPairs } from "./questions/DuolingoMatchPairs";
+import { DuolingoTrueFalse } from "./questions/DuolingoTrueFalse";
+import { DuolingoFillBlank } from "./questions/DuolingoFillBlank";
+import { DuolingoBottomDrawer, type BottomDrawerState } from "./DuolingoBottomDrawer";
+import { DuolingoExitModal } from "./modals/DuolingoExitModal";
+import { DuolingoOutOfHeartsModal } from "./modals/DuolingoOutOfHeartsModal";
+import { DuolingoResults } from "./DuolingoResults";
+import type { DuolingoMistakeItem } from "./modals/DuolingoMistakesModal";
+
+/* ─── Question Conversion Adapter ─── */
+
+import { cleanForComparison } from "@/lib/quiz/validation";
+
+const CREW_ROTATION: CharacterId[] = ["rithu", "astra", "orion", "nova", "vance", "cosmo"];
+
+function adaptToDuolingoQuestion(q: QuizQuestion, index: number): DuolingoQuestion {
+  const characterId = (CREW_ROTATION[index % CREW_ROTATION.length] ?? "rithu") as CharacterId;
+
+  // 1. True / False
+  if (
+    q.type === "true_false" ||
+    (Array.isArray(q.options) &&
+      q.options.length === 2 &&
+      q.options.some((o) => cleanForComparison(typeof o === "string" ? o : (o as { text?: string }).text ?? "") === "true") &&
+      q.options.some((o) => cleanForComparison(typeof o === "string" ? o : (o as { text?: string }).text ?? "") === "false"))
+  ) {
+    const cleanCorrect = cleanForComparison(q.correctAnswer ?? "");
+    const isTrue = cleanCorrect === "true" || cleanCorrect === "1" || cleanCorrect === "yes" || cleanCorrect === "t";
+    return {
+      id: q.id,
+      type: "true_false",
+      prompt: "Cadet, evaluate this statement. Is it True or False?",
+      characterId,
+      hint: q.hint ?? undefined,
+      difficulty: q.difficulty ?? "beginner",
+      payload: {
+        statement: q.question,
+        correctAnswer: isTrue,
+        explanation: (q.payload as { explanation?: string })?.explanation ?? "Review the fundamentals of this concept.",
+      },
+    };
+  }
+
+  // 2. Word Bank / Scramble / Sequence
+  const scrambleTokens = (q.payload as { scrambleTokens?: string[] })?.scrambleTokens;
+  const sequenceItems =
+    (q.payload as { sequenceItems?: Array<{ id?: string; text?: string }> })?.sequenceItems ||
+    (q.type === "sequence" && Array.isArray(q.options) ? (q.options as Array<{ id?: string; text?: string }>) : null);
+
+  if (q.type === "word_scramble" || (q.type as string) === "code_scramble" || scrambleTokens || (q.type === "sequence" && sequenceItems)) {
+    const isWordScramble = q.type === "word_scramble" || (q.type as string) === "code_scramble";
+    const cleanWord = (q.correctAnswer ?? "").trim().toLowerCase();
+
+    // Word scrambles split into individual character tokens
+    const rawTokens: string[] = sequenceItems
+      ? sequenceItems.map((item) => (typeof item === "string" ? item : item.text || item.id || ""))
+      : (isWordScramble && cleanWord && !cleanWord.includes(" "))
+        ? cleanWord.split("")
+        : (scrambleTokens ?? (q.correctAnswer ? q.correctAnswer.split(" ") : []));
+
+    // For sequence questions the correct order is stored as item IDs in
+    // `sequenceCorrectOrder` — map them back to display texts. When the
+    // stored order differs from the natural item order, reassign token IDs
+    // so the client's id-based targetSentence matches what the user builds.
+    const sequenceOrderIds = (q.payload as { sequenceCorrectOrder?: string[] })?.sequenceCorrectOrder;
+    const correctTexts: string[] =
+      q.type === "sequence" && sequenceItems && Array.isArray(sequenceOrderIds)
+        ? sequenceOrderIds
+            .map((id) => {
+              const found = sequenceItems.find(
+                (item) => (typeof item === "object" && item !== null ? item.id : item) === id,
+              );
+              return typeof found === "object" && found !== null
+                ? found.text || found.id || ""
+                : String(found ?? "");
+            })
+            .filter(Boolean)
+        : rawTokens;
+
+    const canonicalTexts = correctTexts.length > 0 ? correctTexts : rawTokens;
+    const tokens = canonicalTexts.map((t: string, i: number) => ({
+      id: `tok-${i}`,
+      text: t,
+    }));
+
+    // Decoy tokens
+    const tokenTextSet = new Set(canonicalTexts.map(cleanForComparison));
+    const decoyPool = isWordScramble
+      ? ["a", "e", "i", "o", "u", "s", "r", "t", "l", "n"]
+      : ["--help", "verbose", "rollback", "undefined", "force"];
+    const decoy = decoyPool.find(
+      (candidate) => !tokenTextSet.has(cleanForComparison(candidate)),
+    );
+    const distractors = decoy ? [{ id: "dist-1", text: decoy }] : [];
+
+    return {
+      id: q.id,
+      type: "word_bank",
+      prompt: q.question || (isWordScramble ? "Unscramble the word to solve the challenge:" : "Assemble the command or sequence in the correct order:"),
+      characterId,
+      hint: q.hint ?? undefined,
+      difficulty: q.difficulty ?? "intermediate",
+      payload: {
+        targetSentence: canonicalTexts.join(" "),
+        tokens,
+        distractors,
+        explanation:
+          q.explanation ??
+          (isWordScramble
+            ? `The correct word is "${canonicalTexts.join("")}".`
+            : `The correct order is: ${canonicalTexts.join(" → ")}.`),
+      },
+    };
+  }
+
+  // 3. Match Pairs
+  const matchPairs =
+    (q.payload as { matchPairs?: Array<{ left: string; right: string }> })?.matchPairs ||
+    (q.type === "match" && Array.isArray(q.options) ? (q.options as Array<{ left: string; right: string }>) : null);
+
+  if (q.type === "match" || (q.type as string) === "match_pair" || matchPairs) {
+    const pairs = (matchPairs ?? []).map((p, i) => ({
+      id: `pair-${i}`,
+      left: p.left,
+      right: p.right,
+    }));
+    return {
+      id: q.id,
+      type: "match_pairs",
+      prompt: q.question || "Match each item to its corresponding definition:",
+      characterId,
+      hint: q.hint ?? undefined,
+      difficulty: q.difficulty ?? "intermediate",
+      payload: {
+        pairs,
+        explanation: "Connect the matching concepts.",
+      },
+    };
+  }
+
+  // 4. Fill in the Blank / Code Completion
+  const fillBlanks =
+    (q.payload as { fillBlanks?: Array<{ answer: string; options?: string[] }> })?.fillBlanks ||
+    (q.type === "fill_blank" && Array.isArray(q.options) ? (q.options as Array<{ answer: string; options?: string[] }>) : null);
+
+  const codeBlanks =
+    (q.payload as { codeBlanks?: Array<{ answer: string; options?: string[] }> })?.codeBlanks ||
+    (q.type === "code_completion" && Array.isArray(q.options) ? (q.options as Array<{ answer: string; options?: string[] }>) : null);
+
+  if (q.type === "fill_blank" || q.type === "code_completion" || fillBlanks || codeBlanks) {
+    const blanks = fillBlanks || codeBlanks;
+    const firstBlank = blanks?.[0];
+    const answer =
+      typeof firstBlank === "object" && firstBlank !== null
+        ? firstBlank?.answer || q.correctAnswer || ""
+        : String(firstBlank || q.correctAnswer || "");
+
+    const promptWithBlank = q.question.includes("___")
+      ? q.question
+      : q.question.includes("{{")
+        ? q.question.replace(/\{\{[^}]+\}\}/g, "___")
+        : `${q.question} ______`;
+
+    const rawOptions =
+      firstBlank?.options ??
+      (Array.isArray(q.options) &&
+      (q.options as Array<{ options?: string[] }>)[0]?.options
+        ? (q.options as Array<{ options?: string[] }>)[0].options!
+        : null) ??
+      (() => {
+        const correct = (answer.split("|")[0] ?? answer).trim();
+        const candidates = ["Nginx", "Kubernetes", "Docker", "Terraform", "S3", "kubectl", "80", "443"];
+        const picked: string[] = [];
+        for (const candidate of candidates) {
+          if (picked.length >= 3) break;
+          if (
+            cleanForComparison(candidate) !== cleanForComparison(correct) &&
+            !picked.some((p) => cleanForComparison(p) === cleanForComparison(candidate))
+          ) {
+            picked.push(candidate);
+          }
+        }
+        const full = [correct, ...picked];
+        // Stable pseudo-random sort based on question id
+        const seed = q.id.charCodeAt(q.id.length - 1) || 1;
+        return full.sort((a, b) => ((a.charCodeAt(0) * seed) % 5) - ((b.charCodeAt(0) * seed) % 5));
+      })();
+
+    return {
+      id: q.id,
+      type: "fill_blank",
+      prompt: q.question || "Fill in the missing parameter:",
+      characterId,
+      hint: q.hint ?? undefined,
+      difficulty: q.difficulty ?? "beginner",
+      payload: {
+        promptWithBlank,
+        blankIndex: 0,
+        options: rawOptions,
+        correctAnswer: answer,
+        explanation: q.explanation ?? `The correct answer is "${answer.split("|")[0] ?? answer}".`,
+      },
+    };
+  }
+
+  // 5. Scenario: multi-part typed terminal questions adapted into command sequence Word Bank
+  if (q.type === "scenario") {
+    const rawParts =
+      Array.isArray(q.parts) && q.parts.length > 0
+        ? (q.parts as Array<{ prompt?: string; correctAnswer?: string }>)
+        : ((q.payload as { scenarioParts?: Array<{ prompt?: string; correctAnswer?: string }> })?.scenarioParts ?? []);
+
+    const partAnswers = rawParts
+      .map((p) => (p.correctAnswer ?? "").split("|")[0].trim())
+      .filter(Boolean);
+
+    if (partAnswers.length > 0) {
+      const tokens = partAnswers.map((cmd, i) => ({
+        id: `scen-tok-${i}`,
+        text: cmd,
+      }));
+
+      const candidateDistractors = [
+        "cd ~",
+        "echo $USER",
+        "hostname",
+        "ls -la",
+        "cat /etc/os-release",
+        "whoami",
+        "pwd",
+        "df -h",
+        "grep error",
+      ];
+      const answerSet = new Set(partAnswers.map(cleanForComparison));
+      const distractors = candidateDistractors
+        .filter((d) => !answerSet.has(cleanForComparison(d)))
+        .slice(0, 2)
+        .map((d, i) => ({ id: `scen-dist-${i}`, text: d }));
+
+      const workedSteps = rawParts
+        .map((p, i) => `${i + 1}. ${p.prompt ?? ""} → \`${p.correctAnswer?.split("|")[0] ?? ""}\``)
+        .join("\n");
+
+      return {
+        id: q.id,
+        type: "word_bank",
+        prompt: q.question,
+        characterId,
+        hint: q.hint ?? "Assemble each required command in order.",
+        difficulty: q.difficulty ?? "intermediate",
+        payload: {
+          targetSentence: partAnswers.join(" "),
+          tokens,
+          distractors,
+          explanation:
+            q.explanation ??
+            `Scenario solution steps:\n${workedSteps}`,
+        },
+      };
+    }
+  }
+
+  // 6. Default: Multiple Choice (MCQ) & Multi-Select & Flip Cards
+  const rawOptions =
+    (q.payload as { mcqOptions?: Array<unknown> })?.mcqOptions ??
+    (q.payload as { multiSelect?: Array<unknown> })?.multiSelect ??
+    (q.payload as { flipCards?: Array<unknown> })?.flipCards ??
+    (Array.isArray(q.options) ? q.options : []);
+
+  const mcqOptions = rawOptions.map((opt: unknown, i: number) => {
+    const text =
+      typeof opt === "string"
+        ? opt
+        : (opt as { text?: string; answer?: string; front?: string; back?: string })?.text ??
+          (opt as { text?: string; answer?: string; front?: string; back?: string })?.answer ??
+          (opt as { text?: string; answer?: string; front?: string; back?: string })?.front ??
+          (opt as { text?: string; answer?: string; front?: string; back?: string })?.back ??
+          String(opt);
+
+    const isCode = text.includes(" ") || text.startsWith("-") || text.includes("/") || text.includes("$");
+    const isExplicitCorrect =
+      typeof opt === "object" && opt !== null ? (opt as { isCorrect?: boolean }).isCorrect : undefined;
+
+    return {
+      id: `opt-${i}`,
+      text,
+      code: isCode,
+      isCorrect: isExplicitCorrect,
+    };
+  });
+
+  // Identify correct option id
+  let correctId = "opt-0";
+  let matched = false;
+
+  // 1) Explicit isCorrect property on option object
+  const explicitCorrectIdx = mcqOptions.findIndex((opt) => opt.isCorrect === true);
+  if (explicitCorrectIdx !== -1) {
+    correctId = `opt-${explicitCorrectIdx}`;
+    matched = true;
+  }
+
+  // 2) Match against q.correctAnswer (clean text & pipe alternatives)
+  if (!matched && q.correctAnswer) {
+    const acceptedAnswers = q.correctAnswer
+      .split("|")
+      .map(cleanForComparison)
+      .filter(Boolean);
+
+    const matchIdx = mcqOptions.findIndex((o) =>
+      acceptedAnswers.includes(cleanForComparison(o.text))
+    );
+    if (matchIdx !== -1) {
+      correctId = `opt-${matchIdx}`;
+      matched = true;
+    }
+  }
+
+  // 3) Match if correctAnswer is an option ID or numeric/letter index
+  if (!matched && q.correctAnswer) {
+    const rawTrim = q.correctAnswer.trim();
+    if (rawTrim.startsWith("opt-")) {
+      const idx = parseInt(rawTrim.replace("opt-", ""), 10);
+      if (!isNaN(idx) && idx >= 0 && idx < mcqOptions.length) {
+        correctId = `opt-${idx}`;
+        matched = true;
+      }
+    } else {
+      const parsedNum = parseInt(rawTrim, 10);
+      if (!isNaN(parsedNum) && parsedNum >= 0 && parsedNum < mcqOptions.length) {
+        correctId = `opt-${parsedNum}`;
+        matched = true;
+      } else if (rawTrim.length === 1 && "ABCD".includes(rawTrim.toUpperCase())) {
+        const letterIdx = "ABCD".indexOf(rawTrim.toUpperCase());
+        if (letterIdx !== -1 && letterIdx < mcqOptions.length) {
+          correctId = `opt-${letterIdx}`;
+          matched = true;
+        }
+      }
+    }
+  }
+
+  // 4) Substring match fallback
+  if (!matched && q.correctAnswer) {
+    const cleanedTarget = cleanForComparison(q.correctAnswer);
+    const subIdx = mcqOptions.findIndex((o) => {
+      const c = cleanForComparison(o.text);
+      return c.includes(cleanedTarget) || cleanedTarget.includes(c);
+    });
+    if (subIdx !== -1) {
+      correctId = `opt-${subIdx}`;
+      matched = true;
+    }
+  }
+
+  return {
+    id: q.id,
+    type: "mcq",
+    prompt: q.question,
+    characterId,
+    hint: q.hint ?? undefined,
+    difficulty: q.difficulty ?? "beginner",
+    payload: {
+      options: mcqOptions,
+      correctOptionId: correctId,
+      explanation: (q.payload as { explanation?: string })?.explanation ?? "Select the most accurate option.",
+    },
+  };
+}
 
 /* ════════════════════════════════════════════════════════════════════
-   QUIZ EXPERIENCE - Main orchestrator component
+   MAIN DUOLINGO GALAXY QUIZ ORCHESTRATOR
    ════════════════════════════════════════════════════════════════════ */
-
-const TYPED_TYPES = new Set(["command", "scenario"]);
-
-function isTypedQuestion(question: QuizQuestion): boolean {
-  return TYPED_TYPES.has(question.type);
-}
-
-function canSubmitValue(question: QuizQuestion | null, value: string | null): boolean {
-  if (!question) return false;
-  return isTypedQuestion(question) ? (value ?? "").trim().length > 0 : value !== null;
-}
 
 export function QuizExperience({
   mode,
-  config: userConfig,
-  questions: initialQuestions = [],
+  questions: rawQuestions = [],
   onComplete,
   onExit,
+  onContinueResults,
   onSubmitAnswer,
   externalCompletion,
-  initialState,
   sessionId,
   userXp = 0,
-  userLevel = 1,
   userStreak = 0,
-  hearts,
+  hearts: initialHearts,
 }: QuizExperienceProps) {
-  // Merge user config with preset
-  const preset = QUIZ_MODE_PRESETS[mode];
-  const config = useMemo(() => deepMerge(preset, userConfig ?? {}), [preset, userConfig]);
+  // Convert questions to Duolingo schema
+  const duolingoQuestions = React.useMemo(() => {
+    return rawQuestions.map((q, idx) => adaptToDuolingoQuestion(q, idx));
+  }, [rawQuestions]);
 
-  // State
-  const [state, setState] = useState<QuizState>("loading");
-  const [questions, setQuestions] = useState<QuizQuestion[]>(initialQuestions);
-  const [currentIndex, setCurrentIndex] = useState(initialState?.currentIndex ?? 0);
-  const [value, setValue] = useState<string | null>(null);
-  const [feedback, setFeedback] = useState<SubmitAnswerResult | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [xpEarned, setXpEarned] = useState(0);
-  const [result, setResult] = useState<QuizResult | null>(null);
-  const [combo, setCombo] = useState(0);
-  const [maxCombo, setMaxCombo] = useState(0);
-  const [answerHistory, setAnswerHistory] = useState<Array<{
-    questionId: string;
-    question: string;
-    userAnswer: string;
-    correctAnswer: string;
-    isCorrect: boolean;
-    xpEarned: number;
-    answeredAt: Date;
-    timeSpentMs: number;
-  }>>([]);
-  const [showHint, setShowHint] = useState(false);
-  const [showReview, setShowReview] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const [questionStartTime, setQuestionStartTime] = useState(Date.now());
-  const [xpTrigger, setXpTrigger] = useState(0);
+  const initialTotalQuestions = React.useRef(duolingoQuestions.length || 1);
 
-  // Refs for timer and async guards
-  const submittingRef = useRef(false);
-  const completingRef = useRef(false);
-  const valueRef = useRef<string | null>(null);
-  const questionStartTimeRef = useRef<number>(Date.now());
+  // FSM State
+  const [queue, setQueue] = React.useState<DuolingoQueueItem[]>(() =>
+    createQuizQueue(duolingoQuestions)
+  );
+  const [drawerState, setDrawerState] = React.useState<BottomDrawerState>("neutral");
+  const [stagedAnswer, setStagedAnswer] = React.useState<string | null>(null);
+  const [hearts, setHearts] = React.useState(initialHearts?.current ?? 5);
+  const streak = userStreak;
+  const [combo, setCombo] = React.useState(0);
+  const [maxCombo, setMaxCombo] = React.useState(0);
 
-  // Update refs
-  useEffect(() => { valueRef.current = value; }, [value]);
-  useEffect(() => { questionStartTimeRef.current = questionStartTime; }, [questionStartTime]);
+  const [totalXpEarned, setTotalXpEarned] = React.useState(0);
+  const [isEvaluating, setIsEvaluating] = React.useState(false);
+  const [isMuted, setIsMuted] = React.useState(false);
 
-  // Timer config
-  const timerConfig: QuizTimerConfig = {
-    enabled: config.timer.enabled,
-    durationMs: config.timer.durationMs,
-    warningThreshold: config.timer.warningThreshold,
-    criticalThreshold: config.timer.criticalThreshold,
-    autoSubmit: config.timer.autoSubmit,
-    showMilliseconds: config.timer.showMilliseconds,
-    countUp: config.timer.countUp,
-  };
+  // Modals & Screen states
+  const [isExitModalOpen, setIsExitModalOpen] = React.useState(false);
+  const [isOutOfHeartsOpen, setIsOutOfHeartsOpen] = React.useState(false);
+  const [isResultsOpen, setIsResultsOpen] = React.useState(false);
 
-  // Progress state
-  const progress: QuizProgressState = useMemo(() => {
-    const answered = questions.filter((q) => q.isCorrect !== null || q.answeredAt).length;
-    const correct = questions.filter((q) => q.isCorrect === true).length;
-    const incorrect = questions.filter((q) => q.isCorrect === false).length;
-    return {
-      current: currentIndex,
-      total: questions.length,
-      percentage: questions.length > 0 ? ((currentIndex + 1) / questions.length) * 100 : 0,
-      answered,
-      correct,
-      incorrect,
-      unanswered: questions.length - answered,
+  // History & Mistakes tracking
+  const [mistakesHistory, setMistakesHistory] = React.useState<DuolingoMistakeItem[]>([]);
+  const [sessionAnswerHistory, setSessionAnswerHistory] = React.useState<
+    Array<{ firstTryCorrect: boolean | null }>
+  >([]);
+
+  // Time tracking
+  const sessionStartTime = React.useRef(Date.now());
+  const activeQuestion = queue[0]?.question;
+
+  // Unlock AudioContext on first user interaction
+  React.useEffect(() => {
+    const handleFirstPointer = () => {
+      resumeAudio();
+      window.removeEventListener("pointerdown", handleFirstPointer);
     };
-  }, [questions, currentIndex]);
-
-  // Current question
-  const currentQuestion = questions[currentIndex];
-
-  // Complete quiz and finalize result
-  const handleComplete = useCallback(async () => {
-    if (completingRef.current) return;
-    completingRef.current = true;
-
-    try {
-      const correctCount = questions.filter((q) => q.isCorrect === true).length;
-      const accuracy = questions.length > 0 ? Math.round((correctCount / questions.length) * 100) : 0;
-      const totalTimeSpent = answerHistory.reduce((sum, a) => sum + a.timeSpentMs, 0);
-
-      const finalResult: QuizResult = {
-        sessionId: sessionId ?? "local",
-        mode,
-        topic: config.theme.variant === "challenge" ? "Daily Challenge" : "Quiz",
-        totalQuestions: questions.length,
-        correctCount,
-        accuracy,
-        totalXpEarned: xpEarned,
-        maxCombo,
-        timeSpentMs: totalTimeSpent,
-        completedAt: new Date(),
-        didLevelUp: false, // Would be set by server
-        streak: undefined, // Would be set by server
-      };
-
-      setResult(finalResult);
-      if (!externalCompletion) {
-        setState("results");
-      }
-      onComplete?.(finalResult);
-    } finally {
-      completingRef.current = false;
-    }
-  }, [questions, xpEarned, maxCombo, sessionId, mode, answerHistory, onComplete, config.theme.variant, externalCompletion]);
-
-  // Timer callbacks
-  const handleTimerExpire = useCallback(() => {
-    if (state === "active" && config.completion.autoComplete) {
-      handleComplete();
-    }
-  }, [state, config.completion.autoComplete, handleComplete]);
-
-  // Load questions if provided async
-  useEffect(() => {
-    if (initialQuestions.length > 0 && state === "loading") {
-      setQuestions(initialQuestions);
-      setCurrentIndex(initialState?.currentIndex ?? 0);
-      setQuestionStartTime(Date.now());
-      const resumedIndex = initialState?.currentIndex ?? 0;
-      const wasAnswered = initialState?.questions?.[resumedIndex]?.answeredAt;
-      setState(wasAnswered ? "review" : "active");
-    } else if (state === "loading" && initialQuestions.length === 0) {
-      setState("landing");
-    }
-  }, [initialQuestions, state, initialState]);
-
-  // Handle answer submission
-  const handleSubmit = useCallback(async (answerOverride?: string) => {
-    if (!currentQuestion || submittingRef.current) return;
-    const answer = answerOverride ?? valueRef.current;
-    if (!canSubmitValue(currentQuestion, answer)) return;
-    const submittedAnswer = answer ?? "";
-
-    submittingRef.current = true;
-    setSubmitting(true);
-    setError(null);
-
-    try {
-      // Parents provide an async handler for server-side grading/persistence.
-      // Without one, fall back to local grading when the question carries its answer.
-      let nextFeedback: SubmitAnswerResult;
-      if (onSubmitAnswer) {
-        nextFeedback = await onSubmitAnswer(currentQuestion, submittedAnswer);
-      } else if (currentQuestion.correctAnswer) {
-        const isCorrect = validateQuestionAnswer(
-          { type: currentQuestion.type, correctAnswer: currentQuestion.correctAnswer },
-          submittedAnswer,
-        );
-        nextFeedback = {
-          questionId: currentQuestion.id,
-          lessonId: "",
-          isCorrect,
-          attemptNumber: 1,
-          xpEarned: isCorrect ? config.scoring.xpPerCorrect : 0,
-          correctAnswer: currentQuestion.correctAnswer,
-          explanation: "",
-          hint: currentQuestion.hint,
-          partIndex: null,
-          scenarioComplete: null,
-          totalParts: null,
-        };
-      } else {
-        throw new Error(
-          "This quiz cannot be graded. Provide onSubmitAnswer or include correctAnswer on each question.",
-        );
-      }
-
-      const timeSpentMs = Math.max(0, Date.now() - questionStartTimeRef.current);
-
-      setQuestions((prev) =>
-        prev.map((q, i) =>
-          i === currentIndex
-            ? {
-                ...q,
-                userAnswer: submittedAnswer,
-                isCorrect: nextFeedback.isCorrect,
-                answeredAt: new Date().toISOString(),
-                xpEarned: nextFeedback.xpEarned,
-              }
-            : q,
-        ),
-      );
-
-      setAnswerHistory((prev) => [
-        ...prev,
-        {
-          questionId: currentQuestion.id,
-          question: currentQuestion.question,
-          userAnswer: submittedAnswer,
-          correctAnswer: nextFeedback.correctAnswer,
-          isCorrect: nextFeedback.isCorrect,
-          xpEarned: nextFeedback.xpEarned,
-          answeredAt: new Date(),
-          timeSpentMs,
-        },
-      ]);
-
-      setCombo((prev) => {
-        const next = nextFeedback.isCorrect ? prev + 1 : 0;
-        setMaxCombo((m) => Math.max(m, next));
-        return next;
-      });
-
-      setXpEarned((prev) => prev + nextFeedback.xpEarned);
-      if (nextFeedback.xpEarned > 0) {
-        setXpTrigger((t) => t + 1);
-      }
-      setFeedback(nextFeedback);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to submit answer");
-    } finally {
-      submittingRef.current = false;
-      setSubmitting(false);
-    }
-  }, [currentQuestion, onSubmitAnswer, config.scoring.xpPerCorrect, currentIndex]);
-
-  // Navigation
-  const handleContinue = useCallback(() => {
-    const nextIndex = questions.findIndex(
-      (q, i) => i > currentIndex && (q.isCorrect === null && q.answeredAt === null)
-    );
-
-    if (nextIndex !== -1) {
-      setCurrentIndex(nextIndex);
-      setValue(null);
-      setFeedback(null);
-      setCombo(0);
-      setQuestionStartTime(Date.now());
-      setState("active");
-    } else {
-      handleComplete();
-    }
-  }, [questions, currentIndex, handleComplete]);
-
-  const handleRetry = useCallback(() => {
-    setFeedback(null);
-    setValue(null);
-    setCombo(0);
-    setError(null);
-    setQuestionStartTime(Date.now());
-    setState("active");
+    window.addEventListener("pointerdown", handleFirstPointer);
+    return () => window.removeEventListener("pointerdown", handleFirstPointer);
   }, []);
 
-  const handlePrevious = useCallback(() => {
-    if (submittingRef.current || currentIndex <= 0) return;
-
-    const prevIndex = currentIndex - 1;
-    const prevQuestion = questions[prevIndex];
-    if (!prevQuestion) return;
-
-    const wasAnswered = prevQuestion.isCorrect !== null || prevQuestion.answeredAt !== null;
-    const history = answerHistory.find((h) => h.questionId === prevQuestion.id);
-
-    setCurrentIndex(prevIndex);
-    setValue(prevQuestion.userAnswer ?? null);
-    setError(null);
-    setQuestionStartTime(Date.now());
-
-    if (wasAnswered) {
-      setFeedback({
-        questionId: prevQuestion.id,
-        lessonId: "",
-        isCorrect: prevQuestion.isCorrect === true,
-        attemptNumber: 1,
-        xpEarned: prevQuestion.xpEarned ?? 0,
-        correctAnswer: history?.correctAnswer ?? "",
-        explanation: "",
-        hint: prevQuestion.hint,
-        partIndex: null,
-        scenarioComplete: null,
-        totalParts: null,
-      });
-      setState("review");
-    } else {
-      setFeedback(null);
-      setState("active");
+  // Update queue when duolingoQuestions load asynchronously
+  React.useEffect(() => {
+    if (duolingoQuestions.length > 0 && queue.length === 0) {
+      initialTotalQuestions.current = duolingoQuestions.length;
+      setQueue(createQuizQueue(duolingoQuestions));
     }
-  }, [currentIndex, questions, answerHistory]);
+  }, [duolingoQuestions, queue.length]);
 
-  const handleSkip = useCallback(() => {
-    if (submittingRef.current) return;
-
-    const nextIndex = questions.findIndex(
-      (q, i) => i > currentIndex && (q.isCorrect === null && q.answeredAt === null)
-    );
-
-    setFeedback(null);
-    setValue(null);
-    setCombo(0);
-
-    if (nextIndex !== -1) {
-      setCurrentIndex(nextIndex);
-      setQuestionStartTime(Date.now());
-      setState("active");
-    } else {
-      handleComplete();
-    }
-  }, [questions, currentIndex, handleComplete]);
-
-  const handleExit = useCallback(() => {
-    onExit?.();
-  }, [onExit]);
-
-  const handlePause = useCallback(() => setIsPaused(true), []);
-  const handleResume = useCallback(() => setIsPaused(false), []);
-
-  // Keyboard shortcuts
-  useEffect(() => {
+  // Escape key opens Exit Modal
+  React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.repeat || submitting) return;
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        if (e.key === "Enter" && !submitting && canSubmitValue(currentQuestion, valueRef.current)) {
-          e.preventDefault();
-          handleSubmit();
-        }
-        return;
-      }
-      if (e.target instanceof HTMLButtonElement || e.target instanceof HTMLAnchorElement || e.target instanceof HTMLSelectElement) {
-        return;
-      }
-
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        if (feedback) {
-          if (!feedback.isCorrect && config.feedback.allowRetry) handleRetry();
-          else handleContinue();
-        } else if (canSubmitValue(currentQuestion, valueRef.current)) {
-          handleSubmit();
-        }
-      }
-
-      if ((e.key === "r" || e.key === "R") && feedback && !feedback.isCorrect && config.feedback.allowRetry) {
-        e.preventDefault();
-        handleRetry();
-      }
-
-      if (!feedback && currentQuestion && !isTypedQuestion(currentQuestion)) {
-        const num = parseInt(e.key, 10);
-        if (num >= 1 && num <= 6 && currentQuestion.options) {
-          const optionIndex = num - 1;
-          if (optionIndex < (currentQuestion.options?.length ?? 0)) {
-            setValue(String(currentQuestion.options[optionIndex]));
-          }
-        }
-      }
-
-      if (e.key === "ArrowLeft" && config.navigation.allowBack && currentIndex > 0) {
-        e.preventDefault();
-        handlePrevious();
+      if (e.key === "Escape" && !isResultsOpen) {
+        setIsExitModalOpen(true);
       }
     };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isResultsOpen]);
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [feedback, submitting, currentQuestion, currentIndex, handleSubmit, handleRetry, handleContinue, handlePrevious, config.navigation.allowBack, config.feedback.allowRetry]);
+  // Calculate dynamic progress percentage based on remaining items
+  const progressPercentage = React.useMemo(() => {
+    const total = initialTotalQuestions.current || 1;
+    const completed = Math.max(0, total - queue.length);
+    return Math.min(100, Math.round((completed / total) * 100));
+  }, [queue.length]);
 
-  // Show landing if no questions yet
-  if (state === "loading" && questions.length === 0) {
+  // Current Character & Mood
+  const currentCharacterId = activeQuestion?.characterId ?? "rithu";
+  const currentMood: CharacterMood =
+    drawerState === "correct"
+      ? "happy_jump"
+      : drawerState === "incorrect"
+        ? "sad_droop"
+        : isEvaluating
+          ? "thinking"
+          : "speaking";
+
+  // Check if current question has a staged answer ready to check
+  const canCheck = React.useMemo(() => {
+    if (!activeQuestion || stagedAnswer === null) return false;
+    return stagedAnswer.trim().length > 0;
+  }, [activeQuestion, stagedAnswer]);
+
+  /* ─── Handlers ─── */
+
+  const handleCheckAnswer = async () => {
+    if (!activeQuestion || !canCheck || isEvaluating) return;
+    setIsEvaluating(true);
+
+    try {
+      let isCorrect = false;
+      let explanation = "";
+      let correctAnswerStr = "";
+      let answerToSendToServer = stagedAnswer ?? "";
+
+      // 1. Grade based on question type
+      if (activeQuestion.type === "mcq") {
+        const payload = activeQuestion.payload as import("./types").DuolingoMCQPayload;
+        const selectedOpt = payload.options.find((o) => o.id === stagedAnswer);
+        const correctOpt = payload.options.find((o) => o.id === payload.correctOptionId);
+        correctAnswerStr = correctOpt?.text ?? "";
+        explanation = payload.explanation;
+
+        // Check against raw accepted answers or option text
+        const originalQ = rawQuestions.find((q) => q.id === activeQuestion.id);
+        const rawAnswers = (originalQ?.correctAnswer ?? correctAnswerStr)
+          .split("|")
+          .map(cleanForComparison)
+          .filter(Boolean);
+
+        const selectedClean = selectedOpt ? cleanForComparison(selectedOpt.text) : "";
+        const isExplicitCorrect =
+          (selectedOpt as unknown as { isCorrect?: boolean })?.isCorrect === true;
+
+        isCorrect =
+          stagedAnswer === payload.correctOptionId ||
+          isExplicitCorrect ||
+          (selectedClean.length > 0 && rawAnswers.includes(selectedClean));
+
+        // When submitting to server, ALWAYS send the selected option's text (e.g. "Bash")
+        answerToSendToServer = selectedOpt ? selectedOpt.text : (stagedAnswer ?? "");
+      } else if (activeQuestion.type === "true_false") {
+        const payload = activeQuestion.payload as import("./types").DuolingoTrueFalsePayload;
+        const stagedBool = stagedAnswer === "true";
+        isCorrect = stagedBool === payload.correctAnswer;
+        correctAnswerStr = payload.correctAnswer ? "True" : "False";
+        explanation = payload.explanation;
+        answerToSendToServer = stagedBool ? "true" : "false";
+      } else if (activeQuestion.type === "word_bank") {
+        const payload = activeQuestion.payload as import("./types").DuolingoWordBankPayload;
+        const normStaged = cleanForComparison(stagedAnswer ?? "");
+        const normTarget = cleanForComparison(payload.targetSentence);
+        const splitTargets = payload.targetSentence
+          .split("|")
+          .map(cleanForComparison)
+          .filter(Boolean);
+
+        // Local grading: staged answer is the space-joined token texts in the
+        // order the user placed them — compare against the ordered target.
+        const localCorrect =
+          normStaged === normTarget ||
+          splitTargets.includes(normStaged);
+        correctAnswerStr = payload.targetSentence;
+        explanation = payload.explanation;
+        answerToSendToServer = localCorrect ? "all_matched" : (stagedAnswer ?? "");
+
+        // For sequence questions the server holds the authoritative order
+        // (item IDs). Submit the assembled answer; when the server confirms
+        // it correct, defer to the server (prevents false negatives from any
+        // token-text normalization drift).
+        const originalWordBankQ = rawQuestions.find((q) => q.id === activeQuestion.id);
+        if (localCorrect) {
+          isCorrect = true;
+        } else if (onSubmitAnswer && originalWordBankQ?.type === "sequence") {
+          isCorrect = false; // provisional — server confirmation below may flip it
+        }
+      } else if (activeQuestion.type === "fill_blank") {
+        const payload = activeQuestion.payload as import("./types").DuolingoFillBlankPayload;
+        const acceptedFill = payload.correctAnswer
+          .split("|")
+          .map(cleanForComparison)
+          .filter(Boolean);
+        isCorrect = acceptedFill.includes(cleanForComparison(stagedAnswer ?? ""));
+        correctAnswerStr = payload.correctAnswer.split("|")[0] ?? payload.correctAnswer;
+        explanation = payload.explanation;
+        answerToSendToServer = stagedAnswer ?? "";
+      } else if (activeQuestion.type === "match_pairs") {
+        isCorrect = stagedAnswer === "all_matched" || stagedAnswer === "matched";
+        answerToSendToServer = "all_matched";
+      }
+
+      // If parent provided an async grading hook, sync with it
+      if (onSubmitAnswer) {
+        const originalQ = rawQuestions.find((q) => q.id === activeQuestion.id);
+        if (originalQ) {
+          const res = await onSubmitAnswer(originalQ, answerToSendToServer);
+          // If either client or server confirmed it is correct, award as correct!
+          isCorrect = isCorrect || res.isCorrect;
+          if (res.explanation) explanation = res.explanation;
+          if (res.correctAnswer) correctAnswerStr = res.correctAnswer;
+        }
+      }
+
+      // Process answer in Queue
+      const queueResult: QueueEvaluationResult = processQueueAnswer(
+        queue,
+        isCorrect,
+        stagedAnswer ?? undefined
+      );
+
+      // Audio & Vibration Feedback
+      if (isCorrect) {
+        if (!isMuted) playCorrectSound();
+        if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+          navigator.vibrate([30, 40]);
+        }
+
+        const nextCombo = combo + 1;
+        setCombo(nextCombo);
+        setMaxCombo((m) => Math.max(m, nextCombo));
+        if (nextCombo === 3 || nextCombo === 5 || nextCombo === 10) {
+          if (!isMuted) playComboFlameSound();
+        }
+
+        setTotalXpEarned((prev) => prev + queueResult.xpEarned);
+        setDrawerState("correct");
+      } else {
+        if (!isMuted) playWrongSound();
+        if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+          navigator.vibrate(60);
+        }
+
+        setCombo(0);
+        const nextHearts = Math.max(0, hearts - 1);
+        setHearts(nextHearts);
+        if (!isMuted) playHeartLossSound();
+
+        // Record mistake for review modal
+        setMistakesHistory((prev) => [
+          ...prev,
+          {
+            question: activeQuestion.prompt,
+            userAnswer: stagedAnswer ?? undefined,
+            correctAnswer: correctAnswerStr,
+            explanation,
+          },
+        ]);
+
+        if (nextHearts === 0) {
+          setIsOutOfHeartsOpen(true);
+        }
+
+        setDrawerState("incorrect");
+      }
+
+      // Track first-try history for session accuracy
+      setSessionAnswerHistory((prev) => [
+        ...prev,
+        { firstTryCorrect: queueResult.evaluatedItem.firstTryCorrect },
+      ]);
+    } finally {
+      setIsEvaluating(false);
+    }
+  };
+
+  const handleContinueAfterFeedback = () => {
+    // If we just got correct, pop head and check if session finished
+    const isCorrect = drawerState === "correct";
+    const queueResult = processQueueAnswer(queue, isCorrect, stagedAnswer ?? undefined);
+
+    setQueue(queueResult.nextQueue);
+    setStagedAnswer(null);
+    setDrawerState("neutral");
+
+    if (queueResult.isSessionComplete) {
+      finalizeSession();
+    }
+  };
+
+  const finalizeSession = () => {
+    const accuracy = calculateSessionAccuracy(sessionAnswerHistory);
+    const timeSpentMs = Date.now() - sessionStartTime.current;
+
+    const result: QuizResult = {
+      sessionId: sessionId ?? "local",
+      mode,
+      topic: "Duolingo Galaxy",
+      totalQuestions: initialTotalQuestions.current,
+      correctCount: sessionAnswerHistory.filter((h) => h.firstTryCorrect).length,
+      accuracy,
+      totalXpEarned,
+      maxCombo,
+      timeSpentMs,
+      completedAt: new Date(),
+      didLevelUp: false,
+    };
+
+
+    onComplete?.(result);
+
+    if (!externalCompletion) {
+      setIsResultsOpen(true);
+    }
+  };
+
+  const handleQuitConfirm = () => {
+    setIsExitModalOpen(false);
+    onExit?.();
+  };
+
+  const handleRefillHearts = () => {
+    setHearts(5);
+    setIsOutOfHeartsOpen(false);
+  };
+
+  /* ─── Render Results Screen ─── */
+  if (isResultsOpen) {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <div className="text-center">
-          <motion.div className="size-12 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center animate-pulse">
-            <svg className="size-6 animate-spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round" strokeDasharray="31.4 31.4"/></svg>
-          </motion.div>
-          <p className="text-sm font-medium text-muted-foreground">Preparing your quiz...</p>
-        </div>
+      <div className="fixed inset-0 z-50 bg-[#070913] overflow-y-auto">
+        <DuolingoResults
+          xpEarned={totalXpEarned}
+          accuracy={calculateSessionAccuracy(sessionAnswerHistory)}
+          maxCombo={maxCombo}
+          timeSpentMs={Date.now() - sessionStartTime.current}
+          streak={streak}
+          mistakes={mistakesHistory}
+          onContinue={() => {
+            if (onContinueResults) {
+              onContinueResults();
+            } else {
+              onExit?.();
+            }
+          }}
+        />
       </div>
     );
   }
 
-  // Show landing page
-  if (state === "landing") {
-    return (
-      <div className={cn("rounded-3xl border p-5 sm:p-8 shadow-2xl", config.theme.cardClass)}>
-        <div className="text-center">
-          <motion.div
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ type: "spring", stiffness: 200, damping: 15 }}
-            className="mb-6 flex justify-center"
-          >
-            <div className={cn(
-              "grid size-16 place-items-center rounded-2xl shadow-lg",
-              config.theme.variant === "challenge"
-                ? "bg-gradient-to-br from-emerald-400 via-green-500 to-teal-500"
-                : config.theme.variant === "practice"
-                ? "bg-gradient-to-br from-primary via-emerald-400 to-cyan-400"
-                : "bg-gradient-to-br from-primary via-emerald-400 to-cyan-400",
-            )}>
-              <svg className="size-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-              </svg>
-            </div>
-          </motion.div>
-          <h2 className="text-2xl font-black text-foreground mb-2">
-            {config.theme.variant === "challenge" ? "Daily Challenge" : "Quiz"}
-          </h2>
-          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-            {config.theme.variant === "challenge"
-              ? "15 questions · 30 minutes · Beat the clock!"
-              : "Test your knowledge and earn XP"}
-          </p>
-          <Button
-            onClick={() => setState("active")}
-            className="w-full font-bold py-4 rounded-xl gap-2"
-          >
-            Start Quiz
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // Show results
-  if (state === "results" && result) {
-    return (
-      <QuizResults
-        result={result}
-        config={config}
-        theme={config.theme}
-        userXp={userXp}
-        onRetry={() => {
-          setResult(null);
-          setCurrentIndex(0);
-          setQuestions(questions.map(q => ({ ...q, isCorrect: null, userAnswer: null, answeredAt: null, xpEarned: undefined })));
-          setValue(null);
-          setFeedback(null);
-          setCombo(0);
-          setMaxCombo(0);
-          setAnswerHistory([]);
-          setXpEarned(0);
-          setXpTrigger(0);
-          setQuestionStartTime(Date.now());
-          setState("active");
-        }}
-        onExit={handleExit}
-        onReview={() => setShowReview(true)}
-        showReview={showReview}
+  /* ─── Render Main Arena ─── */
+  return (
+    <div
+      className={cn(
+        "fixed inset-0 z-50 h-[100dvh] max-h-[100dvh] w-full overflow-y-auto select-none bg-[#070913]",
+        "flex flex-col items-center justify-between",
+      )}
+      style={{
+        paddingTop: "max(env(safe-area-inset-top), 12px)",
+        paddingBottom: "max(env(safe-area-inset-bottom), 16px)",
+      }}
+    >
+      {/* ── 1. FIXED TOP HEADER HUD ── */}
+      <DuolingoHeader
+        progressPercentage={progressPercentage}
+        hearts={hearts}
+        streak={streak}
+        combo={combo}
+        isMuted={isMuted}
+        onToggleMute={() => setIsMuted(!isMuted)}
+        onQuit={() => setIsExitModalOpen(true)}
       />
-    );
-  }
 
-  // Show completed
-  if (state === "completed") {
-    return (
-      <div className={cn("rounded-3xl border p-5 sm:p-8 shadow-2xl text-center", config.theme.cardClass)}>
-        <motion.div
-          initial={{ scale: 0, rotate: -180 }}
-          animate={{ scale: 1, rotate: 0 }}
-          transition={{ type: "spring", stiffness: 200, damping: 15 }}
-          className="mb-5 flex justify-center"
-        >
-          <div className="relative grid size-20 place-items-center rounded-full bg-gradient-to-br from-emerald-400 via-green-500 to-teal-500 shadow-2xl shadow-emerald-400/30">
-            <svg className="size-10 text-white drop-shadow-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" strokeLinecap="round" strokeLinejoin="round" />
-              <polyline points="22 4 12 14.01 9 11.01" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-        </motion.div>
-        <h2 className="text-2xl font-black text-foreground">Quiz Complete</h2>
-        <p className="text-sm text-muted-foreground mt-2 mb-6">Great job! You&apos;ve finished the quiz.</p>
-        <Button onClick={handleExit} className="w-full font-bold py-3 rounded-xl gap-2">
-          <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-            <polyline points="9 22 9 12 15 12 15 22" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          Back to Dashboard
-        </Button>
-      </div>
-    );
-  }
-
-  // Active / Submitting / Review states
-  if (state === "active" || state === "submitting" || state === "review") {
-    if (!currentQuestion) return null;
-
-    return (
-      <div className={cn("flex flex-col gap-6", config.theme.backgroundClass)}>
-        {/* XP Fly animation */}
-        <XpFly amount={xpEarned} triggerKey={xpTrigger} />
-
-        {/* Hearts display */}
-        {hearts && (
-          <div className="flex items-center justify-center">
-            <HeartsDisplay
-              hearts={hearts.current}
-              maxHearts={hearts.max}
-              nextRegen={hearts.nextRegen}
-              size="md"
-            />
-          </div>
-        )}
-
-        {/* Quiz Header */}
-        <QuizHeader
-          mode={mode}
-          config={config}
-          topic={config.theme.variant === "challenge" ? "Daily Challenge" : "Quiz"}
-          subtitle={initialQuestions.length > 0 ? `${questions.length} questions` : undefined}
-          progress={progress}
-          timerConfig={timerConfig}
-          isTimerActive={state === "active" && !isPaused}
-          onTimerExpire={handleTimerExpire}
-          onExit={handleExit}
-          onPause={handlePause}
-          onResume={handleResume}
-          isPaused={isPaused}
-          userStats={{ xp: userXp, level: userLevel, streak: userStreak, hearts }}
-        />
-
-        {/* Streak/Combo indicator */}
-        <StreakIndicator combo={combo} streak={userStreak} maxCombo={maxCombo} />
-
-        {/* Question Area */}
+      {/* ── 2. CENTER "DUOLINGO ZEN" QUESTION ARENA ── */}
+      <section
+        aria-label="Quiz Challenge"
+        className="w-full max-w-xl mx-auto flex-1 flex flex-col justify-center px-4 sm:px-6 pt-20 pb-32 sm:pb-36"
+      >
         <AnimatePresence mode="wait">
-          <motion.div
-            key={currentIndex}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.2 }}
-            className="relative"
-          >
-            {!feedback && (
-              <QuestionSection
-                question={currentQuestion}
-                value={value}
-                onValueChange={setValue}
-                onSubmit={handleSubmit}
-                submitting={submitting}
-                partIndex={null}
-                error={error ?? undefined}
+          {activeQuestion ? (
+            <motion.div
+              key={activeQuestion.id}
+              initial={{ x: 40, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -40, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 350, damping: 30 }}
+              className="flex flex-col gap-6 sm:gap-8 w-full"
+            >
+              {/* Character + Speech Bubble */}
+              <CharacterSpeechBubble
+                characterId={currentCharacterId}
+                mood={currentMood}
+                message={activeQuestion.prompt}
+                disableVoice={isMuted}
               />
-            )}
 
-            {feedback && (
-              <QuizFeedback
-                config={config.feedback}
-                feedback={feedback}
-                onContinue={handleContinue}
-                onRetry={handleRetry}
-                onHintToggle={() => setShowHint(!showHint)}
-                showHint={showHint}
-              />
-            )}
-          </motion.div>
+              {/* The Active Duolingo Question Mechanic */}
+              <div className="w-full">
+                {activeQuestion.type === "mcq" && (
+                  <DuolingoMCQ
+                    key={activeQuestion.id}
+                    payload={activeQuestion.payload as import("./types").DuolingoMCQPayload}
+                    selectedOptionId={stagedAnswer}
+                    onSelectOption={(id) => setStagedAnswer(id)}
+                    disabled={drawerState !== "neutral"}
+                  />
+                )}
+
+                {activeQuestion.type === "word_bank" && (
+                  <DuolingoWordBank
+                    key={activeQuestion.id}
+                    payload={activeQuestion.payload as import("./types").DuolingoWordBankPayload}
+                    value={stagedAnswer ?? ""}
+                    onChange={(val) => setStagedAnswer(val)}
+                    disabled={drawerState !== "neutral"}
+                  />
+                )}
+
+                {activeQuestion.type === "match_pairs" && (
+                  <DuolingoMatchPairs
+                    key={activeQuestion.id}
+                    payload={activeQuestion.payload as import("./types").DuolingoMatchPairsPayload}
+                    onMatchComplete={() => {
+                      setStagedAnswer("all_matched");
+                    }}
+                    disabled={drawerState !== "neutral"}
+                  />
+                )}
+
+                {activeQuestion.type === "true_false" && (
+                  <DuolingoTrueFalse
+                    key={activeQuestion.id}
+                    payload={activeQuestion.payload as import("./types").DuolingoTrueFalsePayload}
+                    selectedValue={stagedAnswer === null ? null : stagedAnswer === "true"}
+                    onSelect={(val) => setStagedAnswer(val ? "true" : "false")}
+                    disabled={drawerState !== "neutral"}
+                  />
+                )}
+
+                {activeQuestion.type === "fill_blank" && (
+                  <DuolingoFillBlank
+                    key={activeQuestion.id}
+                    payload={activeQuestion.payload as import("./types").DuolingoFillBlankPayload}
+                    selectedOption={stagedAnswer}
+                    onSelect={(opt) => setStagedAnswer(opt)}
+                    disabled={drawerState !== "neutral"}
+                  />
+                )}
+              </div>
+            </motion.div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-20 text-white/50">
+              <div className="size-8 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent mb-3" />
+              <p className="text-sm font-medium">Entering orbit...</p>
+            </div>
+          )}
         </AnimatePresence>
+      </section>
 
-        {/* Navigation */}
-        <QuizNavigation
-          config={config.navigation}
-          progress={progress}
-          currentIndex={currentIndex}
-          hasFeedback={!!feedback}
-          isSubmitting={submitting}
-          isLastQuestion={currentIndex === questions.length - 1}
-          canSubmit={canSubmitValue(currentQuestion, value)}
-          onPrevious={handlePrevious}
-          onNext={handleContinue}
-          onSkip={handleSkip}
-          onSubmit={handleSubmit}
-        />
-      </div>
-    );
-  }
+      {/* ── 3. SLIDING BOTTOM ACTION SHEET DRAWER ── */}
+      <DuolingoBottomDrawer
+        state={drawerState}
+        canCheck={canCheck}
+        onCheck={handleCheckAnswer}
+        onContinue={handleContinueAfterFeedback}
+        correctAnswer={
+          activeQuestion?.type === "mcq"
+            ? (activeQuestion.payload as import("./types").DuolingoMCQPayload).options.find(
+                (o) => o.id === (activeQuestion.payload as import("./types").DuolingoMCQPayload).correctOptionId
+              )?.text
+            : activeQuestion?.type === "true_false"
+              ? (activeQuestion.payload as import("./types").DuolingoTrueFalsePayload).correctAnswer
+                ? "TRUE"
+                : "FALSE"
+              : activeQuestion?.type === "word_bank"
+                ? (activeQuestion.payload as import("./types").DuolingoWordBankPayload).targetSentence
+                : activeQuestion?.type === "fill_blank"
+                  ? (activeQuestion.payload as import("./types").DuolingoFillBlankPayload).correctAnswer
+                  : undefined
+        }
+        explanation={
+          activeQuestion ? (activeQuestion.payload as { explanation?: string })?.explanation : undefined
+        }
+        xpEarned={10}
+        combo={combo}
+        isEvaluating={isEvaluating}
+      />
 
-  return null;
+      {/* ── 4. EXIT CONFIRMATION MODAL ── */}
+      <DuolingoExitModal
+        isOpen={isExitModalOpen}
+        onKeepPlaying={() => setIsExitModalOpen(false)}
+        onConfirmQuit={handleQuitConfirm}
+      />
+
+      {/* ── 5. OUT OF HEARTS RECOVERY MODAL ── */}
+      <DuolingoOutOfHeartsModal
+        isOpen={isOutOfHeartsOpen}
+        userXp={userXp}
+        onPracticeForHearts={handleRefillHearts}
+        onRefillWithXp={handleRefillHearts}
+        onQuit={handleQuitConfirm}
+      />
+    </div>
+  );
 }
 
 /* ════════════════════════════════════════════════════════════════════
-   QUIZ PROVIDER - Context for sharing quiz state across components
-   ═════════════════════════════════════════════════════════════════════ */
-
-import { createContext, useContext, ReactNode } from "react";
+   QUIZ CONTEXT & PROVIDER
+   ════════════════════════════════════════════════════════════════════ */
 
 interface QuizContextValue {
-  session: QuizSession | null;
-  setSession: (session: QuizSession | null) => void;
-  submitAnswer: (questionId: string, answer: string) => Promise<void>;
-  nextQuestion: () => void;
-  previousQuestion: () => void;
-  skipQuestion: () => void;
+  session: unknown;
+  setSession: (s: unknown) => void;
 }
 
-const QuizContext = createContext<QuizContextValue | null>(null);
+const QuizContext = React.createContext<QuizContextValue | null>(null);
 
-interface QuizProviderProps {
-  children: ReactNode;
-  mode: QuizMode;
-  config?: DeepPartial<QuizModeConfig>;
-}
-
-export function QuizProvider({ children }: QuizProviderProps) {
-  const [session, setSession] = useState<QuizSession | null>(null);
-
-  // Implementation would go here for context-based state management
-  // For now, the QuizExperience component handles its own state
-
+export function QuizProvider({ children }: { children: React.ReactNode }) {
+  const [session, setSession] = React.useState<unknown>(null);
   return (
-    <QuizContext.Provider value={{ session, setSession, submitAnswer: async () => {}, nextQuestion: () => {}, previousQuestion: () => {}, skipQuestion: () => {} }}>
+    <QuizContext.Provider value={{ session, setSession }}>
       {children}
     </QuizContext.Provider>
   );
 }
 
 export function useQuiz() {
-  const context = useContext(QuizContext);
-  if (!context) {
-    throw new Error("useQuiz must be used within a QuizProvider");
-  }
-  return context;
+  const context = React.useContext(QuizContext);
+  return context ?? { session: null, setSession: () => {} };
 }

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PlanetVisual } from "@/components/galaxy/planet-visual";
 import { getPlanetForCareer } from "@/lib/galaxy-assets";
@@ -18,14 +19,9 @@ type CareerPickerProps = {
   activeSlug: string;
 };
 
-/**
- * The sector-selector of the Learning Galaxy. Each career is a planet
- * destination the explorer can fly toward. The planet is the anchor; the
- * orbit ring + progress arc communicate journey state.
- */
 export function CareerPicker({ careers, activeSlug }: CareerPickerProps) {
   return (
-    <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-5">
+    <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 select-none">
       {careers.map((career, i) => {
         const active = career.slug === activeSlug;
         const planet = getPlanetForCareer(career.slug);
@@ -34,89 +30,68 @@ export function CareerPicker({ careers, activeSlug }: CareerPickerProps) {
         return (
           <motion.div
             key={career.slug}
-            initial={{ opacity: 0, y: 14, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ delay: i * 0.07, duration: 0.4, ease: "easeOut" }}
-            whileHover={active ? undefined : { y: -4 }}
-            whileTap={{ scale: 0.96 }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05, duration: 0.3 }}
           >
             <Link
               href={`/learn?career=${career.slug}`}
               aria-current={active ? "page" : undefined}
-              aria-label={`${career.title} career sector${career.pathCount ? `, ${career.pathCount} paths` : ""}${progress > 0 ? `, ${progress}% explored` : ""}`}
               className={cn(
-                "group flex flex-col items-center gap-2.5 rounded-2xl border px-5 py-4 transition-all duration-300",
+                "group relative flex items-center gap-3 rounded-2xl px-4 sm:px-5 py-2.5 sm:py-3 transition-all duration-100",
+                "duo-card-3d border-2 border-b-4",
                 active
-                  ? "border-foreground/20 bg-foreground/[0.05] shadow-lg shadow-foreground/5"
-                  : "border-transparent hover:border-foreground/10 hover:bg-foreground/[0.02]",
+                  ? "border-emerald-500 bg-emerald-500/15 text-white shadow-[0_4px_16px_rgba(16,185,129,0.2)]"
+                  : "border-white/10 bg-[#0d1424]/90 text-slate-300 hover:border-white/20 hover:bg-[#121c33] hover:text-white shadow-md shadow-black/30",
               )}
             >
-              <div className="relative">
+              {/* Mini Planet Visual */}
+              <div className="relative shrink-0">
                 <PlanetVisual
                   src={planet.src}
                   alt={planet.alt}
-                  size={72}
-                  orbit
+                  size={36}
                   glow={active}
                   float={active}
                   dormant={!active && progress === 0}
-                  accentClass={
-                    active
-                      ? "bg-gradient-to-br from-white/20 to-transparent"
-                      : undefined
-                  }
-                />
-                {/* Ring track around the planet communicating progress */}
-                <div
-                  aria-hidden
-                  className="absolute -inset-2 rounded-full"
-                  style={{
-                    background: `conic-gradient(from 0deg, oklch(0.8 0.18 142) ${progress}%, rgba(255,255,255,0.1) ${progress}%)`,
-                    WebkitMask:
-                      "radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px))",
-                    mask: "radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px))",
-                    opacity: progress > 0 ? 1 : 0,
-                  }}
                 />
                 {active && (
                   <span
                     aria-hidden
-                    className="absolute -right-1 -top-1 grid size-5 place-items-center rounded-full bg-primary text-[9px] font-black text-primary-foreground shadow"
+                    className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-emerald-500 text-[9px] font-black text-slate-950 shadow-sm"
                   >
-                    ✓
+                    <Check className="size-2.5 stroke-[3]" />
                   </span>
                 )}
               </div>
 
-              <div className="text-center">
+              {/* Title & Stats */}
+              <div className="text-left">
                 <p
                   className={cn(
-                    "text-xs font-bold leading-tight transition-colors",
-                    active
-                      ? "text-foreground"
-                      : "text-muted-foreground group-hover:text-foreground/80",
+                    "text-xs sm:text-sm font-black leading-tight tracking-tight transition-colors",
+                    active ? "text-emerald-300" : "text-white group-hover:text-emerald-300",
                   )}
                 >
                   {career.title}
                 </p>
-                <div className="flex items-center justify-center gap-1.5 mt-1">
-                  {progress > 0 && (
-                    <div className="size-1.5 rounded-full bg-emerald-400 shadow-[0_0_4px_rgba(52,211,153,0.5)]" />
-                  )}
-                  <p
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span
                     className={cn(
-                      "text-[10px] font-semibold tabular-nums",
+                      "text-[10px] font-bold uppercase tracking-wider",
                       active
-                        ? "text-primary"
-                        : progress > 0 ? "text-emerald-400/70" : "text-muted-foreground/60",
+                        ? "text-emerald-400"
+                        : progress > 0
+                          ? "text-emerald-400/80"
+                          : "text-slate-400",
                     )}
                   >
                     {progress > 0
-                      ? `${progress}% explored`
+                      ? `${progress}% mastered`
                       : career.pathCount
-                        ? `${career.pathCount} paths`
-                        : "Not started"}
-                  </p>
+                        ? `${career.pathCount} worlds`
+                        : "Sector"}
+                  </span>
                 </div>
               </div>
             </Link>
@@ -126,3 +101,4 @@ export function CareerPicker({ careers, activeSlug }: CareerPickerProps) {
     </div>
   );
 }
+

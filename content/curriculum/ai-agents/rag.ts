@@ -176,6 +176,15 @@ export const ragMemoryPath: SeedPath = {
                   explanation:
                     "Semantic splits, overlap, and boilerplate filtering all improve retrieval; whole-book embeddings lose focus.",
                 },
+                {
+                  type: "fill_blank",
+                  difficulty: "beginner",
+                  question:
+                    "Small chunks retrieve precisely but lose surrounding ___.",
+                  fillBlanks: [{ answer: "context" }],
+                  explanation:
+                    "The size tradeoff: precise small chunks forfeit the broader context larger chunks preserve.",
+                },
               ],
             },
           ],
@@ -443,6 +452,22 @@ export const ragMemoryPath: SeedPath = {
                   explanation:
                     "Focused, tagged context plus grounding instructions produces better, auditable answers.",
                 },
+                {
+                  type: "mcq",
+                  difficulty: "beginner",
+                  question:
+                    "Why does retrieving too many low-quality chunks hurt RAG answers?",
+                  options: [
+                    "The model gets distracted by irrelevant context",
+                    "More chunks always improve accuracy",
+                    "The vector database runs out of memory",
+                    "Citations become impossible to generate",
+                  ],
+                  correctAnswer:
+                    "The model gets distracted by irrelevant context",
+                  explanation:
+                    "Too many irrelevant chunks dilute the signal, leading the model to fabricate or misquote — fewer focused chunks beat a flood of noise.",
+                },
               ],
             },
           ],
@@ -607,6 +632,20 @@ export const ragMemoryPath: SeedPath = {
                   explanation:
                     "Reciprocal Rank Fusion converts each list's positions into scores and sums them.",
                 },
+                {
+                  type: "multi_select",
+                  difficulty: "intermediate",
+                  question:
+                    "In which cases should hybrid search lean toward more lexical weight?",
+                  multiSelectOptions: [
+                    { text: "Queries full of part numbers and error codes", isCorrect: true },
+                    { text: "Code corpora with exact identifiers", isCorrect: true },
+                    { text: "Rare acronyms that embeddings under-represent", isCorrect: true },
+                    { text: "Casual conversational questions about concepts", isCorrect: false },
+                  ],
+                  explanation:
+                    "Exact tokens, identifiers, and rare acronyms are lexical strengths; conversational concept questions want more semantic weight.",
+                },
               ],
             },
             {
@@ -681,6 +720,15 @@ export const ragMemoryPath: SeedPath = {
                   ],
                   explanation:
                     "Staleness, privacy, and context bloat are the real costs — curate and localize what is stored.",
+                },
+                {
+                  type: "fill_blank",
+                  difficulty: "intermediate",
+                  question:
+                    "Condensing older conversation turns into ___ keeps the context window focused on what matters.",
+                  fillBlanks: [{ answer: "summaries" }],
+                  explanation:
+                    "Summarizing old turns compresses the thread so working memory stays focused.",
                 },
               ],
             },

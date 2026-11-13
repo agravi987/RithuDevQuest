@@ -79,12 +79,12 @@ export const linuxPath: SeedPath = {
                     "Bash is a shell: a program that reads your commands and runs them. GNOME Terminal is a terminal emulator, SSH is a remote-login protocol, and VS Code is an editor.",
                 },
                 {
-                  type: "command",
+                  type: "mcq",
                   difficulty: "beginner",
                   question:
-                    "Type a command that prints the message `ready` to the terminal.",
-                  correctAnswer:
-                    'echo ready|echo "ready"|echo \'ready\'',
+                    "Which command prints the message `ready` to the terminal?",
+                  options: ["echo ready", "print ready", "msg ready", "cat ready"],
+                  correctAnswer: "echo ready",
                   explanation:
                     "echo writes its arguments to standard output — the classic first command that proves the shell is listening.",
                 },
@@ -188,20 +188,22 @@ export const linuxPath: SeedPath = {
                     "Each .. climbs one level, so cd ../.. from app lands in projects. cd /home and cd ~ jump elsewhere entirely, and cd ../ only climbs once.",
                 },
                 {
-                  type: "command",
+                  type: "mcq",
                   difficulty: "beginner",
                   question:
-                    "Type the command that moves you into a directory named notes inside your current directory.",
+                    "Which command moves you into a directory named notes inside your current directory?",
+                  options: ["cd notes", "ls notes", "push notes", "mv notes"],
                   correctAnswer: "cd notes",
                   explanation:
                     "A bare relative path is resolved from your current directory, so cd notes moves into the notes folder that lives right here.",
                 },
                 {
-                  type: "command",
+                  type: "mcq",
                   difficulty: "intermediate",
                   question:
-                    "Type one command that lists the current directory in long format and includes hidden files.",
-                  correctAnswer: "ls -la|ls -al",
+                    "Which command lists the current directory in long format and includes hidden files?",
+                  options: ["ls -la", "ls -lh", "ls -a", "ls -ld"],
+                  correctAnswer: "ls -la",
                   explanation:
                     "-l asks for the long (detailed) listing and -a includes hidden dotfiles. The flags can be combined in either order.",
                 },
@@ -318,19 +320,21 @@ export const linuxPath: SeedPath = {
                     "--help prints everything to the terminal and exits on its own — no pager is opened, so there is nothing to quit.",
                 },
                 {
-                  type: "command",
+                  type: "mcq",
                   difficulty: "beginner",
                   question:
-                    "Type the command that opens the manual page for the command grep.",
+                    "Which command opens the manual page for the command grep?",
+                  options: ["man grep", "help grep", "info grep", "grep --man"],
                   correctAnswer: "man grep",
                   explanation:
                     "man grep opens grep's manual page. Inside, press / to search, n for the next match, and q to quit.",
                 },
                 {
-                  type: "command",
+                  type: "mcq",
                   difficulty: "intermediate",
                   question:
-                    "You are inside the man ls pager and searched for the word --color. Type the key that jumps to the next match.",
+                    "When inside a man page and you have searched for text, which key jumps to the next match?",
+                  options: ["n", "p", "f", "s"],
                   correctAnswer: "n",
                   explanation:
                     "In the pager that renders man pages, n repeats the most recent forward search, moving you to the next match.",
@@ -428,10 +432,11 @@ export const linuxPath: SeedPath = {
                     "The -f (follow) flag keeps tail attached to the file so it streams new entries in real time.",
                 },
                 {
-                  type: "command",
+                  type: "mcq",
                   difficulty: "beginner",
                   question:
-                    "Type the command that prints the entire contents of the file app.log to the terminal.",
+                    "Which command prints the entire contents of the file app.log to the terminal?",
+                  options: ["cat app.log", "less app.log", "head app.log", "more app.log"],
                   correctAnswer: "cat app.log",
                   explanation:
                     "cat writes the file's contents to standard output — perfect for short files you want to see all at once.",
@@ -447,10 +452,11 @@ export const linuxPath: SeedPath = {
                     "less opens a file interactively with scrolling and search. cat dumps everything at once and is clumsy for large files.",
                 },
                 {
-                  type: "command",
+                  type: "mcq",
                   difficulty: "intermediate",
                   question:
-                    "Type the command that keeps watching server.log and prints new lines as they are appended.",
+                    "Which command keeps watching server.log and prints new lines as they are appended?",
+                  options: ["tail -f server.log", "tail server.log", "cat server.log", "watch server.log"],
                   correctAnswer: "tail -f server.log",
                   explanation:
                     "tail -f follows the file, streaming each appended line in real time — the classic way to watch live logs.",
@@ -557,10 +563,11 @@ export const linuxPath: SeedPath = {
                     "The ! overrides the warning about unsaved changes and quits immediately. Use :wq to save and quit.",
                 },
                 {
-                  type: "command",
+                  type: "mcq",
                   difficulty: "beginner",
                   question:
-                    "You are in Vim's normal mode. Type the key that switches to insert mode so you can start typing.",
+                    "You are in Vim's normal mode. Which key switches to insert mode so you can start typing?",
+                  options: ["i", "a", "o", "Esc"],
                   correctAnswer: "i",
                   explanation:
                     "Pressing i enters insert mode so keystrokes become text. Press Esc to return to normal mode for commands.",
@@ -576,10 +583,11 @@ export const linuxPath: SeedPath = {
                     ":w writes the file and :q quits; :wq does both. :q alone refuses to quit with unsaved changes, and :w alone keeps Vim open.",
                 },
                 {
-                  type: "command",
+                  type: "mcq",
                   difficulty: "intermediate",
                   question:
-                    "Type the Vim command that quits without saving your changes.",
+                    "Which Vim command quits without saving your changes?",
+                  options: [":q!", ":wq", ":q", ":w!"],
                   correctAnswer: ":q!",
                   explanation:
                     "The ! suppresses the unsaved-changes warning, so :q! abandons everything and exits immediately.",
@@ -677,19 +685,21 @@ export const linuxPath: SeedPath = {
                     "The -r (recursive) flag makes rm descend into directories. There is no trash can, so use it carefully.",
                 },
                 {
-                  type: "command",
+                  type: "mcq",
                   difficulty: "beginner",
                   question:
-                    "Type the command that creates a new empty file named deploy.yml.",
+                    "Which command creates a new empty file named deploy.yml?",
+                  options: ["touch deploy.yml", "mkdir deploy.yml", "create deploy.yml", "new deploy.yml"],
                   correctAnswer: "touch deploy.yml",
                   explanation:
                     "touch creates an empty file (or refreshes the timestamp if it already exists).",
                 },
                 {
-                  type: "command",
+                  type: "mcq",
                   difficulty: "beginner",
                   question:
-                    "Type the command that creates a directory named configs.",
+                    "Which command creates a directory named configs?",
+                  options: ["mkdir configs", "touch configs", "make configs", "newdir configs"],
                   correctAnswer: "mkdir configs",
                   explanation:
                     "mkdir creates a directory. Add -p to create any missing parents in the path.",
@@ -807,6 +817,89 @@ export const linuxPath: SeedPath = {
                   body: "Configuration in `/etc`, logs in `/var/log`, and shared libraries in `/usr/lib` are conventions every tool and every troubleshooting session relies on.",
                 },
               ],
+              questions: [
+                {
+                  type: "mcq",
+                  difficulty: "beginner",
+                  question:
+                    "Executable programs such as ls and grep are conventionally kept in which directory?",
+                  options: ["/bin", "/etc", "/var", "/tmp"],
+                  correctAnswer: "/bin",
+                  explanation:
+                    "/bin (and /usr/bin) hold the programs you run. /etc holds configuration, /var holds variable data like logs, and /tmp is scratch space.",
+                },
+                {
+                  type: "mcq",
+                  difficulty: "beginner",
+                  question:
+                    "Which directory stores system-wide configuration files?",
+                  options: ["/etc", "/home", "/var", "/opt"],
+                  correctAnswer: "/etc",
+                  explanation:
+                    "/etc is where services and the system keep their configuration, which is why configuring nginx or sshd means editing files under /etc.",
+                },
+                {
+                  type: "true_false",
+                  difficulty: "beginner",
+                  question:
+                    "Log files written by running services are typically stored under /var/log.",
+                  correctAnswer: "true",
+                  explanation:
+                    "Logs are variable data, and the /var tree is dedicated to variable data — most notably /var/log for log files and /var/lib for databases.",
+                },
+                {
+                  type: "fill_blank",
+                  difficulty: "beginner",
+                  question:
+                    "Fill in the blank: User home directories are conventionally located under ________.",
+                  fillBlanks: [{ answer: "/home" }],
+                  explanation:
+                    "Each user gets a directory under /home (e.g. /home/adam). Only the superuser's home lives elsewhere, at /root.",
+                },
+                {
+                  type: "match",
+                  difficulty: "intermediate",
+                  question: "Match each top-level directory to its purpose.",
+                  matchPairs: [
+                    { left: "/bin", right: "Executable programs" },
+                    { left: "/etc", right: "System configuration files" },
+                    { left: "/var", right: "Variable data such as logs" },
+                    { left: "/opt", right: "Optional third-party software" },
+                  ],
+                  explanation:
+                    "The Linux filesystem is a single tree from / — /bin for programs, /etc for config, /var for changing data like logs, and /opt for optional vendor software.",
+                },
+                {
+                  type: "mcq",
+                  difficulty: "beginner",
+                  question:
+                    "Which command prints your current working directory?",
+                  options: ["pwd", "ls", "cd", "where"],
+                  correctAnswer: "pwd",
+                  explanation:
+                    "pwd (print working directory) echoes the absolute path of the directory you are currently in — indispensable when you are navigating a deep tree.",
+                },
+                {
+                  type: "scenario",
+                  difficulty: "intermediate",
+                  question:
+                    "A service you manage has stopped. Its log file lives in /var/log. You are at the shell prompt.",
+                  parts: [
+                    {
+                      prompt:
+                        "Type the command that lists the files in /var/log.",
+                      correctAnswer: "ls /var/log",
+                    },
+                    {
+                      prompt:
+                        "Type the command that shows the last 20 lines of /var/log/syslog.",
+                      correctAnswer: "tail -n 20 /var/log/syslog",
+                    },
+                  ],
+                  explanation:
+                    "The /var tree stores variable data, and logs are the classic example. ls inspects a directory and tail prints the newest lines of a file — the first move in troubleshooting.",
+                },
+              ],
             },
             {
               title: "Absolute vs Relative Paths",
@@ -847,10 +940,11 @@ export const linuxPath: SeedPath = {
                   explanation: ". means the current directory and .. means the parent directory.",
                 },
                 {
-                  type: "command",
+                  type: "mcq",
                   difficulty: "beginner",
-                  question: "Type the command that changes to the parent directory.",
-correctAnswer: "cd ..",
+                  question: "Which command changes to the parent directory?",
+                  options: ["cd ..", "cd -", "cd /", "cd ~"],
+                  correctAnswer: "cd ..",
                   explanation: ".. refers to the parent directory. cd .. moves one level up in the directory tree.",
                 },
                 {
@@ -919,9 +1013,10 @@ correctAnswer: "cd ..",
                   explanation: "The asterisk * matches zero or more characters.",
                 },
                 {
-                  type: "command",
+                  type: "mcq",
                   difficulty: "beginner",
-                  question: "Type the command that removes all .tmp files in the current directory.",
+                  question: "Which command removes all .tmp files in the current directory?",
+                  options: ["rm *.tmp", "del *.tmp", "remove *.tmp", "erase *.tmp"],
                   correctAnswer: "rm *.tmp",
                   explanation: "The shell expands *.tmp to all matching filenames before passing them to rm.",
                 },
@@ -945,6 +1040,16 @@ explanation: "Glob expansion happens in the shell before the command runs.",
                   explanation:
                     "* matches any run of characters, ? matches exactly one character, and [12] matches a single character from the set — so file?.txt misses file12.txt.",
                   hint: "Compare how many characters ? and [12] each cover.",
+                },
+                {
+                  type: "fill_blank",
+                  difficulty: "beginner",
+                  question:
+                    "Fill in the blank: The shell glob character that matches exactly one character is ________.",
+                  fillBlanks: [{ answer: "?" }],
+                  explanation:
+                    "? matches exactly one character, * matches any number of characters, and [abc] matches a single character from the set.",
+                  hint: "It is a single punctuation mark, not the asterisk.",
                 },
               ],
             },
@@ -981,9 +1086,10 @@ explanation: "Glob expansion happens in the shell before the command runs.",
                   explanation: "find traverses the directory tree. ls does not recurse and grep searches file contents.",
                 },
                 {
-                  type: "command",
+                  type: "mcq",
                   difficulty: "intermediate",
-                  question: "Type the command that finds all files larger than 100MB in the current directory.",
+                  question: "Which command finds all files larger than 100MB in the current directory?",
+                  options: ["find . -size +100M", "find . -size -100M", "ls -size +100M", "grep -size 100M"],
                   correctAnswer: "find . -size +100M",
                   explanation: "find . searches the current directory, -size +100M filters for large files.",
                 },
@@ -1001,7 +1107,6 @@ explanation: "find searches by filename, size, time. grep searches file contents
                     "Complete the GNU find one-liner that searches /var/log for files ending in .log that were modified less than 7 days ago.",
                   codeLanguage: "bash",
                   codeBlanks: [
-                    { id: "find-cmd", answer: "find /var/log -name \"*.log\" -mtime -7", placeholder: "<command>" },
                     { id: "mtime-flag", answer: "-mtime -7", placeholder: "<time filter>" },
                   ],
                   explanation:
@@ -1079,11 +1184,12 @@ explanation: "find searches by filename, size, time. grep searches file contents
                   correctAnswer: "true",
                   explanation: "Execute permission on directories allows cd into them.",
                 },
-                {
-                  type: "command",
+{
+                  type: "mcq",
                   difficulty: "beginner",
-                  question: "Type the command that shows permissions of all files in long format.",
-correctAnswer: "ls -l",
+                  question: "Which command shows permissions of all files in long format?",
+                  options: ["ls -l", "ls -a", "ls -ld", "ls -la"],
+                  correctAnswer: "ls -l",
                   explanation: "ls -l displays permissions, owner, group, size, and date.",
                 },
                 {
@@ -1150,10 +1256,11 @@ correctAnswer: "ls -l",
                   correctAnswer: "Owner: rwx, Group: r-x, Others: r-x",
                   explanation: "7=rwx, 5=r-x. Owner full access; group and others read+execute.",
                 },
-                {
-                  type: "command",
+{
+                  type: "mcq",
                   difficulty: "beginner",
-                  question: "Type the command that makes deploy.sh executable by its owner.",
+                  question: "Which command makes deploy.sh executable by its owner?",
+                  options: ["chmod u+x deploy.sh", "chmod +x deploy.sh", "chmod u+r deploy.sh", "chmod a+x deploy.sh"],
                   correctAnswer: "chmod u+x deploy.sh",
                   explanation: "u+x adds execute for the user (owner).",
                 },
@@ -1178,6 +1285,20 @@ correctAnswer: "true",
                   explanation:
                     "Read=4, write=2, execute=1, and you sum the bits in the triple: rwx is 4+2+1=7, r-x is 4+0+1=5, rw- is 4+2+0=6, and r-- is 4.",
                   hint: "Add 4 (read), 2 (write), and 1 (execute) only where the letter is present.",
+                },
+                {
+                  type: "match",
+                  difficulty: "intermediate",
+                  question:
+                    "Match each octal mode with the access it grants (owner / group / others).",
+                  matchPairs: [
+                    { left: "755", right: "Owner rwx, group and others r-x" },
+                    { left: "644", right: "Owner rw-, group and others r--" },
+                    { left: "700", right: "Owner rwx, group and others no access" },
+                    { left: "600", right: "Owner rw-, group and others no access" },
+                  ],
+                  explanation:
+                    "7 means rwx, 6 means rw-, 5 means r-x, and 4 means r--. So 755 is full control for the owner with read/execute for everyone else, 644 is the standard readable config, and 700/600 leave the group and others with nothing.",
                 },
               ],
             },
@@ -1220,10 +1341,11 @@ correctAnswer: "true",
                   correctAnswer: "u+x",
                   explanation: "u+x adds execute for the owner.",
                 },
-                {
-                  type: "command",
+{
+                  type: "mcq",
                   difficulty: "intermediate",
-                  question: "Type the command that changes the owner of /var/www to deploy.",
+                  question: "Which command changes the owner of /var/www to deploy?",
+                  options: ["chown deploy /var/www", "chmod deploy /var/www", "chgrp deploy /var/www", "chown -R deploy /var/www"],
                   correctAnswer: "chown deploy /var/www",
                   explanation: "chown changes file ownership. Only root can change other users' files.",
                 },
@@ -1248,6 +1370,20 @@ correctAnswer: "false",
                   explanation:
                     "First chown so you control the files, then chmod 750 to grant owner full access with least privilege for everyone else, and finally ls -ld to verify owner and mode.",
                   hint: "You must own the directory before your chmod is the one that sticks.",
+                },
+                {
+                  type: "match",
+                  difficulty: "intermediate",
+                  question:
+                    "Match each command with the change it makes.",
+                  matchPairs: [
+                    { left: "chmod u+x script.sh", right: "Add execute permission for the owner" },
+                    { left: "chmod g-w config.txt", right: "Remove write permission from the group" },
+                    { left: "chown adam:web /var/www", right: "Set owner to adam and group to web" },
+                    { left: "chown -R $USER /var/data", right: "Take ownership of a directory recursively" },
+                  ],
+                  explanation:
+                    "chmod u+x grants execute to the owner, g-w strips group write, chown user:group changes owner and group at once, and chown -R applies the ownership change to a directory and everything beneath it.",
                 },
               ],
             },
@@ -1298,12 +1434,13 @@ correctAnswer: "false",
                   correctAnswer: "ps aux",
                   explanation: "ps aux lists all processes with detailed info.",
                 },
-                {
-                  type: "command",
+{
+                  type: "mcq",
                   difficulty: "beginner",
-                  question: "Type the command that lists processes and filters for nginx.",
-                  correctAnswer: "ps aux | grep nginx",
-                  explanation: "ps aux + grep filters for nginx processes.",
+                  question: "Which command lists all processes with full details?",
+                  options: ["ps aux", "ls -la", "df -h", "du -sh"],
+                  correctAnswer: "ps aux",
+                  explanation: "ps aux lists every running process with user, PID, and resource use.",
                 },
                 {
                   type: "true_false",
@@ -1326,6 +1463,15 @@ correctAnswer: "true",
                   explanation:
                     "ps aux takes a snapshot, top keeps refreshing live, the PID is the number kill targets, and piping ps into grep narrows the output to one program.",
                   hint: "One pair is about the number shown in the first column of ps aux.",
+                },
+                {
+                  type: "fill_blank",
+                  difficulty: "beginner",
+                  question:
+                    "Fill in the blank: In ps aux output, the ________ column holds the unique identifier you pass to kill to stop a misbehaving process.",
+                  fillBlanks: [{ answer: "PID" }],
+                  explanation:
+                    "Every running process has a unique PID, printed in the PID column of ps aux, and that is exactly the identifier kill expects when a program misbehaves.",
                 },
               ],
             },
@@ -1361,10 +1507,11 @@ correctAnswer: "true",
                   correctAnswer: "SIGTERM",
                   explanation: "kill sends SIGTERM (signal 15) by default for graceful shutdown.",
                 },
-                {
-                  type: "command",
+{
+                  type: "mcq",
                   difficulty: "beginner",
-                  question: "Type the command that sends SIGKILL to process 5678.",
+                  question: "Which command sends SIGKILL to process 5678?",
+                  options: ["kill -9 5678", "kill -15 5678", "kill -2 5678", "killall 5678"],
                   correctAnswer: "kill -9 5678",
                   explanation: "-9 sends SIGKILL for immediate termination.",
                 },
@@ -1440,10 +1587,11 @@ correctAnswer: "true",
                   correctAnswer: "Runs in background",
                   explanation: "& puts the command in the background.",
                 },
-                {
-                  type: "command",
+{
+                  type: "mcq",
                   difficulty: "beginner",
-                  question: "Type the command that runs sleep 60 in the background.",
+                  question: "Which command runs sleep 60 in the background?",
+                  options: ["sleep 60 &", "sleep 60", "bg sleep 60", "nohup sleep 60"],
                   correctAnswer: "sleep 60 &",
                   explanation: "& at the end runs the command in the background.",
                 },
@@ -1469,6 +1617,22 @@ correctAnswer: "true",
                   explanation:
                     "Start with & so the shell returns immediately, confirm it with jobs, resume it with fg, and finally kill %1 referencing the job number.",
                   hint: "The & symbol is the very first thing you do.",
+                },
+                {
+                  type: "multi_select",
+                  difficulty: "intermediate",
+                  question:
+                    "Which of the following statements about background jobs in the shell are true?",
+                  multiSelectOptions: [
+                    { text: "Trailing & starts the job in the background and returns your prompt immediately.", isCorrect: true },
+                    { text: "The jobs command lists the background jobs of the current shell.", isCorrect: true },
+                    { text: "fg brings a background job back to the foreground.", isCorrect: true },
+                    { text: "Without nohup, a background job started with & always survives logging out.", isCorrect: false },
+                    { text: "kill %1 refers to a process ID (PID), not a job number.", isCorrect: false },
+                  ],
+                  explanation:
+                    "A trailing & runs the job in the background and hands the prompt straight back, jobs lists those jobs, and fg pulls one forward. Plain &-jobs stay tied to the shell and are not safe across logout — that is exactly why long-running work uses nohup. And %1 in kill %1 is a job reference, not a PID.",
+                  hint: "Only the detached, nohup-style jobs are truly safe from logout.",
                 },
               ],
             },
@@ -1519,10 +1683,11 @@ correctAnswer: "true",
                   correctAnswer: "ip addr",
                   explanation: "ip addr shows all interfaces with IP addresses.",
                 },
-                {
-                  type: "command",
+{
+                  type: "mcq",
                   difficulty: "intermediate",
-                  question: "Type the command that lists all TCP listening ports with processes.",
+                  question: "Which command lists all TCP listening ports with processes?",
+                  options: ["ss -tlnp", "ss -tln", "netstat -tlnp", "ss -ulnp"],
                   correctAnswer: "ss -tlnp",
                   explanation: "ss -t TCP -l listening -n numeric -p process.",
                 },
@@ -1591,10 +1756,11 @@ correctAnswer: "true",
                   correctAnswer: "ping",
                   explanation: "ping sends ICMP echo requests.",
                 },
-                {
-                  type: "command",
+{
+                  type: "mcq",
                   difficulty: "beginner",
-                  question: "Type the command that fetches HTTP headers from example.com.",
+                  question: "Which command fetches HTTP headers from example.com?",
+                  options: ["curl -I example.com", "curl example.com", "wget -I example.com", "curl -i example.com"],
                   correctAnswer: "curl -I example.com",
                   explanation: "curl -I sends a HEAD request for headers only.",
                 },
@@ -1675,11 +1841,12 @@ correctAnswer: "true",
                   correctAnswer: "true",
                   explanation: "The system checks /etc/hosts before DNS.",
                 },
-                {
-                  type: "command",
+{
+                  type: "mcq",
                   difficulty: "intermediate",
-                  question: "Type the command that resolves example.com via system resolution.",
-correctAnswer: "getent hosts example.com",
+                  question: "Which command resolves example.com via system resolution?",
+                  options: ["getent hosts example.com", "dig example.com", "nslookup example.com", "host example.com"],
+                  correctAnswer: "getent hosts example.com",
                   explanation: "getent hosts uses the same path as applications.",
                 },
                 {
@@ -1696,6 +1863,20 @@ correctAnswer: "getent hosts example.com",
                   explanation:
                     "dig talks straight to DNS, while getent mirrors how applications resolve and therefore honours /etc/hosts. Comparing the two is how you spot a stray hosts entry.",
                   hint: "One of the checked tools reads /etc/hosts, the other does not.",
+                },
+                {
+                  type: "match",
+                  difficulty: "intermediate",
+                  question:
+                    "Match each name-resolution tool or file with what it does.",
+                  matchPairs: [
+                    { left: "dig example.com", right: "Query a DNS server directly for records" },
+                    { left: "getent hosts example.com", right: "Resolve through the same path applications use, including /etc/hosts" },
+                    { left: "/etc/hosts", right: "Local static name mappings that override DNS" },
+                    { left: "/etc/resolv.conf", right: "Configure which DNS servers to consult" },
+                  ],
+                  explanation:
+                    "dig bypasses the system and asks DNS directly, getent hosts follows the full system resolution order, /etc/hosts holds local overrides, and /etc/resolv.conf tells the resolver which nameservers to use.",
                 },
               ],
             },

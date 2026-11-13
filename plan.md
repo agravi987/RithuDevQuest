@@ -796,56 +796,597 @@ Student can open a lesson, learn, practice, and complete it.
 
 ---
 
-## Phase 4 — Quiz Engine
+## Phase 4 — Duolingo-Grade Quiz Engine (Galaxy Edition)
 
 ### Milestone
-Lesson questions are validated, scored, and tracked.
+Transform the quiz experience into an authentic, faithful replica of **Duolingo**'s design, architecture, game mechanics, and styling — elevated with a sleek **Cosmic Galaxy Theme** (deep-space midnight canvas, glowing celestial accents, 3D tactile beveled buttons, sliding bottom action drawer, spaced mistake recycling, a 6-character space crew, synthetic voice chirps, native mobile responsive feel, zero-bloat lightweight code, and end-to-end gamification).
 
-### Steps
+---
 
-1. **Implement question types**
-   - MCQ: render options as clickable cards
-   - True/False: two-option selection
-   - Command: text input for shell commands
-   - Scenario: multi-part question with context
+### 1. Architectural Blueprint & Philosophy
 
-2. **Create answer validation logic** — `src/lib/quiz/`
-   - `validateAnswer()` — type-specific validation
-   - `calculateScore()` — weight by difficulty and attempt number
-   - `selectQuestions()` — intelligent question selection
+Duolingo's world-class engagement is driven by high-frequency, low-friction micro-interactions with immediate audiovisual feedback, tactile physical physics, and zero cognitive clutter.
 
-3. **Implement scoring rules**
-   ```
-   First attempt correct:    100% XP
-   Second attempt correct:    50% XP
-   Third+ attempt correct:    25% XP
-   ```
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│ DUOLINGO GALAXY HEADER (Fixed Top, z-40)                               │
+│  [✕ Quit]       ═══════════════════[Progress 65%]════     ❤️ 4    🔥 5  │
+├────────────────────────────────────────────────────────────────────────┤
+│ QUESTION ARENA (Center Focus, Single-Column "Duolingo Zen" Canvas)     │
+│                                                                        │
+│   ┌────────────────────────────────────────────────────────────────┐   │
+│   │ [⚡ Astra (Cyber-Eng)] "Choose the command to inspect live logs"│   │
+│   └────────────────────────────────────────────────────────────────┘   │
+│                                                                        │
+│   ┌────────────────────────────────────────────────────────────────┐   │
+│   │ [1]  docker logs -f my-app                                     │   │
+│   │      (3D Tactile Card: Deep border-b-4, emerald glow on select)│   │
+│   ├────────────────────────────────────────────────────────────────┤   │
+│   │ [2]  docker inspect my-app                                     │   │
+│   ├────────────────────────────────────────────────────────────────┤   │
+│   │ [3]  docker ps -a                                              │   │
+│   ├────────────────────────────────────────────────────────────────┤   │
+│   │ [4]  docker top my-app                                         │   │
+│   └────────────────────────────────────────────────────────────────┘   │
+│                                                                        │
+├────────────────────────────────────────────────────────────────────────┤
+│ DUOLINGO BOTTOM ACTION DRAWER (Sticky Full-Bleed Sheet, z-40)          │
+│                                                                        │
+│   [Neutral State]:                                                     │
+│   [ SKIP ]                                           [   CHECK   ]     │
+│                                                     (3D Chunky Button) │
+│                                                                        │
+│   [Correct State (Slides Up)]: Emerald Glow Banner                     │
+│   (✓)  Nicely done!  +10 XP                         [  CONTINUE  ]     │
+│                                                                        │
+│   [Incorrect State (Slides Up)]: Supernova Crimson Banner              │
+│   (✕)  Correct solution: docker logs -f my-app       [   GOT IT   ]     │
+│        Explanation: -f streams the live log output                     │
+└────────────────────────────────────────────────────────────────────────┘
+```
 
-4. **Create question bank with curated questions**
-   - 10-15 questions per lesson
-   - Mix of question types
-   - Difficulty progression: beginner → intermediate → advanced
+#### UI Paradigm Transformation: Legacy vs. Duolingo Galaxy
 
-5. **Implement question selection algorithm**
-   - Start with easier questions
-   - Increase difficulty as student answers correctly
-   - Avoid repeating recently-asked questions
-   - Balance question types
+| Legacy Quiz UI (To be Removed / Replaced) | Duolingo Galaxy Experience (New Standard) |
+| :--- | :--- |
+| Multi-column sidebars, breadcrumbs, jump menus | **Single-column "Duolingo Zen" focus arena (`max-w-xl mx-auto`)** |
+| Floating Previous / Next / Skip navigation bars | **Sticky sliding bottom action drawer (Neutral $\to$ Emerald $\to$ Crimson)** |
+| Flat buttons with faint hover transitions | **Chunky 3D tactile buttons with beveled bottom borders (`border-b-4`)** |
+| Disconnected static cards with text headers | **Animated vector Starship Crew member + interactive speech bubble** |
+| Silent answer selection and grading | **Web Audio synthesis (tap pops, chimes, heart shatter, voice chirps)** |
+| Failed quizzes end in defeat with a low score | **Spaced Mistake Recycling Queue: 100% mastery required to finish** |
+| Static hearts counter | **Cracking hearts animation with 3-way recovery (Practice, XP, Timer)** |
+| Standard Next/Finish results page | **Victory screen with confetti explosion, odometer XP counter, streak flame** |
 
-6. **Create `src/lib/quiz/validation.ts`**
-   - Zod schemas for each question type
-   - Server-side answer validation
-   - Prevent client-side answer manipulation
+---
 
-### Verification Checklist
-- [ ] All question types render correctly
-- [ ] Answer validation works for each type
-- [ ] First-attempt correct answers give full XP
-- [ ] Retry attempts give reduced XP
-- [ ] Attempts are recorded in database
-- [ ] Question selection varies across runs
-- [ ] Client cannot manipulate answers (server validates)
-- [ ] `npm run test:run` — all tests pass
+### 2. Native Mobile-App Architecture & Responsive Feel (iOS & Android)
+
+To guarantee RithuDevQuest feels identical to a native mobile app downloaded from the App Store or Google Play:
+
+```
+┌──────────────────────────────────────┐     ┌─────────────────────────────────────────────────────────────┐
+│ MOBILE VIEWPORT (375px - 430px)      │     │ DESKTOP VIEWPORT (1024px+)                                  │
+│                                      │     │                                                             │
+│ ┌──────────────────────────────────┐ │     │ ┌─────────────────────────────────────────────────────────┐ │
+│ │ [✕]  ════════[75%]════   ❤️4  🔥3│ │     │ │ [✕ Quit]     ══════════[75%]══════════    ❤️ 4    🔥 3   │ │
+│ └──────────────────────────────────┘ │     │ └─────────────────────────────────────────────────────────┘ │
+│                                      │     │                                                             │
+│ [⚡ Astra] 💬 "Choose the right flag"│     │   ┌──────────────┐  ┌─────────────────────────────────────┐ │
+│                                      │     │   │              │  │ 💬 "Choose the command flag to run  │ │
+│ ┌──────────────────────────────────┐ │     │   │  [⚡ Astra]   │  │    a container in the background"   │ │
+│ │ [1]  docker run -d nginx         │ │     │   │ Cyber-Eng.   │  └─────────────────────────────────────┘ │
+│ └──────────────────────────────────┘ │     │   │ (Hover/Blink)│                                          │
+│ ┌──────────────────────────────────┐ │     │   └──────────────┘  ┌─────────────────────────────────────┐ │
+│ │ [2]  docker run -it nginx        │ │     │                     │ [1]  docker run -d nginx            │ │
+│ └──────────────────────────────────┘ │     │                     ├─────────────────────────────────────┤ │
+│ ┌──────────────────────────────────┐ │     │                     │ [2]  docker run -it nginx           │ │
+│ │ [3]  docker run --rm nginx       │ │     │                     └─────────────────────────────────────┘ │
+│ └──────────────────────────────────┘ │     │                                                             │
+│                                      │     │ ┌─────────────────────────────────────────────────────────┐ │
+│ ┌──────────────────────────────────┐ │     │ │ [ SKIP ]                                  [   CHECK   ] │ │
+│ │       [    CHECK (Full Width)  ] │ │     │ └─────────────────────────────────────────────────────────┘ │
+│ └──────────────────────────────────┘ │     └─────────────────────────────────────────────────────────────┘
+└──────────────────────────────────────┘
+```
+
+#### 1. Dynamic Viewport Height & Safe Area Insets (`100dvh`)
+- **No Address Bar Jump**: Standard `100vh` causes bottom bars to jump or be occluded when mobile browser chrome expands/collapses. The layout strictly uses:
+  ```css
+  height: 100dvh;
+  max-height: 100dvh;
+  padding-top: max(env(safe-area-inset-top), 12px);
+  padding-bottom: max(env(safe-area-inset-bottom), 16px);
+  overscroll-behavior: none;
+  ```
+- **Zero 300ms Mobile Tap Delay**: Interactive elements enforce `touch-action: manipulation` across buttons, cards, and token chips, eliminating the native browser 300ms double-tap zoom delay.
+
+#### 2. Physiological Thumb-Zone Action Sheet Architecture
+- **Mobile Bottom Bar**: Docked directly in the physiological "Thumb Zone". On mobile screens ($< 640\text{px}$), the 3D "CHECK" button expands to full width (`w-full py-4 text-base sm:text-lg font-black tracking-wide`), making one-handed mobile play effortless.
+- **Slide-Up Responsive Sheet**: When evaluating, the drawer springs up to cover 28% to 35% of the mobile viewport, keeping the "CONTINUE" / "GOT IT" button firmly anchored under the right thumb.
+
+#### 3. Native Micro-Haptic Feedback (`navigator.vibrate`)
+On supported mobile devices (Android / PWA), physical tactile vibrations synchronize with audio:
+- **Card Selection**: `10ms` subtle haptic tick.
+- **Correct Answer**: `[30ms, 40ms]` joyous double-tick.
+- **Incorrect Answer**: `60ms` heavy error buzz.
+- **Heart Loss**: `[25ms, 50ms, 25ms]` triple shatter pulse.
+
+#### 4. Token Silhouette Placeholders (Mobile Word Bank)
+- In the mobile Word Bank, screen space is precious. When a user taps a token chip into the answer slot:
+  - The token's original position in the lower bank transforms into a faint **dashed silhouette outline** (`border border-dashed border-white/20 bg-white/5 rounded-xl`).
+  - This guarantees **Cumulative Layout Shift (CLS) = 0** and visually communicates where each token will return when recalled.
+
+#### 5. Horizontal Motion Slide-Transitions
+- Moving between questions uses fluid horizontal slide transitions:
+  - Outgoing question: `x: -40, opacity: 0` (exiting left).
+  - Incoming question: `x: 40, opacity: 0` (entering from right).
+  - Spring physics: `stiffness: 350, damping: 32` for that snappy 60fps native Duolingo feel.
+
+---
+
+### 3. "Duolingo Zen" — Minimalist Clean UI/UX Rules (Zero Clutter)
+
+To guarantee the clean, uncluttered, world-class aesthetic requested:
+- **Single-Column Focus**: The quiz arena is constrained to `max-w-xl mx-auto w-full px-4 sm:px-6`. There are strictly zero sidebars, breadcrumbs, user stats side-panels, or distracting chrome.
+- **Generous Negative Space**: 32px to 48px breathing room between character, prompt, and options. Visual flow is clean and effortless: Character $\to$ Prompt $\to$ Options $\to$ Bottom Drawer.
+- **Thumb-Friendly Tactile Ergonomics**: Option cards have a generous 60px minimum height with `rounded-2xl` geometry and 12px vertical spacing to prevent mis-clicks.
+- **Obsidian & Neon Contrast Hierarchy**: Background is deep space obsidian (`#070913`). Questions and characters pop with vibrant neon strokes (Celestial Cyan `#06b6d4`, Galactic Emerald `#10b981`, Solar Amber `#f59e0b`).
+- **Typography Clarity**: Chunky, playful, high-readability sans-serif for numbers, prompts, and praise (`font-black`, `tracking-tight`), paired with clean monospace (`font-mono`) exclusively for terminal commands.
+
+---
+
+### 4. The Starship Crew — Duolingo-Style Animated Space Characters
+
+Duolingo’s recurring cast (Lily, Zari, Oscar, Junior, Falstaff) gives the app soul. We introduce **The Starship Crew**, rendered as crisp, lightweight vector SVGs with micro-animations and synthetic voice blips:
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│ THE STARSHIP CREW (Duolingo-Style Animated Character Ensemble)        │
+│                                                                        │
+│  [🤖 Rithu]     [🔬 Dr. Orion]   [⚡ Astra]      [🚀 Nova]      [🛡️ Vance]│
+│  Mission Guide   Quantum Sci.    Cyber-Eng.     Star Cadet     EVA Veteran│
+│  (Warm/Wise)    (Dramatic)      (Cool/Deadpan) (Hyper-Active) (Stoic)     │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+1. **Commander Rithu (The AI Mission Commander & Guide)**:
+   - *Archetype*: Duo the Owl / Wise Guide.
+   - *Visual*: Pristine white & galactic emerald EVA suit, smart visor with expressive LED animated eyes, antenna with a glowing star.
+   - *Voice FX*: Warm synthesizer chime chirp (880 Hz $\to$ 1320 Hz dual harmonic blip).
+   - *Topic Affinity*: Milestone Quests, System Onboarding, Core Fundamentals.
+
+2. **Dr. Orion (The Eccentric Quantum Scientist)**:
+   - *Archetype*: Oscar the Drama Teacher / The Mad Professor.
+   - *Visual*: Flowing anti-grav lab coat over pressure suit, floating holographic math & terminal symbols, wild silver hair, glowing circular goggles.
+   - *Voice FX*: Eccentric staccato frequency chirp (587 Hz $\to$ 880 Hz $\to$ 1174 Hz).
+   - *Topic Affinity*: Backend Architecture, Distributed Systems, Database Optimization.
+
+3. **Astra (The Cyber-Engineer & Terminal Specialist)**:
+   - *Archetype*: Lily the Goth Teen / The Cool Hacker.
+   - *Visual*: Midnight-purple flight suit with neon-cyan conduits, oversized holographic noise-cancelling headphones, cyber-stylus.
+   - *Voice FX*: Smooth, low-register synth-bass blip (220 Hz $\to$ 330 Hz).
+   - *Topic Affinity*: Linux Internals, Shell Scripting, Bash Pipelines, Vim/Git.
+
+4. **Cadet Nova (The Hyper-Energetic Starship Pilot)**:
+   - *Archetype*: Zari the Enthusiast / Eager Trainee.
+   - *Visual*: Bright solar-orange cadet flight suit, rocket boots with mini thruster sparks, starry pilot patches.
+   - *Voice FX*: High-energy ascending whistle chirp (1046 Hz $\to$ 1568 Hz).
+   - *Topic Affinity*: Daily Challenges, Speed Practice, Web Development, CI/CD pipelines.
+
+5. **Captain Vance (The Grizzled Deep-Space Veteran)**:
+   - *Archetype*: Falstaff the Bear / The Stoic Protector.
+   - *Visual*: Heavy armored deep-space EVA dreadnought suit, bionic cyber-arm, scarred helmet visor with constellation markings.
+   - *Voice FX*: Resonant sub-bass confirmation hum (110 Hz $\to$ 165 Hz).
+   - *Topic Affinity*: Kubernetes Clusters, Docker Container Hardening, Network Security.
+
+6. **Cosmo (The Adorable Recon Space-Bot)**:
+   - *Archetype*: Junior the Kid / The Playful Pet.
+   - *Visual*: Cute spherical levitating droid with single large emotive sapphire lens, satellite ear-flaps, and tiny magnetic claw hands.
+   - *Voice FX*: Playful 8-bit chirps and trills (double square-wave arpeggio).
+   - *Topic Affinity*: Beginner Quick Practice, Vocabulary, True/False quick-fires.
+
+---
+
+### 5. Formal Finite State Machine (FSM)
+
+The quiz engine operates as a deterministic finite state machine with strict state transitions, eliminating race conditions or inconsistent UI states:
+
+| Current State | Trigger / Event | Guard / Condition | Next State | Action / Side Effects |
+| :--- | :--- | :--- | :--- | :--- |
+| `INITIALIZING` | `MOUNT` | Questions loaded | `QUESTION_READY` | Initialize Queue, start timer, play character voice chirp |
+| `QUESTION_READY` | `SELECT_OPTION` | Input is valid | `ANSWER_STAGED` | Play tap pop sound, update staged answer |
+| `ANSWER_STAGED` | `DESELECT` | Answer cleared | `QUESTION_READY` | Disable CHECK button, clear staged answer |
+| `ANSWER_STAGED` | `PRESS_CHECK` / `Enter` | Valid staged answer | `EVALUATING` | Lock inputs, show checking spinner |
+| `EVALUATING` | `GRADE_RESULT` | `isCorrect == true` | `FEEDBACK_CORRECT` | Play correct chime, pop from Queue, +XP, mascot `happy_jump` |
+| `EVALUATING` | `GRADE_RESULT` | `isCorrect == false && hearts > 1` | `FEEDBACK_INCORRECT` | Play wrong buzz, deduct heart (-1), re-queue to end, mascot `sad_droop` |
+| `EVALUATING` | `GRADE_RESULT` | `isCorrect == false && hearts == 1` | `OUT_OF_HEARTS` | Play heart break tone, open Refill/Practice modal |
+| `FEEDBACK_CORRECT` | `PRESS_CONTINUE` / `Enter` | `queue.length > 0` | `QUESTION_READY` | Slide drawer down, load next question in queue |
+| `FEEDBACK_CORRECT` | `PRESS_CONTINUE` / `Enter` | `queue.length == 0` | `VICTORY_CELEBRATION` | Trigger confetti, fanfare audio, odometer count-up |
+| `FEEDBACK_INCORRECT`| `PRESS_GOT_IT` / `Enter` | `queue.length > 0` | `QUESTION_READY` | Slide drawer down, load next question in queue |
+| `ANY` | `PRESS_QUIT` / `Escape` | Non-evaluating | `CONFIRM_EXIT` | Pause timer, open Exit confirmation modal |
+| `CONFIRM_EXIT` | `CANCEL_QUIT` | None | (Previous State) | Resume timer, dismiss modal |
+| `CONFIRM_EXIT` | `CONFIRM_QUIT` | None | `EXITED` | Clean up audio, redirect to parent route |
+
+---
+
+### 6. Signature Duolingo Mechanics (5 Types)
+
+#### 1. Tap-to-Assemble Word Bank (Sentence / Command Scramble)
+- Given command: `docker run -d -p 8080:80 --name web nginx`
+- Scrambled tokens in bank: `["--name", "web", "-p", "run", "docker", "8080:80", "-d", "nginx"]` + 2 distractors (`"-it"`, `"exec"`).
+- Upper target area with dotted slot lines.
+- Lower bank with randomized 3D token chips and dashed silhouette placeholders.
+- Tapping a chip moves it with spring animation into the target slot; tapping an answer chip returns it to the bank.
+- Supports keyboard input (typing first letter or space to pick tokens; `Backspace` removes last placed token).
+
+#### 2. Multiple Choice (MCQ)
+- Vertically stacked or 2x2 3D tactile cards.
+- Hotkey badges `[1]`, `[2]`, `[3]`, `[4]` in top-left corner.
+- Pressing 1-4 selects the corresponding option; space or Enter confirms.
+- Selected state glows with cyan neon halo and depresses by 2px (`translate-y-[2px]`).
+
+#### 3. Match Pairs (Tile Matching Grid)
+- 2 columns of 4-5 tiles (e.g., Linux signals vs definitions, or Docker CLI commands vs descriptions):
+  - Left: `SIGTERM`, `SIGKILL`, `SIGHUP`, `SIGINT`
+  - Right: `Graceful stop`, `Force kill`, `Reload config`, `Interrupt (Ctrl+C)` (shuffled).
+- Tap 1st tile (cyan highlight) $\to$ Tap 2nd tile:
+  - Match: Both flash emerald, play chord chime, and lock into completed/disabled state.
+  - Mismatch: Both shake red with error buzz and deselect.
+- Step counter updates (`2/4 pairs matched`).
+
+#### 4. Fill in the Blank / Code Cloze
+- Command line or YAML block with inline interactive blank slots:
+  - `kubectl get pods -n _______` $\to$ choices: `[production, --all, -v, restart]`
+  - Interactive token pills drop smoothly into the blank with sound.
+
+#### 5. True / False 3D Cards
+- Two giant oversized tactile cards with Check/Cross icons and hotkeys `[1]` / `[2]`.
+
+---
+
+### 7. The Sliding Bottom Action Sheet Drawer
+- Fixed to the bottom of the screen (`fixed bottom-0 left-0 right-0 z-40`):
+  - **Neutral State**:
+    - "Skip" button (left, ghost style).
+    - 3D "CHECK" button (right). Disabled (flat gray) when no answer is chosen; illuminates in vibrant green/cyan 3D when an answer is ready.
+  - **Correct State (Drawer Slides Up with Spring)**:
+    - Background: Glowing Galactic Emerald (`bg-[#064e3b]/95 backdrop-blur-xl border-t border-[#10b981]/40`).
+    - Left side: Giant animated green check circle (`CheckCircle2`), bold praise ("Nicely done!", "Spot on!", "Brilliant!"), and "+10 XP" glowing pill.
+    - Right side: Big 3D "CONTINUE" button (bright emerald, auto-focused, bound to `Enter`).
+    - Audio: Ascending chime sound (`playCorrectSound()`).
+  - **Incorrect State (Drawer Slides Up with Spring)**:
+    - Background: Deep Supernova Crimson (`bg-[#4c0519]/95 backdrop-blur-xl border-t border-[#f43f5e]/40`).
+    - Left side: Giant red X circle (`XCircle`), bold "Correct solution:", code snippet showing the right answer, and helpful explanation.
+    - Right side: Big 3D "GOT IT" button (vibrant rose, auto-focused, bound to `Enter`).
+    - Audio: Descending buzzer sound (`playWrongSound()`).
+    - Hearts: Deducts 1 heart with crack animation.
+
+---
+
+### 8. Gamification, Mastery & Edge-Case Features
+
+#### Feature 7A: Spaced Mistake Recycling (Mastery Loop)
+- In Duolingo, you cannot "just finish" a quiz with a failing score.
+- **Queue Algorithm (`src/lib/quiz/queue.ts`)**:
+  - The session maintains a dynamic queue of question IDs.
+  - When answered **correctly**: Question is cleared from the queue.
+  - When answered **incorrectly**: Question is **re-inserted at the end of the queue**!
+  - Session continues until **every single question is answered correctly**.
+  - **Scoring Formula**:
+    $$\text{XP}_{\text{awarded}} = \begin{cases} 10 & \text{attempt } = 1 \\ 5 & \text{attempt } = 2 \\ 3 & \text{attempt } \ge 3 \end{cases}$$
+    Plus Streak Combo bonus ($+2\text{ XP}$ per consecutive correct answer beyond 3) and Flawless Session bonus ($+15\text{ XP}$ if 0 mistakes).
+
+#### Feature 7B: Cosmic Hearts & 3-Way Out-of-Lives Recovery Flow
+- 5 Hearts displayed at top-right. Each error cracks 1 heart and floats `-1`.
+- When Hearts == 0, `DuolingoOutOfHeartsModal` opens with 3 distinct recovery options:
+  1. **Practice for Hearts**: Launches a casual 3-question refill practice where each correct question restores 1 heart.
+  2. **Refill with Stardust / XP**: Instant 5-heart refill for 50 XP.
+  3. **Auto-Regen Timer**: Displays live countdown (1 heart every 30 minutes).
+
+#### Feature 7C: Daily Streak Lock-In & Streak Freeze
+- When completing the first quiz of the day, an animated streak celebration triggers:
+  - 7-day mini calendar strip marks today as completed with a blazing flame.
+  - Streak number increments (+1).
+  - Shows active "Streak Freeze" shield status.
+
+#### Feature 7D: Interactive "Review Mistakes" Drawer
+- On the victory results screen, if any mistakes were made, a "Review Mistakes" button appears.
+- Opens an interactive slide-over showing:
+  - Question prompt & active character.
+  - User's incorrect submission in red strikethrough.
+  - Correct solution in glowing emerald.
+  - Deep-dive architectural explanation authored by Dr. Orion or Astra.
+
+#### Feature 7E: Mid-Quiz Combo Milestones & Session Persistence
+- **Combo Toast**: At 3, 5, and 10 correct answers in a row, a blazing combo banner drops down ("5 IN A ROW! 🔥 You're on fire!").
+- **Session Auto-Recovery**: Session queue, score, and hearts state are continuously mirrored in `sessionStorage` (`rdq_quiz_session`). If the user accidentally refreshes their tab, the session seamlessly resumes without lost progress.
+
+---
+
+### 9. Audio Synthesis Specifications (Web Audio API)
+
+No external audio files needed; generated with precision oscillators in `src/lib/sounds.ts`:
+
+| Sound Effect | Waveform | Frequency & Envelopes | Duration | Musical Interval |
+| :--- | :--- | :--- | :--- | :--- |
+| **Tap Pop** | Sine | 850 Hz $\to$ 400 Hz (exponential decay) | 35 ms | Micro percussion |
+| **Correct Chime** | Sine | Triad arpeggio: C5 (523 Hz) $\to$ E5 (659 Hz) $\to$ G5 (784 Hz) $\to$ C6 (1046 Hz) | 300 ms | Major Chord Ascent |
+| **Wrong Buzz** | Triangle + LPF | Dissonant descent: Eb4 (311 Hz) $\to$ C4 (261 Hz) | 280 ms | Minor/Diminished drop |
+| **Heart Crack** | White Noise + Sine | Crack transient (1200 Hz) + Sub-bass thud (80 Hz) | 180 ms | Impact drop |
+| **Combo Flame** | Sine + Triangle | Frequency glide: 300 Hz $\to$ 1100 Hz with vibrato | 350 ms | Energetic whoosh |
+| **Victory Fanfare** | Sine + Harmonics | C5 (523 Hz) $\to$ G5 (784 Hz) $\to$ C6 (1046 Hz) $\to$ E6 (1318 Hz sustained) | 600 ms | Triumphant fanfare |
+| **Character Voice Chirp** | Dual Sine / FM | Modular frequency blips per character (110 Hz $\to$ 1568 Hz) | 120 ms | Voice blip |
+
+---
+
+### 10. AI Agent Skills, Tools & Execution Strategy
+
+To execute this architecture with extreme precision and strict adherence to `AGENTS.md`, the AI agent leverages specialized built-in tools and skills:
+
+| Tool / Skill | Type | Purpose & Tactical Usage in Phase 4 |
+| :--- | :--- | :--- |
+| `write_to_file` | Core Tool | Atomic authoring of brand-new, fully typed components (`duo-button.tsx`, `DuolingoHeader.tsx`, `DuolingoBottomDrawer.tsx`, `CosmicCharacter.tsx`, `DuolingoResults.tsx`, question components, queue logic). |
+| `replace_file_content` | Core Tool | Surgical, non-destructive updates to existing files (`QuizExperience.tsx`, `globals.css`, `quick-practice-page.tsx`, `daily-challenge-page.tsx`), strictly preserving existing functionality. |
+| `run_command` | Core Tool | Automated continuous verification gates after each step: `npx tsc --noEmit` (TypeScript strict mode), `npm run lint` (ESLint zero-tolerance), `npm run test:run` (Vitest unit tests), `npm run build` (Next.js production build verification). |
+| `view_file` & `grep_search` | Core Tool | Deep structural inspection of database schemas (`prisma/schema.prisma`), question payloads (`src/lib/quiz/types.ts`), and seed questions to guarantee 100% data contract compatibility without duplication. |
+| `generative_ui` | Special Skill | Rendering live interactive HTML sandbox widgets in artifacts during development to test button depression physics, bottom sheet spring curves, character facial rigs, and mobile breakpoint layouts before committing code. |
+| `antigravity-guide` & `agy-customizations` | Special Skill | Ensuring absolute compliance with workspace rules (`AGENTS.md`), memory hooks, and project architectural guardrails. |
+
+---
+
+### 11. Faster Lightweight Libraries, Zero-Bloat Dependencies & Code Optimization
+
+To ensure blazing-fast performance on mobile devices with zero lag and zero runtime stutter:
+
+#### 1. Zero External Runtime Audio Dependencies
+- **No Howler.js or Tone.js**: We use the native browser **Web Audio API** (`AudioContext`, `OscillatorNode`, `GainNode`, `BiquadFilterNode`).
+- **Bundle Impact**: **0 KB** additional bundle weight (saves 150KB+ vs Tone.js).
+- **Latency**: Sub-5ms instantaneous audio playback with zero network roundtrips.
+
+#### 2. Tree-Shaken React 19 Motion (`motion/react`)
+- Import strictly from `motion/react` (the official React 19 tree-shakeable modern package).
+- Only import essential primitives (`motion`, `AnimatePresence`).
+- Avoid bloated animation runtimes or legacy Framer Motion packages.
+
+#### 3. Pure React Vector SVG Characters (Zero Raster Images)
+- The Starship Crew characters are authored as clean, modular inline SVG React components.
+- **Bundle Impact**: Highly compressible vector paths ($< 3\text{ KB}$ per character gzipped vs 200KB+ Lottie runtimes or multi-MB sprite sheets).
+- **Quality**: Infinitely scalable from mobile (40px) to desktop (160px) with zero pixelation on retina displays.
+- **Performance**: Zero image downloads; zero layout shift (CLS 0); zero Flash of Unstyled Image (FOUI).
+
+#### 4. Hardware-Accelerated CSS Physics
+- Bottom drawer slide-up, token placement, and option depression strictly use hardware-accelerated transforms:
+  ```css
+  transform: translate3d(0, var(--y, 0), 0);
+  will-change: transform;
+  backface-visibility: hidden;
+  ```
+- Guarantees locked 60fps animations even on budget smartphones.
+
+#### 5. CSS-Only 3D Tactile Physics
+- Tactile button press uses pure CSS `:active` and border transitions (`border-b-4` $\to$ `border-b-0` + `translate-y-1`), saving main thread JS cycles for touch events.
+
+#### 6. Mobile Edge-Case Engineering
+- **Audio Context Unlock**: Mobile iOS/Android browsers suspend audio contexts until first user interaction. A global `pointerdown` listener calls `audioCtx.resume()` to guarantee crystal-clear audio on the very first question tap.
+- **Touch-Action Manipulation**: Eliminates the 300ms mobile tap delay across all cards and buttons.
+- **Virtual Keyboard Shield**: On questions with text entry, `window.visualViewport` listeners prevent the virtual soft keyboard from squishing the header or mascot.
+- **Double-Tap Race Condition Protection**: `submittingRef` and `completingRef` prevent duplicate answer submissions or skipped questions from rapid double-taps.
+- **Synchronous Micro-Grading**: Grading executes in $< 1\text{ms}$ synchronously in memory, triggering the bottom drawer instantly without perceptible network delay.
+
+---
+
+### 12. Component Props & TypeScript Interface Directory
+
+```typescript
+// src/components/quiz/types.ts
+
+export type CharacterId =
+  | "rithu"
+  | "orion"
+  | "astra"
+  | "nova"
+  | "vance"
+  | "cosmo";
+
+export type CharacterMood =
+  | "idle"
+  | "thinking"
+  | "speaking"
+  | "happy_jump"
+  | "sad_droop"
+  | "celebrating";
+
+export interface CosmicCharacterProps {
+  characterId: CharacterId;
+  mood: CharacterMood;
+  size?: "sm" | "md" | "lg";
+  className?: string;
+}
+
+export type DuolingoQuestionType =
+  | "mcq"
+  | "word_bank"
+  | "match_pairs"
+  | "fill_blank"
+  | "true_false";
+
+export interface DuolingoMCQPayload {
+  options: Array<{ id: string; text: string; code?: boolean }>;
+  correctOptionId: string;
+  explanation: string;
+}
+
+export interface DuolingoWordBankPayload {
+  targetSentence: string;
+  tokens: Array<{ id: string; text: string }>;
+  distractors?: Array<{ id: string; text: string }>;
+  explanation: string;
+}
+
+export interface DuolingoMatchPairsPayload {
+  pairs: Array<{ id: string; left: string; right: string }>;
+  explanation?: string;
+}
+
+export interface DuolingoFillBlankPayload {
+  promptWithBlank: string; // "docker run -d -p ___:80 nginx"
+  blankIndex: number;
+  options: string[];
+  correctAnswer: string;
+  explanation: string;
+}
+
+export interface DuolingoTrueFalsePayload {
+  statement: string;
+  correctAnswer: boolean;
+  explanation: string;
+}
+
+export interface DuolingoQuestion {
+  id: string;
+  type: DuolingoQuestionType;
+  prompt: string;
+  characterId?: CharacterId;
+  hint?: string;
+  payload:
+    | DuolingoMCQPayload
+    | DuolingoWordBankPayload
+    | DuolingoMatchPairsPayload
+    | DuolingoFillBlankPayload
+    | DuolingoTrueFalsePayload;
+  difficulty: "beginner" | "intermediate" | "advanced";
+}
+
+export interface DuolingoQueueItem {
+  question: DuolingoQuestion;
+  attemptCount: number;
+  firstTryCorrect: boolean | null;
+  userAnswer?: string;
+}
+```
+
+---
+
+### 13. Step-by-Step Implementation Roadmap
+
+Execution is structured into 11 strictly ordered, atomic steps to keep lint, build, and tests green throughout:
+
+```
+Step 1: 3D Tactile Design Tokens & Primitives
+   ↓
+Step 2: Web Audio Synthesizer Engine & Character Voice Blips
+   ↓
+Step 3: Vector SVG Animated Starship Crew (6 Characters)
+   ↓
+Step 4: Top Header HUD & Progress/Hearts Display
+   ↓
+Step 5: The 5 Signature Duolingo Question Components
+   ↓
+Step 6: Sliding Bottom Action Sheet Drawer
+   ↓
+Step 7: Spaced Mistake Recycling Queue Engine (`queue.ts`)
+   ↓
+Step 8: Interactive Modals (Exit, Out-of-Hearts, Review Mistakes)
+   ↓
+Step 9: Victory Celebration Screen (Confetti, Odometer XP, Streak Flame)
+   ↓
+Step 10: Master Orchestrator Overhaul (`QuizExperience.tsx`) & Page Wiring
+   ↓
+Step 11: Unit & Integration Testing, Verification, Smoke Tests
+```
+
+#### Step 1: 3D Tactile Design Tokens & Primitives
+- Create `src/components/quiz/duo-button.tsx` with beveled 3D borders (`border-b-4`, `active:translate-y-1`, `active:border-b-0`, variants: `primary`, `secondary`, `danger`, `neutral`, `ghost`).
+- Add utility classes in `src/app/globals.css` (`.duo-card-3d`, `.heart-crack`, `.stardust-twinkle`).
+
+#### Step 2: Web Audio Synthesizer Engine & Character Voice Blips
+- Extend `src/lib/sounds.ts` with programmatic synthesizers for:
+  - `playTapPopSound()`
+  - `playHeartLossSound()`
+  - `playComboFlameSound()`
+  - `playCharacterVoice(characterId: CharacterId)`
+
+#### Step 3: Vector SVG Animated Starship Crew (6 Characters)
+- Create `src/components/quiz/characters/CosmicCharacter.tsx` with vector SVG rigs for:
+  - Commander Rithu
+  - Dr. Orion
+  - Astra
+  - Cadet Nova
+  - Captain Vance
+  - Cosmo
+- Create `src/components/quiz/characters/CharacterSpeechBubble.tsx` with clean responsive pointer math.
+
+#### Step 4: Top Header HUD & Progress/Hearts Display
+- Create `src/components/quiz/DuolingoHeader.tsx` with Quit button `✕`, glowing capsule progress bar, 5 cosmic hearts, streak flame, and audio toggle.
+
+#### Step 5: The 5 Signature Duolingo Question Components
+- Create `src/components/quiz/questions/DuolingoMCQ.tsx` (3D cards with hotkeys [1]-[4]).
+- Create `src/components/quiz/questions/DuolingoWordBank.tsx` (tap-to-place token scramble with spring placement).
+- Create `src/components/quiz/questions/DuolingoMatchPairs.tsx` (2-column tap-to-match with chime/shake).
+- Create `src/components/quiz/questions/DuolingoTrueFalse.tsx` (oversized 3D True/False).
+- Create `src/components/quiz/questions/DuolingoFillBlank.tsx` (interactive inline cloze).
+
+#### Step 6: Sliding Bottom Action Sheet Drawer
+- Create `src/components/quiz/DuolingoBottomDrawer.tsx` supporting:
+  - Neutral state (Disabled gray $\to$ Vibrant green/cyan on staged answer).
+  - Correct state (Galactic Emerald with checkmark, "+10 XP", and "CONTINUE").
+  - Incorrect state (Supernova Crimson with solution code, explanation, and "GOT IT").
+  - Bound to `Enter` key for Check and Continue.
+
+#### Step 7: Spaced Mistake Recycling Queue Engine
+- Create `src/lib/quiz/queue.ts` implementing Duolingo's mistake re-queueing algorithm.
+- Implement tier-based XP scoring (100% first-try, 50% retry, 25% third+).
+
+#### Step 8: Interactive Modals
+- Create `src/components/quiz/modals/DuolingoExitModal.tsx` ("Quit session? All progress lost").
+- Create `src/components/quiz/modals/DuolingoOutOfHeartsModal.tsx` with 3-way recovery (Practice for hearts, Refill with XP, Auto-regen timer).
+- Create `src/components/quiz/modals/DuolingoMistakesModal.tsx` (Interactive review of missed questions with mentor tips).
+
+#### Step 9: Victory Celebration Screen
+- Create `src/components/quiz/DuolingoResults.tsx` with:
+  - Confetti explosion shower (`canvas-confetti`).
+  - Mascot victory cheer animation.
+  - Animated odometer XP counter (0 $\to$ Total XP).
+  - Circular accuracy meter.
+  - Daily streak flame ignition animation.
+  - "Review Mistakes" button.
+
+#### Step 10: Master Orchestrator Overhaul (`QuizExperience.tsx`) & Page Wiring
+- Overhaul `src/components/quiz/QuizExperience.tsx` into the fullscreen Duolingo engine.
+- Wire FSM transitions, keyboard controls, character rotation, mistake queue, and session persistence in `sessionStorage`.
+- Wire `/practice/quick` and `/practice/daily-challenge` into the new engine.
+
+#### Step 11: Unit & Integration Testing, Verification, Smoke Tests
+- Write unit tests in `tests/unit/quiz-queue.test.ts` and `tests/unit/quiz-scoring.test.ts`.
+- Run typecheck (`tsc --noEmit`), lint (`npm run lint`), and tests (`npm run test:run`).
+- Perform runtime verification on production build (`npm run build` + `npm start`).
+
+---
+
+### 14. Verification Checklist
+
+- [x] Fullscreen distraction-free layout with clean galaxy nebula canvas (zero clutter)
+- [x] 3D tactile beveled buttons depress on click (`active:translate-y-1`)
+- [x] Mobile responsive: dynamic viewport height `100dvh` with safe-area insets (`env(safe-area-inset-*)`)
+- [x] Mobile bottom drawer docked in natural thumb reach zone with 100% width button
+- [x] Mobile haptic feedback API (`navigator.vibrate`) triggers physical micro-vibrations
+- [x] Zero 300ms mobile tap delay: `touch-action: manipulation` enforced
+- [x] Mobile Word Bank uses dashed silhouette placeholders to prevent jarring layout jumps (CLS = 0)
+- [x] The Starship Crew (all 6 characters) render crisp vector SVGs with idle/speaking/cheer animations
+- [x] Character synthetic voice blips play softly when speech bubbles appear
+- [x] Speech bubble layout is clean and responsive on mobile and desktop
+- [x] Tap-to-place Word Bank correctly moves tokens between bank and answer slot
+- [x] Match Pairs validates correctly with green glow and error shake
+- [x] MCQ supports keyboard shortcuts [1], [2], [3], [4] and Enter
+- [x] Bottom Drawer slides up in Emerald for correct, Supernova Crimson for incorrect
+- [x] Missed questions are re-queued at the end of the session until mastered
+- [x] Hearts crack and decrement by 1 on incorrect answers; 0 hearts triggers 3-way recovery modal
+- [x] Results screen triggers confetti, animated XP count-up, streak flame, and "Review Mistakes"
+- [x] Interrupted sessions can be resumed from `sessionStorage`
+- [x] Clean lint (`npm run lint`), zero TypeScript errors (`tsc --noEmit`), all unit tests pass (`npm run test:run`)
+
+
 
 ---
 

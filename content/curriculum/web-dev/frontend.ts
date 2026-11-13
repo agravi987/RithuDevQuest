@@ -267,6 +267,19 @@ export const htmlCssJsPath: SeedPath = {
                   explanation:
                     "Absolute includes scheme+host; / starts at the root; ../ steps up one folder; # targets an id.",
                 },
+                {
+                  type: "multi_select",
+                  difficulty: "beginner",
+                  question: "Which attributes belong on the right element?",
+                  multiSelectOptions: [
+                    { text: "href on an <a> to set the link destination", isCorrect: true },
+                    { text: "alt on an <img> to describe the image", isCorrect: true },
+                    { text: "src on an <img> to point at the image file", isCorrect: true },
+                    { text: "href on an <img> to load the image", isCorrect: false },
+                  ],
+                  explanation:
+                    "href only works on links; images use src for the file and alt for a text description. Mixing them up breaks the page.",
+                },
               ],
             },
           ],

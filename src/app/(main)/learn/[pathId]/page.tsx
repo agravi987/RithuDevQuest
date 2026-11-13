@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { Trophy, Flame, Zap, Sparkles, Clock } from "lucide-react";
 import { GalaxySection } from "@/components/galaxy/galaxy-section";
@@ -27,6 +28,10 @@ import { getGamificationProfile } from "@/lib/gamification/queries";
 import { PlanetVisual } from "@/components/galaxy/planet-visual";
 import { getPlanetForCareer } from "@/lib/galaxy-assets";
 import { getPathVisual, getCareer } from "@/lib/career-metadata";
+import Link from "next/link";
+import { getCrossReferencesForPath } from "@/lib/curriculum/cross-references";
+import { CosmicCharacter } from "@/components/quiz/characters/CosmicCharacter";
+import { PrerequisiteTracks } from "@/components/learning-path/prerequisite-tracks";
 
 export default async function PathPage({
   params,
@@ -77,6 +82,7 @@ export default async function PathPage({
 
   const planet = getPathVisual(path.slug);
   const careerPlanet = getPlanetForCareer(path.careerId ?? "fallback");
+  const prerequisites = getCrossReferencesForPath(path.slug);
 
   // Build module zones with lesson states
   const moduleZones = path.modules.map((mod) => {
@@ -91,14 +97,16 @@ export default async function PathPage({
       icon: mod.icon ?? "BookOpen",
       completedCount: completionCounts.get(mod.id) ?? 0,
       lessons: statuses.map((status) => {
-        const lesson =
-          lessonBySlug.get(status.lesson.slug ?? "") ?? status.lesson;
+        const fullLesson = lessonBySlug.get(status.lesson.slug ?? "");
+        const lesson = fullLesson ?? status.lesson;
         const lessonSlug = lesson.slug ?? "";
         return {
           id: lesson.id,
           title: lesson.title ?? `Lesson ${lesson.order + 1}`,
+          description: fullLesson?.description ?? null,
+          skills: fullLesson?.skills?.map((s) => s.name) ?? [],
           slug: lessonSlug,
-          estimatedMinutes: lesson.estimatedMinutes ?? 5,
+          estimatedMinutes: ("estimatedMinutes" in lesson ? (lesson as { estimatedMinutes?: number }).estimatedMinutes : 5) ?? 5,
           order: lesson.order,
           state: status.state,
           href: `/learn/${path.slug}/${mod.slug}/${lessonSlug}`,
@@ -244,12 +252,76 @@ export default async function PathPage({
           </div>
         </div>
 
-        {/* Galaxy Winding Path */}
-        <GalaxyPath
-          modules={moduleZones}
-          careerSlug={path.slug}
-          streak={profile?.streak.currentStreak}
-        />
+        {/* Duolingo Winding Path & Right Rail */}
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <Suspense fallback={<div className="h-96 w-full animate-pulse rounded-3xl bg-white/5" />}>
+            <GalaxyPath
+              modules={moduleZones}
+              careerSlug={path.slug}
+              streak={profile?.streak.currentStreak}
+            />
+          </Suspense>
+
+          {/* Duolingo Sticky Right Sidebar */}
+          <div className="hidden lg:flex flex-col gap-5 sticky top-20 self-start w-[320px]">
+            {/* 1. Daily Quests Progress Card */}
+            <div className="duo-card-3d rounded-3xl border-2 border-white/10 bg-[#0d1527] p-5 shadow-xl">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">📋</span>
+                  <h4 className="text-xs font-black uppercase tracking-wider text-white">Daily Quests</h4>
+                </div>
+                <Link href="/practice/daily-challenge" className="text-[10px] font-black uppercase text-emerald-400 hover:underline">
+                  View All
+                </Link>
+              </div>
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between text-[11px] font-bold text-slate-300">
+                    <span>Earn 20 XP</span>
+                    <span className="text-emerald-400 font-black">⚡ 20 XP</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+                    <div className="h-full rounded-full bg-emerald-400" style={{ width: `${Math.min(100, ((profile?.user.xp ?? 0) % 50) * 2)}%` }} />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between text-[11px] font-bold text-slate-300">
+                    <span>Complete 1 Lesson</span>
+                    <span className="text-amber-400 font-black">🎁 Chest</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+                    <div className="h-full rounded-full bg-amber-400" style={{ width: completedCount > 0 ? "100%" : "0%" }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Cosmic Crew Motivation Card */}
+            <div className="duo-card-3d rounded-3xl border-2 border-emerald-500/30 bg-[#0d1527] p-5 shadow-xl">
+              <div className="flex items-center gap-3">
+                <div className="size-12 shrink-0 flex items-center justify-center rounded-2xl bg-emerald-500/15 border border-emerald-500/30 p-1">
+                  <CosmicCharacter characterId="rithu" mood="happy_jump" size="xs" className="size-full" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">
+                    Commander Rithu
+                  </span>
+                  <p className="text-xs font-bold text-slate-200 mt-0.5 leading-snug">
+                    One lesson a day keeps your streak blazing! Tap any unlocked node to practice.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {prerequisites.length > 0 && (
+              <div className="self-start w-full">
+                <PrerequisiteTracks references={prerequisites} />
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </GalaxySection>
   );

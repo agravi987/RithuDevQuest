@@ -5,6 +5,20 @@ export const gcpPath: SeedPath = {
   description:
     "Compute Engine, Cloud Run, BigQuery, and GKE — Google Cloud's core services for the working engineer.",
   slug: "gcp",
+  crossReferences: [
+    {
+      careerSlug: "devops",
+      pathSlug: "linux",
+      title: "Linux Fundamentals",
+      note: "The shell and SSH skills used with Compute Engine and gcloud.",
+    },
+    {
+      careerSlug: "devops",
+      pathSlug: "docker",
+      title: "Docker & Containers",
+      note: "Container fundamentals behind Cloud Run and GKE.",
+    },
+  ],
   modules: [
     {
       title: "Compute",
@@ -418,6 +432,36 @@ export const gcpPath: SeedPath = {
                   explanation:
                     "Private IP keeps the DB out of the public internet; authorized networks and SSL lock it down; the proxy removes the need for client IP allowlisting.",
                 },
+                {
+                  type: "multi_select",
+                  difficulty: "intermediate",
+                  question:
+                    "Which of these are managed for you by Cloud SQL?",
+                  multiSelectOptions: [
+                    { text: "Automated database backups", isCorrect: true },
+                    { text: "Security patching of the database engine", isCorrect: true },
+                    { text: "Designing your application schema", isCorrect: false },
+                    { text: "Automatic storage growth", isCorrect: true },
+                  ],
+                  explanation:
+                    "Cloud SQL automates backups, patching, and storage — the schema and queries stay under your control.",
+                },
+                {
+                  type: "sequence",
+                  difficulty: "advanced",
+                  question:
+                    "Order the steps when Cloud SQL performs automatic failover in an HA configuration.",
+                  sequenceItems: [
+                    { id: "detect", text: "Primary instance failure is detected" },
+                    { id: "standby", text: "Healthy synchronous standby is confirmed" },
+                    { id: "promote", text: "Standby is promoted to primary" },
+                    { id: "route", text: "Connections reroute to the new primary" },
+                    { id: "repair", text: "A fresh standby is provisioned" },
+                  ],
+                  sequenceCorrectOrder: ["detect", "standby", "promote", "route", "repair"],
+                  explanation:
+                    "Detect → verify standby → promote → reroute connections → repair the standby.",
+                },
               ],
             },
             {
@@ -580,6 +624,31 @@ export const gcpPath: SeedPath = {
                   explanation:
                     "The VPC is global, subnets are regional, NAT gives outbound access, and firewall rules filter traffic.",
                 },
+                {
+                  type: "sequence",
+                  difficulty: "intermediate",
+                  question:
+                    "Order how a private Compute Engine instance reaches the public internet through Cloud NAT.",
+                  sequenceItems: [
+                    { id: "private", text: "Instance has only an internal IP" },
+                    { id: "egress", text: "Instance sends traffic outbound" },
+                    { id: "nat", text: "Cloud NAT translates the source address" },
+                    { id: "return", text: "NAT stores the mapping for replies" },
+                    { id: "deliver", text: "Response packets route back to the instance" },
+                  ],
+                  sequenceCorrectOrder: ["private", "egress", "nat", "return", "deliver"],
+                  explanation:
+                    "Private instance → outbound traffic → Cloud NAT translation → reply mapping → return path.",
+                },
+                {
+                  type: "word_scramble",
+                  difficulty: "beginner",
+                  question:
+                    "Unscramble the word for the GCP service that provides outbound internet access to private-only instances:",
+                  scrambledWord: "nat",
+                  explanation:
+                    "Cloud NAT translates private address space outbound so instances without public IPs still reach the internet.",
+                },
               ],
             },
             {
@@ -673,6 +742,337 @@ export const gcpPath: SeedPath = {
                   fillBlanks: [{ answer: "service" }],
                   explanation:
                     "Service accounts are purpose-built machine identities.",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      title: "Event-Driven Computing",
+      description: "Cloud Functions and Pub/Sub.",
+      slug: "event-driven",
+      icon: "Zap",
+      units: [
+        {
+          title: "Functions as a Service",
+          description: "Triggered, stateless, ephemeral.",
+          slug: "cloud-functions",
+          lessons: [
+            {
+              title: "Cloud Functions (2nd Gen)",
+              description: "Event-driven functions on Cloud Run.",
+              slug: "cloud-functions-2g",
+              estimatedMinutes: 7,
+              learningObjectives: [
+                "Explain Cloud Functions 2nd gen event model",
+                "Trigger functions from HTTP, Pub/Sub, and Storage",
+                "Compare Cloud Functions vs Cloud Run",
+              ],
+              skills: [
+                {
+                  name: "cloud-functions",
+                  description: "Build event-driven functions on GCP",
+                },
+              ],
+              activities: [
+                {
+                  title: "Functions That React",
+                  body: "**Cloud Functions 2nd gen** runs stateless functions in response to events. Under the hood it builds on **Cloud Run** — each invocation gets a container with your code. Supported triggers include **HTTP requests**, **Pub/Sub messages**, and **Cloud Storage object changes** (create, archive, finalize). The function scales to zero, bills per 100ms, and you never manage servers. Second-gen functions support **up to 2 GiB memory**, **concurrency**, and **v2identity** (service-account per function).",
+                },
+                {
+                  title: "Example",
+                  body: "A function triggers on `google.storage.object.finalize` to generate a thumbnail whenever a new image lands in a bucket — no polling, no servers, pure event.",
+                },
+              ],
+              questions: [
+                {
+                  type: "mcq",
+                  difficulty: "beginner",
+                  question:
+                    "Which GCP product runs stateless code in response to events without server management?",
+                  options: [
+                    "Cloud Functions",
+                    "Compute Engine",
+                    "BigQuery",
+                    "Cloud Spanner",
+                  ],
+                  correctAnswer: "Cloud Functions",
+                  explanation:
+                    "Cloud Functions is the managed event-driven compute offering — serverless, ephemeral, and event-triggered.",
+                },
+                {
+                  type: "true_false",
+                  difficulty: "intermediate",
+                  question:
+                    "Cloud Functions 2nd gen builds on Cloud Run under the hood.",
+                  correctAnswer: "true",
+                  explanation:
+                    "Each 2nd gen function deploys as a Cloud Run service, inheriting its scaling, concurrency, and IAM model.",
+                },
+                {
+                  type: "fill_blank",
+                  difficulty: "intermediate",
+                  question:
+                    "A function that triggers only when a new object lands in a bucket is said to react to a storage ___.",
+                  fillBlanks: [{ answer: "event" }],
+                  explanation:
+                    "Object lifecycle transitions are exposed as events that Cloud Functions can subscribe to.",
+                },
+                {
+                  type: "match",
+                  difficulty: "intermediate",
+                  question:
+                    "Match each Cloud Functions 2nd gen trigger to its event.",
+                  matchPairs: [
+                    {
+                      left: "HTTP request",
+                      right: "Direct invocation via URL",
+                    },
+                    {
+                      left: "Pub/Sub message",
+                      right: "Asynchronous event on a topic",
+                    },
+                    {
+                      left: "Storage finalize",
+                      right: "Object creation in a bucket",
+                    },
+                    {
+                      left: "Firestore write",
+                      right: "Document change in a collection",
+                    },
+                  ],
+                  explanation:
+                    "Each trigger type maps to one or more GCP event sources that fire your function code.",
+                },
+                {
+                  type: "sequence",
+                  difficulty: "intermediate",
+                  question:
+                    "Order the steps when a Pub/Sub message triggers a Cloud Function.",
+                  sequenceItems: [
+                    {
+                      id: "publish",
+                      text: "Message is published to the topic",
+                    },
+                    {
+                      id: "fan-out",
+                      text: "Subscription delivers to subscribers",
+                    },
+                    {
+                      id: "invoke",
+                      text: "Cloud Functions invokes your handler",
+                    },
+                    {
+                      id: "process",
+                      text: "Function processes the message",
+                    },
+                    {
+                      id: "ack",
+                      text: "Acknowledgement sent back to Pub/Sub",
+                    },
+                  ],
+                  sequenceCorrectOrder: [
+                    "publish",
+                    "fan-out",
+                    "invoke",
+                    "process",
+                    "ack",
+                  ],
+                  explanation:
+                    "Publish → subscription delivery → function invocation → processing → acknowledgement.",
+                },
+                {
+                  type: "scenario",
+                  difficulty: "advanced",
+                  question:
+                    "You are building a thumbnail generator: images upload to a bucket, you need messaging to fan out events, and functions to process each upload. Identify the GCP service for each role.",
+                  parts: [
+                    {
+                      prompt:
+                        "Which GCP service stores the uploaded original images?",
+                      correctAnswer: "Cloud Storage",
+                    },
+                    {
+                      prompt:
+                        "Which messaging service fans out events to subscribers?",
+                      correctAnswer: "Pub/Sub",
+                    },
+                    {
+                      prompt:
+                        "Which compute service runs your thumbnail generation code?",
+                      correctAnswer: "Cloud Functions",
+                    },
+                  ],
+                  explanation:
+                    "Storage holds the images, Pub/Sub distributes events, and Cloud Functions runs the processing logic.",
+                },
+              ],
+            },
+          ],
+        },
+        {
+          title: "Managed Messaging",
+          description: "Pub/Sub topics and subscriptions.",
+          slug: "pub-sub",
+          lessons: [
+            {
+              title: "Pub/Sub Messaging",
+              description: "Asynchronous event streaming at scale.",
+              slug: "pub-sub",
+              estimatedMinutes: 7,
+              learningObjectives: [
+                "Explain topics and subscriptions",
+                "Contrast push and pull subscriptions",
+                "Describe at-least-once delivery guarantees",
+              ],
+              skills: [
+                {
+                  name: "pub-sub",
+                  description: "Design event-driven systems with Pub/Sub",
+                },
+              ],
+              activities: [
+                {
+                  title: "Publish, Subscribe, Deliver",
+                  body: "**Pub/Sub** is a fully managed, serverless messaging bus. Producers publish messages to **topics**; **subscriptions** deliver those messages to consumers. Two delivery modes: **pull** (the subscriber polls the subscription) and **push** (Pub/Sub makes an HTTP POST to your endpoint). Messages are retained for up to 31 days and delivered **at-least-once** — your code must be idempotent. Ordering guarantees exist only when a **message ordering key** is set.",
+                },
+                {
+                  title: "Example",
+                  body: "An order service publishes an `order.created` event to a topic. A Pub/Sub subscription pushes the event to a Cloud Function, which writes an email to a queue — decoupling the two systems.",
+                },
+              ],
+              questions: [
+                {
+                  type: "mcq",
+                  difficulty: "beginner",
+                  question:
+                    "In Pub/Sub, what is the logical endpoint to which all subscribers listen?",
+                  options: [
+                    "Topic",
+                    "Bucket",
+                    "Instance",
+                    "Load Balancer",
+                  ],
+                  correctAnswer: "Topic",
+                  explanation:
+                    "Publishers send to topics; subscriptions attached to those topics deliver to subscribers.",
+                },
+                {
+                  type: "true_false",
+                  difficulty: "beginner",
+                  question:
+                    "Pub/Sub delivers every message at least once, so subscribers must be idempotent.",
+                  correctAnswer: "true",
+                  explanation:
+                    "At-least-once delivery means duplicates are possible; your handler must tolerate them.",
+                },
+                {
+                  type: "fill_blank",
+                  difficulty: "intermediate",
+                  question:
+                    "A subscriber that receives messages via an HTTP POST request is using a ___ subscription.",
+                  fillBlanks: [{ answer: "push" }],
+                  explanation:
+                    "Push subscriptions have Pub/Sub make an HTTP POST to your endpoint rather than requiring the client to poll.",
+                },
+                {
+                  type: "match",
+                  difficulty: "intermediate",
+                  question: "Match the Pub/Sub concept to its role.",
+                  matchPairs: [
+                    {
+                      left: "Topic",
+                      right: "Logical channel for messages",
+                    },
+                    {
+                      left: "Subscription",
+                      right: "Delivers messages to a subscriber",
+                    },
+                    {
+                      left: "Push delivery",
+                      right: "Pub/Sub POSTs to an endpoint",
+                    },
+                    {
+                      left: "Pull delivery",
+                      right: "Subscriber polls the subscription",
+                    },
+                  ],
+                  explanation:
+                    "Topics hold messages, subscriptions route them, and push/pull are the two delivery modes.",
+                },
+                {
+                  type: "sequence",
+                  difficulty: "intermediate",
+                  question:
+                    "Order the steps of a message flowing through Pub/Sub from publisher to consumer.",
+                  sequenceItems: [
+                    {
+                      id: "publish",
+                      text: "Publisher sends a message to a topic",
+                    },
+                    {
+                      id: "retain",
+                      text: "Pub/Sub retains the message",
+                    },
+                    {
+                      id: "fan-out",
+                      text: "All active subscriptions receive a copy",
+                    },
+                    {
+                      id: "deliver",
+                      text: "Message is delivered via push or pulled",
+                    },
+                    {
+                      id: "ack",
+                      text: "Consumer acknowledges the message",
+                    },
+                  ],
+                  sequenceCorrectOrder: [
+                    "publish",
+                    "retain",
+                    "fan-out",
+                    "deliver",
+                    "ack",
+                  ],
+                  explanation:
+                    "Publish → retain → fan-out to subscriptions → deliver → acknowledgement.",
+                },
+                {
+                  type: "multi_select",
+                  difficulty: "advanced",
+                  question:
+                    "Which characteristics describe Pub/Sub delivery behavior?",
+                  multiSelectOptions: [
+                    {
+                      text: "At-least-once delivery by default",
+                      isCorrect: true,
+                    },
+                    {
+                      text: "Exactly-once delivery without any configuration",
+                      isCorrect: false,
+                    },
+                    {
+                      text: "Message retention up to 31 days",
+                      isCorrect: true,
+                    },
+                    {
+                      text: "Ordering only when using an ordering key",
+                      isCorrect: true,
+                    },
+                  ],
+                  explanation:
+                    "Pub/Sub is at-least-once and retains messages for up to 31 days. Strict ordering requires an ordering key; exactly-once requires special handling.",
+                },
+                {
+                  type: "fill_blank",
+                  difficulty: "intermediate",
+                  question:
+                    "A message sent to a Pub/Sub topic is delivered to all ___ attached to that topic.",
+                  fillBlanks: [{ answer: "subscriptions" }],
+                  explanation:
+                    "Every active subscription receives its own copy of each published message.",
                 },
               ],
             },

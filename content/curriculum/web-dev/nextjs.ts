@@ -167,6 +167,19 @@ export const nextJsPath: SeedPath = {
                   explanation:
                     "Link internally, router.push programmatically, raw anchors externally — never hijack raw anchors for SPAs.",
                 },
+                {
+                  type: "match",
+                  difficulty: "intermediate",
+                  question: "Match each navigation approach to its use.",
+                  matchPairs: [
+                    { left: "<Link href>", right: "Prefetches and navigates without a reload" },
+                    { left: "router.push", right: "Navigates programmatically from code" },
+                    { left: "href object with pathname and params", right: "Builds a dynamic route's URL" },
+                    { left: "Raw <a>", right: "External links only" },
+                  ],
+                  explanation:
+                    "Link handles internal client-side navigation, router.push works from code, href objects build dynamic paths, and raw anchors stay for external destinations.",
+                },
               ],
             },
           ],

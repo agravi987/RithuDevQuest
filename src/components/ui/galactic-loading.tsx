@@ -2,49 +2,45 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { Sparkles, Lightbulb, Rocket } from "lucide-react";
 import { getLoadingMessages, type LoadingMessage } from "@/lib/loading-messages";
+import { CosmicCharacter } from "@/components/quiz/characters/CosmicCharacter";
 
-const ROTATION_MS = 3500;
+const ROTATION_MS = 3200;
 
-function MessageCard({ message }: { message: LoadingMessage }) {
+function MessageBubble({ message }: { message: LoadingMessage }) {
+  const isTip = message.kind === "tip";
+
   return (
     <motion.div
       key={message.text}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
+      initial={{ opacity: 0, y: 8, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -8, scale: 0.96 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="flex flex-col items-center gap-2 text-center"
+      className="relative flex flex-col items-center gap-1.5 text-center px-4"
     >
       <span
-        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-widest ${
-          message.kind === "quote"
-            ? "border border-primary/25 bg-primary/10 text-primary"
-            : "border border-amber-400/30 bg-amber-400/10 text-amber-500"
+        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-0.5 text-[10px] font-black uppercase tracking-wider border border-b-2 shadow-sm ${
+          isTip
+            ? "border-amber-500/40 bg-amber-500/15 text-amber-400"
+            : "border-cyan-500/40 bg-cyan-500/15 text-cyan-300"
         }`}
       >
-        {message.kind === "quote" ? "✨ Motivation" : "💡 Pro Tip"}
+        {isTip ? <Lightbulb className="size-3" /> : <Sparkles className="size-3" />}
+        {isTip ? "Cadet Pro Tip" : "Cosmic Motivation"}
       </span>
-      <p className="text-sm sm:text-base font-medium text-foreground/90 leading-relaxed max-w-md">
-        {message.text}
+
+      <p className="text-sm sm:text-base font-bold text-foreground leading-snug max-w-md">
+        &ldquo;{message.text}&rdquo;
       </p>
+
       {"author" in message && message.author && (
-        <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
+        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/70">
           — {message.author}
         </p>
       )}
     </motion.div>
-  );
-}
-
-function LogoMark() {
-  return (
-    <div className="relative">
-      <div className="size-20 rounded-3xl border-2 border-primary/25 animate-pulse-ring" />
-      <div className="absolute inset-0 grid size-14 place-items-center rounded-2xl bg-gradient-to-br from-primary via-emerald-400 to-cyan-400 shadow-xl shadow-primary/30">
-        <span className="text-2xl font-black text-primary-foreground">R</span>
-      </div>
-    </div>
   );
 }
 
@@ -63,48 +59,81 @@ export function GalacticLoading() {
   const message = messages[index] ?? messages[0]!;
 
   return (
-    <div className="relative flex min-h-[40vh] items-center justify-center py-10">
-      <div className="relative w-full max-w-xl overflow-hidden rounded-3xl border border-border/40 bg-gradient-to-b from-card/80 to-card/30 p-8 sm:p-10 text-center shadow-xl shadow-black/10">
-        {/* Nebula glows */}
-        <div className="pointer-events-none absolute -left-16 -top-16 size-48 rounded-full bg-primary/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-16 -right-16 size-48 rounded-full bg-cyan-500/10 blur-3xl" />
-        {/* Twinkling stars */}
-        {[12, 27, 42, 58, 72, 86, 95].map((left, i) => (
+    <div className="relative flex min-h-[50vh] w-full items-center justify-center p-4 py-12">
+      {/* Duolingo 3D Stage Card */}
+      <div className="relative w-full max-w-lg overflow-hidden rounded-3xl border-2 border-emerald-500/30 border-b-[8px] border-b-emerald-600/40 bg-card p-6 sm:p-10 text-center shadow-2xl shadow-emerald-500/10">
+        {/* Ambient Cosmic Lights */}
+        <div className="pointer-events-none absolute -left-20 -top-20 size-56 rounded-full bg-emerald-500/10 blur-[90px]" />
+        <div className="pointer-events-none absolute -bottom-20 -right-20 size-56 rounded-full bg-cyan-500/10 blur-[90px]" />
+
+        {/* Twinkling star specs */}
+        {[15, 30, 48, 68, 85].map((left, i) => (
           <div
             key={i}
             aria-hidden
-            className="absolute size-0.5 rounded-full bg-foreground/30 animate-twinkle"
-            style={{ left: `${left}%`, top: `${10 + ((i * 17) % 60)}%`, animationDelay: `${i * 0.4}s` }}
+            className="absolute size-1 rounded-full bg-white/30 animate-twinkle"
+            style={{
+              left: `${left}%`,
+              top: `${12 + ((i * 21) % 70)}%`,
+              animationDelay: `${i * 0.5}s`,
+            }}
           />
         ))}
 
-        <div className="relative flex flex-col items-center gap-4">
-          <LogoMark />
+        <div className="relative z-10 flex flex-col items-center gap-6">
+          {/* ═══ 1. ANIMATED COMMANDER RITHU MASCOT STAGE ═══ */}
+          <div className="relative">
+            {/* Glowing pedestal shadow */}
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-24 h-4 rounded-full bg-emerald-500/20 blur-md" />
 
-          <div>
-            <h2 className="text-lg font-black tracking-tight text-foreground">
-              Rithu<span className="text-primary">Dev</span>Quest
-            </h2>
-            <p className="mt-0.5 text-xs font-medium text-muted-foreground">
-              Loading your galaxy…
-            </p>
+            <motion.div
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+              className="relative size-24 sm:size-28 flex items-center justify-center rounded-3xl bg-emerald-500/15 border-2 border-b-4 border-emerald-500/40 shadow-xl shadow-emerald-500/10"
+            >
+              <CosmicCharacter
+                characterId="rithu"
+                mood="speaking"
+                size="custom"
+                className="size-20 sm:size-24"
+              />
+            </motion.div>
+
+            <span className="absolute -bottom-1 -right-1 flex size-7 items-center justify-center rounded-full bg-emerald-400 text-slate-950 font-black text-xs shadow-md">
+              🚀
+            </span>
           </div>
 
-          {/* Rotating message */}
-          <div className="min-h-[92px] flex items-center justify-center w-full">
+          {/* ═══ 2. DUOLINGO SPEECH BUBBLE MESSAGE ═══ */}
+          <div className="relative min-h-[96px] w-full flex items-center justify-center rounded-2xl border-2 border-border/80 border-b-4 border-b-border bg-card/70 p-4 shadow-sm">
+            {/* Speech bubble pointer pointing up */}
+            <div className="absolute -top-2 left-1/2 -translate-x-1/2 size-3 rotate-45 border-l-2 border-t-2 border-border/80 bg-card/90" />
+
             <AnimatePresence mode="wait">
-              <MessageCard key={message.text} message={message} />
+              <MessageBubble key={message.text} message={message} />
             </AnimatePresence>
           </div>
 
-          {/* Shimmer loading bar */}
-          <div className="relative h-1 w-48 max-w-full overflow-hidden rounded-full bg-muted">
-            <motion.div
-              aria-hidden
-              animate={{ x: ["-100%", "260%"] }}
-              transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
-              className="h-full w-1/3 bg-gradient-to-r from-transparent via-primary to-transparent"
-            />
+          {/* ═══ 3. DUOLINGO 3D PROGRESS CAPSULE ═══ */}
+          <div className="flex flex-col items-center gap-2 w-full pt-1">
+            <div className="relative h-4 sm:h-5 w-64 sm:w-72 rounded-full border-2 border-emerald-600/40 bg-slate-950 p-0.5 overflow-hidden shadow-inner">
+              <motion.div
+                animate={{
+                  width: ["20%", "75%", "95%", "35%"],
+                  x: ["0%", "5%", "0%", "0%"],
+                }}
+                transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+                className="relative h-full rounded-full bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 shadow-[0_0_12px_rgba(16,185,129,0.6)]"
+              >
+                {/* Glossy top shine */}
+                <div className="absolute top-0.5 left-1 right-1 h-1 rounded-full bg-white/35" />
+              </motion.div>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-widest mt-1">
+              <Rocket className="size-3.5 animate-bounce text-emerald-400" />
+              <span>Powering up hyperdrive...</span>
+            </div>
           </div>
         </div>
       </div>
@@ -113,8 +142,8 @@ export function GalacticLoading() {
 }
 
 /**
- * Slim variant for streaming section fallbacks — a spinner plus the rotating
- * tip, so a loading state always has something engaging to say.
+ * Slim variant for streaming section fallbacks — features a compact bouncing Cosmo
+ * plus rotating tips with Duolingo styling.
  */
 export function GalacticLoadingStatus({ label = "Loading your galaxy…" }: { label?: string }) {
   const messages = getLoadingMessages();
@@ -134,23 +163,43 @@ export function GalacticLoadingStatus({ label = "Loading your galaxy…" }: { la
     <div
       role="status"
       aria-live="polite"
-      className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border/60 bg-card/40 px-4 py-8 text-center"
+      className="flex flex-col items-center gap-3.5 rounded-3xl border-2 border-emerald-500/25 border-b-4 border-b-emerald-600/30 bg-card p-6 text-center shadow-md"
     >
-      <div className="relative grid size-10 place-items-center rounded-full bg-gradient-to-br from-primary via-emerald-400 to-cyan-400 animate-pulse-ring">
-        <div className="size-8 rounded-full border-2 border-background border-t-transparent animate-spin" />
+      <motion.div
+        animate={{ y: [0, -6, 0] }}
+        transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+        className="size-14 flex items-center justify-center rounded-2xl bg-emerald-500/15 border-2 border-b-3 border-emerald-500/40 shadow-md"
+      >
+        <CosmicCharacter
+          characterId="cosmo"
+          mood="thinking"
+          size="custom"
+          className="size-11"
+        />
+      </motion.div>
+
+      <p className="text-xs font-black uppercase tracking-wider text-foreground">{label}</p>
+
+      {/* Mini 3D Progress Capsule */}
+      <div className="relative h-2.5 w-40 rounded-full border border-emerald-500/40 bg-slate-950 p-0.5 overflow-hidden">
+        <motion.div
+          animate={{ width: ["15%", "85%", "40%"] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400"
+        />
       </div>
-      <p className="text-xs font-bold text-muted-foreground">{label}</p>
+
       <AnimatePresence mode="wait">
         <motion.p
           key={message.text}
-          initial={{ opacity: 0, y: 6 }}
+          initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -6 }}
-          transition={{ duration: 0.25 }}
-          className="max-w-[260px] text-[11px] leading-relaxed text-muted-foreground/70"
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.2 }}
+          className="max-w-[280px] text-xs font-bold text-muted-foreground leading-relaxed"
         >
           {message.kind === "tip" ? "💡 " : "✨ "}
-          {message.text}
+          &ldquo;{message.text}&rdquo;
         </motion.p>
       </AnimatePresence>
     </div>

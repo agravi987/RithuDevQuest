@@ -19,7 +19,8 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: Request) {
-  const session = await auth();
+  try {
+    const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -140,6 +141,7 @@ export async function POST(req: Request) {
         score: grade.score,
         feedback: grade.feedback,
         tips: grade.tips ?? null,
+        idealAnswer: grade.idealAnswer ?? null,
       },
       summary,
     });
@@ -177,16 +179,24 @@ export async function POST(req: Request) {
     }),
   ]);
 
-  return NextResponse.json({
-    sessionId: interview.id,
-    isComplete: false,
-    round,
-    totalRounds: interview.totalRounds,
-    answered: {
-      score: grade.score,
-      feedback: grade.feedback,
-      tips: grade.tips ?? null,
-    },
-    nextQuestion,
-  });
+    return NextResponse.json({
+      sessionId: interview.id,
+      isComplete: false,
+      round,
+      totalRounds: interview.totalRounds,
+      answered: {
+        score: grade.score,
+        feedback: grade.feedback,
+        tips: grade.tips ?? null,
+        idealAnswer: grade.idealAnswer ?? null,
+      },
+      nextQuestion,
+    });
+  } catch (error) {
+    console.error("[Interview Answer API Error]", error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to evaluate answer" },
+      { status: 500 },
+    );
+  }
 }

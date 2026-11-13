@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/lib/auth";
-import { getPracticeTopics } from "@/lib/practice/queries";
+import { getPracticeTopicTree } from "@/lib/practice/queries";
 import { QuickPracticePage } from "@/components/practice/quick-practice-page";
 
 export const metadata: Metadata = {
@@ -15,11 +15,11 @@ export default async function QuickPracticeRoutePage() {
     redirect("/login");
   }
 
-  const topics = await getPracticeTopics();
+  const topicTree = await getPracticeTopicTree();
 
   return (
     <div className="mx-auto max-w-3xl pb-12">
-      <QuickPracticePage topics={topics} />
+      <QuickPracticePage topicTree={topicTree} />
     </div>
   );
 }

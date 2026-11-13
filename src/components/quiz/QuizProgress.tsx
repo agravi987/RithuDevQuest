@@ -108,9 +108,7 @@ export function QuizProgress({
           <span
             className={cn(
               "inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-bold",
-              currentQuestion.type === "command"
-                ? "bg-xp/10 text-xp border border-xp/20"
-                : currentQuestion.type === "scenario"
+              currentQuestion.type === "scenario"
                 ? "bg-achievement/10 text-achievement border border-achievement/20"
                 : currentQuestion.type === "true_false"
                 ? "bg-level/10 text-level border border-level/20"

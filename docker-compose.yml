@@ -2,19 +2,44 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: rithudevquest-db
+    restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5433}:5432"
     environment:
-      POSTGRES_USER: rithu
-      POSTGRES_PASSWORD: rithu123
-      POSTGRES_DB: rithudevquest
+      POSTGRES_USER: ${POSTGRES_USER:-rithu}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rithu123}
+      POSTGRES_DB: ${POSTGRES_DB:-rithudevquest}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U rithu -d rithudevquest"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-rithu} -d ${POSTGRES_DB:-rithudevquest}"]
       interval: 5s
       timeout: 5s
       retries: 5
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rithudevquest-app
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USER:-rithu}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-rithu}:${POSTGRES_PASSWORD:-rithu123}@postgres:5432/${POSTGRES_DB:-rithudevquest}?schema=public
+      - DATABASE_ADAPTER=pg
+      - AUTH_URL=${AUTH_URL:-http://localhost:3000}
+      - NEXTAUTH_URL=${AUTH_URL:-http://localhost:3000}
+      - PORT=3000
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   pgdata:

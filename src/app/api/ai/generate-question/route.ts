@@ -10,7 +10,7 @@ const generateQuestionInputSchema = z.object({
   subtopic: z.string().optional(),
   learningObjectives: z.array(z.string()).optional(),
   difficulty: z.enum(["beginner", "intermediate", "advanced"]).optional(),
-  questionType: z.enum(["mcq", "true_false", "command", "scenario"]).optional(),
+  questionType: z.enum(["mcq", "true_false", "scenario"]).optional(),
   count: z.number().int().min(1).max(5).default(1),
   lessonId: z.string().optional(),
   skillId: z.string().optional(),

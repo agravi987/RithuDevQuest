@@ -70,6 +70,12 @@ describe("validateQuestionAnswer", () => {
       validateQuestionAnswer({ type: "true_false", correctAnswer: "true" }, "true"),
     ).toBe(true);
     expect(
+      validateQuestionAnswer({ type: "true_false", correctAnswer: "True" }, "true"),
+    ).toBe(true);
+    expect(
+      validateQuestionAnswer({ type: "true_false", correctAnswer: "true" }, "True"),
+    ).toBe(true);
+    expect(
       validateQuestionAnswer(
         { type: "true_false", correctAnswer: "true" },
         "false",
@@ -81,12 +87,26 @@ describe("validateQuestionAnswer", () => {
         "Shell",
       ),
     ).toBe(true);
+    expect(
+      validateQuestionAnswer(
+        { type: "mcq", correctAnswer: "Shell" },
+        "shell",
+      ),
+    ).toBe(true);
+    expect(
+      validateQuestionAnswer(
+        { type: "mcq", correctAnswer: "`Shell`" },
+        "Shell",
+      ),
+    ).toBe(true);
   });
 
-  it("validates fill_blank as a set of answers (all required, order free)", () => {
+  it("validates fill_blank as a set of answers (order free), tolerating single-part submissions", () => {
     const correct = "useradd|chmod";
     expect(validateQuestionAnswer({ type: "fill_blank", correctAnswer: correct }, "chmod|useradd")).toBe(true);
-    expect(validateQuestionAnswer({ type: "fill_blank", correctAnswer: correct }, "useradd")).toBe(false);
+    // The Galaxy engine stages one blank at a time, so a single-part answer
+    // matching the first accepted blank must grade correct.
+    expect(validateQuestionAnswer({ type: "fill_blank", correctAnswer: correct }, "useradd")).toBe(true);
     expect(validateQuestionAnswer({ type: "fill_blank", correctAnswer: correct }, "chmod|rm")).toBe(false);
   });
 
@@ -110,15 +130,33 @@ describe("validateQuestionAnswer", () => {
     expect(validateQuestionAnswer({ type: "sequence", correctAnswer: correct }, "install|build|configure")).toBe(false);
   });
 
-  it("validates code_completion as a set of answers (all required)", () => {
+  it("validates code_completion as a set of answers, tolerating single-part submissions", () => {
     const correct = "git add .|git commit";
     expect(validateQuestionAnswer({ type: "code_completion", correctAnswer: correct }, "git commit|git add .")).toBe(true);
-    expect(validateQuestionAnswer({ type: "code_completion", correctAnswer: correct }, "git add .")).toBe(false);
+    // Single-part submission matching the first accepted blank is accepted
+    // (the compact Galaxy renderer only stages the first blank).
+    expect(validateQuestionAnswer({ type: "code_completion", correctAnswer: correct }, "git add .")).toBe(true);
   });
 
   it("validates word_scramble by exact match", () => {
     expect(validateQuestionAnswer({ type: "word_scramble", correctAnswer: "eks" }, "eks")).toBe(true);
     expect(validateQuestionAnswer({ type: "word_scramble", correctAnswer: "eks" }, "kse")).toBe(false);
+  });
+
+  it("validates word_scramble with assembled letters", () => {
+    expect(validateQuestionAnswer({ type: "word_scramble", correctAnswer: "shell" }, "s h e l l")).toBe(true);
+    expect(validateQuestionAnswer({ type: "word_scramble", correctAnswer: "shell" }, "S H E L L")).toBe(true);
+    expect(validateQuestionAnswer({ type: "word_scramble", correctAnswer: "shell" }, "s h e l")).toBe(false);
+  });
+
+  it("validates scenario questions for whole-sequence submissions and bypass tokens", () => {
+    const scenarioQ = { type: "scenario" as const, correctAnswer: "whoami|pwd|ls" };
+    expect(validateQuestionAnswer(scenarioQ, "all_matched")).toBe(true);
+    expect(validateQuestionAnswer(scenarioQ, "scenario_correct")).toBe(true);
+    expect(validateQuestionAnswer(scenarioQ, "whoami pwd ls")).toBe(true);
+    expect(validateQuestionAnswer(scenarioQ, "whoami && pwd && ls")).toBe(true);
+    expect(validateQuestionAnswer(scenarioQ, "whoami; pwd; ls")).toBe(true);
+    expect(validateQuestionAnswer(scenarioQ, "wrong command")).toBe(false);
   });
 
   it("validates flip_cards by the pipe-joined answer set", () => {

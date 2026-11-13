@@ -4,15 +4,16 @@ import { Loader2 } from "lucide-react";
 import { useActionState, useState } from "react";
 
 import { loginAction, type LoginState } from "@/lib/auth-actions";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
 
+import { DuoButton } from "@/components/quiz/duo-button";
+
 const initialState: LoginState = { status: "idle" };
 
 const inputClass =
-  "h-10 rounded-xl bg-background text-foreground placeholder:text-muted-foreground/60";
+  "input-focus-glow h-11 rounded-2xl bg-background border-2 border-border/80 text-foreground placeholder:text-muted-foreground/60 focus:border-emerald-500/60";
 
 export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
   const [state, formAction, pending] = useActionState(
@@ -27,7 +28,7 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
     <form action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="callbackUrl" value={callbackUrl ?? ""} />
       <div className="flex flex-col gap-2">
-        <Label htmlFor="email" className="text-muted-foreground">
+        <Label htmlFor="email" className="text-muted-foreground font-bold text-xs uppercase tracking-wider">
           Email
         </Label>
         <Input
@@ -44,7 +45,7 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
         />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="password" className="text-muted-foreground">
+        <Label htmlFor="password" className="text-muted-foreground font-bold text-xs uppercase tracking-wider">
           Password
         </Label>
         <PasswordInput
@@ -64,26 +65,29 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
           id="login-error"
           role="alert"
           aria-live="polite"
-          className="rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+          className="animate-shake rounded-2xl border-2 border-destructive/30 bg-destructive/10 px-4 py-2.5 text-sm font-bold text-destructive"
         >
           {error}
         </p>
       )}
-      <Button
-        type="submit"
-        size="lg"
-        disabled={pending}
-        className="mt-1 h-11 w-full rounded-xl bg-gradient-to-r from-primary to-emerald-400 text-sm font-black text-primary-foreground shadow-lg shadow-primary/25 btn-glow hover:brightness-110 transition-all"
-      >
-        {pending ? (
-          <>
-            <Loader2 className="animate-spin" />
-            Logging in…
-          </>
-        ) : (
-          "Log in"
-        )}
-      </Button>
+      <div className="mt-2">
+        <DuoButton
+          type="submit"
+          variant="primary"
+          size="lg"
+          disabled={pending}
+          className="w-full uppercase tracking-wider"
+        >
+          {pending ? (
+            <>
+              <Loader2 className="animate-spin mr-2" />
+              AUTHENTICATING...
+            </>
+          ) : (
+            "LOG IN"
+          )}
+        </DuoButton>
+      </div>
     </form>
   );
 }

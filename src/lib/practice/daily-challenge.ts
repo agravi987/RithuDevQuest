@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/auth";
-import { validateAcceptedAnswer } from "@/lib/quiz/validation";
+import { validateQuestionAnswer, type QuestionType } from "@/lib/quiz/validation";
 import { processLessonGamification } from "@/lib/gamification/actions";
 import { updateQuestProgress } from "@/lib/quests/daily";
 
@@ -435,10 +435,40 @@ export async function submitChallengeAnswer(
     }
 
     // Validate answer
-    const isCorrect = validateAcceptedAnswer(
-      dq.question.correctAnswer.toLowerCase(),
-      (userAnswer ?? "").trim().toLowerCase(),
+    let isCorrect = validateQuestionAnswer(
+      {
+        type: dq.question.type as QuestionType,
+        correctAnswer: dq.question.correctAnswer,
+        options: dq.question.options,
+      },
+      userAnswer ?? "",
     );
+
+    // Fallback: If not matched directly, check if userAnswer was an option ID or index (e.g. "opt-0" or "0")
+    if (!isCorrect && dq.question.options && Array.isArray(dq.question.options)) {
+      const opts = dq.question.options as Array<string | { text: string; isCorrect?: boolean }>;
+      const optIdx = (userAnswer ?? "").startsWith("opt-")
+        ? parseInt((userAnswer ?? "").replace("opt-", ""), 10)
+        : parseInt(userAnswer ?? "", 10);
+
+      if (!isNaN(optIdx) && optIdx >= 0 && optIdx < opts.length) {
+        const opt = opts[optIdx];
+        const optText = typeof opt === "string" ? opt : opt?.text ?? "";
+        if (optText) {
+          isCorrect = validateQuestionAnswer(
+            {
+              type: dq.question.type as QuestionType,
+              correctAnswer: dq.question.correctAnswer,
+              options: dq.question.options,
+            },
+            optText,
+          );
+        }
+        if (!isCorrect && typeof opt === "object" && opt?.isCorrect) {
+          isCorrect = true;
+        }
+      }
+    }
 
     // Get current combo (count consecutive correct from most recent answered)
     const recentAnswers = await prisma.dailyChallengeQuestion.findMany({

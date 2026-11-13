@@ -5,6 +5,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { allCareers } from "../content/curriculum/index";
 import { activityTypeOf } from "../src/lib/curriculum/seed";
 import { encodeRichQuestion } from "../src/lib/quiz/types";
+import { planQuestionReseed } from "../src/lib/curriculum/reseed";
 import type {
   SeedCareer,
   SeedPath,
@@ -289,50 +290,105 @@ async function upsertLesson(
     },
   });
 
-  await prisma.skill.deleteMany({ where: { lessonId: lessonRecord.id } });
-  await prisma.skill.createMany({
-    data: lesson.skills.map((skill) => ({
-      name: skill.name,
-      description: skill.description,
-      lessonId: lessonRecord.id,
-    })),
-  });
-
-  const skills = await prisma.skill.findMany({
-    where: { lessonId: lessonRecord.id },
-  });
-
-  await prisma.question.deleteMany({ where: { lessonId: lessonRecord.id } });
-  if (lesson.questions && lesson.questions.length > 0) {
-    await prisma.question.createMany({
-      data: lesson.questions.map((question) => {
-        const encoded = encodeRichQuestion(question);
-        return {
-          type: question.type,
-          difficulty: question.difficulty ?? "beginner",
-          question: question.question,
-          options: (encoded.options as unknown as Prisma.InputJsonValue) ?? Prisma.JsonNull,
-          parts: (encoded.parts as unknown as Prisma.InputJsonValue) ?? Prisma.JsonNull,
-          correctAnswer: encoded.correctAnswer,
-          explanation: question.explanation,
-          hint: question.hint,
+  // --- Skills: upsert by lessonId+name, delete only stale unused skills ---
+  const upsertedSkills = await Promise.all(
+    lesson.skills.map((skill) =>
+      prisma.skill.upsert({
+        where: {
+          lessonId_name: { lessonId: lessonRecord.id, name: skill.name },
+        },
+        create: {
+          name: skill.name,
+          description: skill.description,
           lessonId: lessonRecord.id,
-          skillId: skills[0]?.id ?? null,
-          source: "curriculum",
-        };
+        },
+        update: { description: skill.description },
       }),
+    ),
+  );
+
+  const seedSkillNames = new Set(lesson.skills.map((s) => s.name));
+  const allLessonSkills = await prisma.skill.findMany({
+    where: { lessonId: lessonRecord.id },
+    include: { _count: { select: { userSkills: true } } },
+  });
+  const staleSkillIds = allLessonSkills
+    .filter((s) => !seedSkillNames.has(s.name) && s._count.userSkills === 0)
+    .map((s) => s.id);
+  if (staleSkillIds.length > 0) {
+    await prisma.skill.deleteMany({ where: { id: { in: staleSkillIds } } });
+  }
+
+  // --- Questions: match by type+text, preserve IDs and attempt history ---
+  const primarySkillId = upsertedSkills[0]?.id ?? null;
+
+  const existingQuestions = await prisma.question.findMany({
+    where: { lessonId: lessonRecord.id },
+    select: { id: true, type: true, question: true },
+  });
+  const plan = planQuestionReseed(lesson.questions ?? [], existingQuestions);
+
+  const questionData = (seed: SeedQuestion) => {
+    const encoded = encodeRichQuestion(seed);
+    return {
+      type: seed.type,
+      difficulty: seed.difficulty ?? "beginner",
+      question: seed.question,
+      options:
+        (encoded.options as unknown as Prisma.InputJsonValue) ??
+        Prisma.JsonNull,
+      parts:
+        (encoded.parts as unknown as Prisma.InputJsonValue) ?? Prisma.JsonNull,
+      correctAnswer: encoded.correctAnswer,
+      explanation: seed.explanation,
+      hint: seed.hint,
+      skillId: primarySkillId,
+      source: "curriculum",
+    };
+  };
+
+  for (const { id, question } of plan.updates) {
+    await prisma.question.update({
+      where: { id },
+      data: questionData(question),
     });
   }
 
-  await prisma.activity.deleteMany({ where: { lessonId: lessonRecord.id } });
-  await prisma.activity.createMany({
-    data: lesson.activities.map((activity, index) => ({
-      type: activityTypeOf(activity),
-      content: activity as unknown as Prisma.InputJsonValue,
-      order: index,
-      lessonId: lessonRecord.id,
-    })),
+  for (const question of plan.creates) {
+    await prisma.question.create({
+      data: { ...questionData(question), lessonId: lessonRecord.id },
+    });
+  }
+
+  // --- Activities: reconcile by order, preserve extras ---
+  const existingActivities = await prisma.activity.findMany({
+    where: { lessonId: lessonRecord.id },
+    orderBy: { order: "asc" },
   });
+  const existingByOrder = new Map(existingActivities.map((a) => [a.order, a]));
+
+  for (let i = 0; i < lesson.activities.length; i++) {
+    const seedActivity = lesson.activities[i];
+    const activityType = activityTypeOf(seedActivity);
+    const content = seedActivity as unknown as Prisma.InputJsonValue;
+    const existing = existingByOrder.get(i);
+
+    if (existing) {
+      await prisma.activity.update({
+        where: { id: existing.id },
+        data: { type: activityType, content },
+      });
+    } else {
+      await prisma.activity.create({
+        data: {
+          type: activityType,
+          content,
+          order: i,
+          lessonId: lessonRecord.id,
+        },
+      });
+    }
+  }
 
   return lessonRecord;
 }

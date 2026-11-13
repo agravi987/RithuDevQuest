@@ -25,7 +25,7 @@ export function AIPracticeBox() {
     "beginner" | "intermediate" | "advanced"
   >("intermediate");
   const [questionType, setQuestionType] = useState<
-    "mcq" | "command" | "true_false"
+    "mcq" | "true_false"
   >("mcq");
 
   const [loading, setLoading] = useState(false);
@@ -68,7 +68,7 @@ export function AIPracticeBox() {
       if (data.questions && data.questions.length > 0) {
         const q = data.questions[0];
         // The renderer only supports these types; bail gracefully otherwise.
-        if (!["mcq", "command", "true_false"].includes(q.type)) {
+        if (!["mcq", "true_false"].includes(q.type)) {
           throw new Error("Unsupported question format returned. Please try again.");
         }
         setQuestion(q);
@@ -244,15 +244,12 @@ export function AIPracticeBox() {
               id="ai-format"
               value={questionType}
               onChange={(e) =>
-                setQuestionType(
-                  e.target.value as "mcq" | "command" | "true_false",
-                )
+                setQuestionType(e.target.value as "mcq" | "true_false")
               }
               disabled={question != null}
               className="w-full h-9 rounded-md border border-border/70 bg-card px-3 py-1 text-sm shadow-sm font-medium cursor-pointer focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <option value="mcq">Multiple Choice</option>
-              <option value="command">Terminal Command</option>
               <option value="true_false">True / False</option>
             </select>
           </div>
@@ -338,17 +335,6 @@ export function AIPracticeBox() {
                   </Button>
                 ))}
               </div>
-            )}
-
-            {question.type === "command" && (
-              <Input
-                value={userAnswer}
-                onChange={(e) => setUserAnswer(e.target.value)}
-                disabled={submitted}
-                placeholder="Type command..."
-                aria-label="Command answer"
-                className="font-mono text-sm input-focus-glow"
-              />
             )}
 
             {!submitted ? (

@@ -163,7 +163,6 @@ describe("Curriculum seed content", () => {
         expect(lesson.questions?.length ?? 0, lesson.slug).toBeGreaterThanOrEqual(6);
         const types = new Set(lesson.questions?.map((question) => question.type));
         expect(types.has("scenario"), `${lesson.slug} scenario`).toBe(true);
-        expect(types.has("command"), `${lesson.slug} command`).toBe(true);
       }
     }
   });

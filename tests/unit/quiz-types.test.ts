@@ -176,7 +176,6 @@ describe("QUESTION_TYPE_META", () => {
     for (const type of [
       "mcq",
       "true_false",
-      "command",
       "scenario",
       "fill_blank",
       "multi_select",

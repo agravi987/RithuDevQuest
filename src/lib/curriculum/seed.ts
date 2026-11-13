@@ -28,7 +28,6 @@ export type SeedSkill = {
 export type SeedQuestionType =
   | "mcq"
   | "true_false"
-  | "command"
   | "scenario"
   | "fill_blank"
   | "multi_select"
@@ -127,11 +126,19 @@ export type SeedModule = {
   units: SeedUnit[];
 };
 
+export type SeedPathCrossReference = {
+  careerSlug: string;
+  pathSlug: string;
+  title: string;
+  note?: string;
+};
+
 export type SeedPath = {
   title: string;
   description?: string;
   slug: string;
   modules: SeedModule[];
+  crossReferences?: SeedPathCrossReference[];
 };
 
 export type SeedCareer = {

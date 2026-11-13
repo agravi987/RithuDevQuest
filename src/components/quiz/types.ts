@@ -355,6 +355,8 @@ export interface QuizExperienceProps {
   questions?: QuizQuestion[];
   onComplete?: (result: QuizResult) => void;
   onExit?: () => void;
+  /** Optional callback fired when the user clicks 'CONTINUE' on the celebratory results screen. */
+  onContinueResults?: () => void;
   onSubmitAnswer?: (
     question: QuizQuestion,
     answer: string,
@@ -426,4 +428,92 @@ export function deepMerge<T extends object>(target: T, source: DeepPartial<T>): 
     }
   }
   return result;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   DUOLINGO GALAXY QUIZ ENGINE TYPES
+   ════════════════════════════════════════════════════════════════════ */
+
+export type CharacterId =
+  | "rithu"
+  | "orion"
+  | "astra"
+  | "nova"
+  | "vance"
+  | "cosmo";
+
+export type CharacterMood =
+  | "idle"
+  | "thinking"
+  | "speaking"
+  | "happy_jump"
+  | "sad_droop"
+  | "celebrating";
+
+export interface CosmicCharacterProps {
+  characterId: CharacterId;
+  mood: CharacterMood;
+  size?: "xs" | "sm" | "md" | "lg" | "custom";
+  className?: string;
+}
+
+export type DuolingoQuestionType =
+  | "mcq"
+  | "word_bank"
+  | "match_pairs"
+  | "fill_blank"
+  | "true_false";
+
+export interface DuolingoMCQPayload {
+  options: Array<{ id: string; text: string; code?: boolean }>;
+  correctOptionId: string;
+  explanation: string;
+}
+
+export interface DuolingoWordBankPayload {
+  targetSentence: string;
+  tokens: Array<{ id: string; text: string }>;
+  distractors?: Array<{ id: string; text: string }>;
+  explanation: string;
+}
+
+export interface DuolingoMatchPairsPayload {
+  pairs: Array<{ id: string; left: string; right: string }>;
+  explanation?: string;
+}
+
+export interface DuolingoFillBlankPayload {
+  promptWithBlank: string; // e.g. "docker run -d -p ___:80 nginx"
+  blankIndex: number;
+  options: string[];
+  correctAnswer: string;
+  explanation: string;
+}
+
+export interface DuolingoTrueFalsePayload {
+  statement: string;
+  correctAnswer: boolean;
+  explanation: string;
+}
+
+export interface DuolingoQuestion {
+  id: string;
+  type: DuolingoQuestionType;
+  prompt: string;
+  characterId?: CharacterId;
+  hint?: string;
+  payload:
+    | DuolingoMCQPayload
+    | DuolingoWordBankPayload
+    | DuolingoMatchPairsPayload
+    | DuolingoFillBlankPayload
+    | DuolingoTrueFalsePayload;
+  difficulty: "beginner" | "intermediate" | "advanced";
+}
+
+export interface DuolingoQueueItem {
+  question: DuolingoQuestion;
+  attemptCount: number;
+  firstTryCorrect: boolean | null;
+  userAnswer?: string;
 }

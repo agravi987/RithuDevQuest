@@ -8,7 +8,7 @@ import { auth } from "@/lib/auth";
 import { LearnPageClient } from "@/components/learning-path/learn-page-client";
 import { LearnHero } from "@/components/learning-path/learn-hero";
 import { GalaxySection } from "@/components/galaxy/galaxy-section";
-import { ContinueQuest } from "@/components/galaxy/continue-quest";
+import { Sparkles, Compass, Rocket } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Learn",
@@ -35,6 +35,8 @@ export default async function LearnPage({
   }
 
   let careerStats: Record<string, { progress: number; pathCount: number }> = {};
+  const pathProgressMap = new Map<string, number>();
+
   if (session?.user?.id) {
     const deep = await Promise.all(
       careers.map(async (c) => {
@@ -65,7 +67,24 @@ export default async function LearnPage({
         return [c.slug, { progress, pathCount: c.paths.length }];
       }),
     );
+
+    for (const p of career.paths) {
+      const total = p.modules.reduce(
+        (s, m) => s + m.units.reduce((u, un) => u + un.lessons.length, 0),
+        0,
+      );
+      const completed = p.modules.reduce(
+        (s, m) => s + (counts.get(m.id) ?? 0),
+        0,
+      );
+      const prog = total > 0 ? Math.round((completed / total) * 100) : 0;
+      pathProgressMap.set(p.slug, prog);
+    }
   }
+
+  const nextQuest = session?.user?.id
+    ? await getNextQuest(session.user.id)
+    : null;
 
   const paths = career.paths.map((path) => ({
     id: path.id,
@@ -82,13 +101,12 @@ export default async function LearnPage({
         ),
       0,
     ),
+    progress: pathProgressMap.get(path.slug) ?? 0,
+    isRecommended: nextQuest ? nextQuest.pathSlug === path.slug : false,
   }));
 
   const careerProgress = careerStats[career.slug]?.progress ?? 0;
-
-  const nextQuest = session?.user?.id
-    ? await getNextQuest(session.user.id)
-    : null;
+  const totalLessons = paths.reduce((s, p) => s + p.lessonCount, 0);
 
   return (
     <GalaxySection
@@ -96,7 +114,7 @@ export default async function LearnPage({
       starCount={100}
     >
       <div className="relative z-10 mx-auto max-w-6xl">
-        {/* Header */}
+        {/* Duolingo Hero with Mascot */}
         <LearnHero
           careerTitle={career.title}
           careers={careers.map((c) => ({
@@ -108,42 +126,57 @@ export default async function LearnPage({
           activeSlug={careerSlug}
         />
 
-        {nextQuest && (
-          <div className="mx-auto mb-8 max-w-3xl animate-page-fade">
-            <ContinueQuest quest={nextQuest} />
+        {/* Tactical Fleet Status HUD */}
+        <div className="mb-10 flex flex-wrap items-center justify-center gap-3 sm:gap-6 animate-page-fade select-none">
+          <div className="inline-flex items-center gap-2 rounded-2xl border-2 border-b-4 border-white/10 bg-[#0c1222]/80 px-4 py-2 text-xs font-black text-slate-300 shadow-sm backdrop-blur-md">
+            <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse" />
+            <span className="text-emerald-400">{careerProgress}%</span>
+            <span className="text-slate-400">Mastered</span>
           </div>
-        )}
 
-        {/* Fleet status */}
-        <div className="mb-8 flex items-center justify-center gap-4 text-xs animate-page-fade">
-          <span className="flex items-center gap-1.5 text-muted-foreground">
-            <span className="size-2 rounded-full bg-emerald-400 shadow shadow-emerald-400/40" />
-            {careerProgress > 0 ? `${careerProgress}% explored` : "New sector"}
-          </span>
-          <span className="h-3 w-px bg-border" />
-          <span className="text-muted-foreground">
-            {paths.length} worlds · {paths.reduce((s, p) => s + p.lessonCount, 0)} lessons
-          </span>
+          <div className="inline-flex items-center gap-2 rounded-2xl border-2 border-b-4 border-white/10 bg-[#0c1222]/80 px-4 py-2 text-xs font-black text-slate-300 shadow-sm backdrop-blur-md">
+            <Compass className="size-3.5 text-cyan-400" />
+            <span className="text-white">{paths.length}</span>
+            <span className="text-slate-400">Worlds</span>
+          </div>
+
+          <div className="inline-flex items-center gap-2 rounded-2xl border-2 border-b-4 border-white/10 bg-[#0c1222]/80 px-4 py-2 text-xs font-black text-slate-300 shadow-sm backdrop-blur-md">
+            <Rocket className="size-3.5 text-amber-400" />
+            <span className="text-white">{totalLessons}</span>
+            <span className="text-slate-400">Interactive Lessons</span>
+          </div>
         </div>
 
-        {/* Section header */}
-        <div className="mb-6 flex items-center gap-3">
-          <div className="h-px flex-1 bg-gradient-to-r from-transparent to-border/50" />
-          <h2 className="text-sm font-bold text-muted-foreground/60">Learning Worlds</h2>
-          <div className="h-px flex-1 bg-gradient-to-l from-transparent to-border/50" />
+        {/* Section Header Banner */}
+        <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b-2 border-white/10 pb-4">
+          <div>
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-emerald-400 mb-1">
+              <Sparkles className="size-3 text-emerald-400" />
+              <span>Available Learning Worlds</span>
+            </div>
+            <h2 className="text-2xl font-black text-white tracking-tight">
+              Select Your Next Destination
+            </h2>
+          </div>
+          <p className="text-xs font-bold text-slate-400">
+            Pick a sector to explore its step-by-step skill tree
+          </p>
         </div>
 
+        {/* World Cards Grid */}
         <LearnPageClient paths={paths} />
 
-        <div className="text-center mt-12 space-y-2">
-          <p className="text-xs text-muted-foreground">
-            {paths.length} worlds · {paths.reduce((s, p) => s + p.lessonCount, 0)} lessons · {paths.reduce((s, p) => s + p.moduleCount, 0)} modules
-          </p>
-          <p className="text-[10px] text-muted-foreground/50">
-            Tap a world to begin your journey
-          </p>
+        {/* Cadet Motivation Footer */}
+        <div className="mt-14 text-center select-none">
+          <div className="inline-flex items-center gap-2 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 px-5 py-3 text-xs font-bold text-slate-300 shadow-sm backdrop-blur-sm">
+            <span className="text-base">🚀</span>
+            <span>
+              <strong className="text-emerald-400">Pro Cadet Tip:</strong> Completing all modules in a sector awards permanent mastery crowns and level XP multipliers!
+            </span>
+          </div>
         </div>
       </div>
     </GalaxySection>
   );
 }
+

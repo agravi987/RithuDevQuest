@@ -22,14 +22,14 @@ function mcqQuestion(): LessonQuestionData {
   };
 }
 
-function commandQuestion(): LessonQuestionData {
+function scenarioTypedQuestion(): LessonQuestionData {
   return {
     id: "q2",
-    type: "command",
+    type: "scenario",
     difficulty: "beginner",
-    question: "Run a command that prints `hello`.",
+    question: "You are asked to print a greeting in the terminal.",
     options: null,
-    parts: null,
+    parts: [{ prompt: "Run a command that prints the word hello." }],
     hint: "Try the echo command.",
   };
 }
@@ -134,14 +134,14 @@ describe("QuestionSection", () => {
     expect(screen.getByText("False")).toBeInTheDocument();
   });
 
-  it("collects raw input for a command question", async () => {
+  it("collects raw input for a scenario part", async () => {
     const user = userEvent.setup();
     let typed = "";
     function Harness() {
       const [value, setValue] = useState("");
       return (
         <QuestionSection
-          question={commandQuestion()}
+          question={scenarioTypedQuestion()}
           value={value}
           onValueChange={(next) => {
             typed = next;
@@ -155,7 +155,7 @@ describe("QuestionSection", () => {
     }
     render(<Harness />);
     const input = screen.getByRole("textbox", {
-      name: "Command answer",
+      name: "Answer for part 1",
     });
     await user.type(input, "echo hello");
     expect(typed).toBe("echo hello");
@@ -183,7 +183,7 @@ describe("QuestionSection", () => {
     const user = userEvent.setup();
     render(
       <QuestionSection
-        question={commandQuestion()}
+        question={scenarioTypedQuestion()}
         value=""
         onValueChange={vi.fn()}
         onSubmit={vi.fn()}

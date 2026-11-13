@@ -42,7 +42,7 @@ export function LayoutContent({
     // hidden, so leave the CSS default (0px) intact — otherwise an inline
     // value here would override the media query and create a large empty gap.
     if (isDesktop) {
-      const width = collapsed ? 68 : 220;
+      const width = collapsed ? 80 : 256;
       document.documentElement.style.setProperty("--sidebar-width", `${width}px`);
     } else {
       document.documentElement.style.setProperty("--sidebar-width", "0px");
