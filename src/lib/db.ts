@@ -15,10 +15,14 @@ function createPrismaClient(): PrismaClient {
     throw new Error("DATABASE_URL is not defined");
   }
 
-  const adapter =
-    process.env.DATABASE_ADAPTER === "neon"
-      ? new PrismaNeon({ connectionString })
-      : new PrismaPg({ connectionString });
+  const isNeon =
+    process.env.DATABASE_ADAPTER === "neon" ||
+    connectionString.includes("neon.tech") ||
+    connectionString.includes("neon.database");
+
+  const adapter = isNeon
+    ? new PrismaNeon({ connectionString })
+    : new PrismaPg({ connectionString });
 
   return new PrismaClient({ adapter });
 }

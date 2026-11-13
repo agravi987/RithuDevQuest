@@ -1,11 +1,24 @@
 import "dotenv/config";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaNeon } from "@prisma/adapter-neon";
 
 async function main() {
-  const prisma = new PrismaClient({
-    adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
-  });
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error("DATABASE_URL is not defined");
+  }
+
+  const isNeon =
+    process.env.DATABASE_ADAPTER === "neon" ||
+    connectionString.includes("neon.tech") ||
+    connectionString.includes("neon.database");
+
+  const adapter = isNeon
+    ? new PrismaNeon({ connectionString })
+    : new PrismaPg({ connectionString });
+
+  const prisma = new PrismaClient({ adapter });
 
   const byType = await prisma.question.groupBy({
     by: ["type"],
