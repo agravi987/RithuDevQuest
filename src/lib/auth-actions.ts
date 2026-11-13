@@ -32,18 +32,19 @@ export async function signupAction(
     };
   }
 
-  const existing = await prisma.user.findUnique({
-    where: { email: parsed.data.email },
-    select: { id: true },
-  });
-
-  if (existing) {
-    return { status: "error", message: "An account with this email already exists." };
-  }
-
-  const passwordHash = await bcrypt.hash(parsed.data.password, 10);
-
+  let passwordHash: string;
   try {
+    const existing = await prisma.user.findUnique({
+      where: { email: parsed.data.email },
+      select: { id: true },
+    });
+
+    if (existing) {
+      return { status: "error", message: "An account with this email already exists." };
+    }
+
+    passwordHash = await bcrypt.hash(parsed.data.password, 10);
+
     await prisma.user.create({
       data: {
         name: parsed.data.name,
@@ -51,8 +52,9 @@ export async function signupAction(
         passwordHash,
       },
     });
-  } catch {
-    return { status: "error", message: "Could not create your account. Please try again." };
+  } catch (err) {
+    console.error("Signup database error:", err);
+    return { status: "error", message: "Could not create your account. Please check your connection and try again." };
   }
 
   try {
@@ -108,12 +110,16 @@ export async function loginAction(
   if (callbackUrl) {
     redirectTo = callbackUrl;
   } else {
-    const user = await prisma.user.findUnique({
-      where: { email: parsed.data.email },
-      select: { role: true },
-    });
-    if (user?.role === "admin") {
-      redirectTo = "/admin";
+    try {
+      const user = await prisma.user.findUnique({
+        where: { email: parsed.data.email },
+        select: { role: true },
+      });
+      if (user?.role === "admin") {
+        redirectTo = "/admin";
+      }
+    } catch {
+      // Default to /dashboard on DB error
     }
   }
 
