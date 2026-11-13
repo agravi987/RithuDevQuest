@@ -462,7 +462,23 @@ export type DuolingoQuestionType =
   | "word_bank"
   | "match_pairs"
   | "fill_blank"
-  | "true_false";
+  | "true_false"
+  | "command"
+  | "multi_select";
+
+export interface DuolingoCommandPayload {
+  promptCommand?: string;
+  placeholder?: string;
+  correctAnswer: string;
+  acceptedAnswers: string[];
+  explanation: string;
+  quickTokens?: string[];
+}
+
+export interface DuolingoMultiSelectPayload {
+  options: Array<{ id: string; text: string; isCorrect: boolean; code?: boolean }>;
+  explanation: string;
+}
 
 export interface DuolingoMCQPayload {
   options: Array<{ id: string; text: string; code?: boolean }>;
@@ -507,7 +523,9 @@ export interface DuolingoQuestion {
     | DuolingoWordBankPayload
     | DuolingoMatchPairsPayload
     | DuolingoFillBlankPayload
-    | DuolingoTrueFalsePayload;
+    | DuolingoTrueFalsePayload
+    | DuolingoCommandPayload
+    | DuolingoMultiSelectPayload;
   difficulty: "beginner" | "intermediate" | "advanced";
 }
 

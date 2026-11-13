@@ -8,7 +8,19 @@ export type LessonActivityData = {
 
 export type LessonQuestionData = {
   id: string;
-  type: "mcq" | "true_false" | "scenario" | "fill_blank" | "multi_select" | "match" | "sequence" | "code_completion" | "word_scramble" | "flip_cards";
+  type:
+    | "mcq"
+    | "true_false"
+    | "scenario"
+    | "fill_blank"
+    | "multi_select"
+    | "match"
+    | "sequence"
+    | "code_completion"
+    | "word_scramble"
+    | "flip_cards"
+    | "command"
+    | "terminal";
   difficulty: "beginner" | "intermediate" | "advanced";
   question: string;
   options: unknown[] | null;

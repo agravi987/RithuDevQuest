@@ -24,12 +24,14 @@ export { CosmicCharacter } from "./characters/CosmicCharacter";
 export { CharacterSpeechBubble } from "./characters/CharacterSpeechBubble";
 export type { CharacterSpeechBubbleProps } from "./characters/CharacterSpeechBubble";
 
-// 5 Signature Duolingo Question Mechanics
+// Question Mechanics
 export { DuolingoMCQ } from "./questions/DuolingoMCQ";
 export { DuolingoWordBank } from "./questions/DuolingoWordBank";
 export { DuolingoMatchPairs } from "./questions/DuolingoMatchPairs";
 export { DuolingoTrueFalse } from "./questions/DuolingoTrueFalse";
 export { DuolingoFillBlank } from "./questions/DuolingoFillBlank";
+export { DuolingoTerminalInput } from "./questions/DuolingoTerminalInput";
+export { DuolingoMultiSelect } from "./questions/DuolingoMultiSelect";
 
 // Modals & Results
 export { DuolingoExitModal } from "./modals/DuolingoExitModal";

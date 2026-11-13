@@ -8,7 +8,9 @@ export type QuestionType =
   | "sequence"
   | "code_completion"
   | "word_scramble"
-  | "flip_cards";
+  | "flip_cards"
+  | "command"
+  | "terminal";
 
 export type DefinedQuestionType = Exclude<QuestionType, "flip_cards">;
 
@@ -23,6 +25,8 @@ export const QUESTION_TYPES: readonly QuestionType[] = [
   "code_completion",
   "word_scramble",
   "flip_cards",
+  "command",
+  "terminal",
 ] as const;
 
 export function isQuestionType(value: unknown): value is QuestionType {
@@ -313,6 +317,14 @@ export function validateQuestionAnswer(
         acceptedParts.includes(cleanedAnswer) ||
         (acceptedParts.length > 0 && acceptedParts.every((p) => cleanedAnswer.includes(p)))
       ) {
+        return true;
+      }
+      return validateAcceptedAnswer(question.correctAnswer, answer);
+    }
+    case "command":
+    case "terminal": {
+      const accepted = splitAcceptedAnswers(question.correctAnswer).map(cleanForComparison);
+      if (accepted.includes(normAns) || cleanForComparison(question.correctAnswer) === normAns) {
         return true;
       }
       return validateAcceptedAnswer(question.correctAnswer, answer);

@@ -26,6 +26,8 @@ import { DuolingoWordBank } from "./questions/DuolingoWordBank";
 import { DuolingoMatchPairs } from "./questions/DuolingoMatchPairs";
 import { DuolingoTrueFalse } from "./questions/DuolingoTrueFalse";
 import { DuolingoFillBlank } from "./questions/DuolingoFillBlank";
+import { DuolingoTerminalInput } from "./questions/DuolingoTerminalInput";
+import { DuolingoMultiSelect } from "./questions/DuolingoMultiSelect";
 import { DuolingoBottomDrawer, type BottomDrawerState } from "./DuolingoBottomDrawer";
 import { DuolingoExitModal } from "./modals/DuolingoExitModal";
 import { DuolingoOutOfHeartsModal } from "./modals/DuolingoOutOfHeartsModal";
@@ -285,7 +287,89 @@ function adaptToDuolingoQuestion(q: QuizQuestion, index: number): DuolingoQuesti
     }
   }
 
-  // 6. Default: Multiple Choice (MCQ) & Multi-Select & Flip Cards
+  // 6. Command / Terminal Input
+  if (q.type === "command" || (q.type as string) === "terminal") {
+    const acceptedAnswers = (q.correctAnswer ?? "")
+      .split("|")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const firstAccepted = acceptedAnswers[0] ?? "";
+    const rawTokens = firstAccepted.split(/\s+/).filter(Boolean);
+    const quickTokens = Array.from(
+      new Set([...rawTokens, "--help", "ls", "echo", "cat", "pwd", "mkdir", "cd"])
+    ).slice(0, 5);
+
+    return {
+      id: q.id,
+      type: "command",
+      prompt: q.question || "Type the command in the terminal below:",
+      characterId,
+      hint: q.hint ?? "Type the command and press Check or Enter.",
+      difficulty: q.difficulty ?? "beginner",
+      payload: {
+        correctAnswer: firstAccepted,
+        acceptedAnswers: acceptedAnswers.length > 0 ? acceptedAnswers : [firstAccepted],
+        explanation: q.explanation ?? `The correct command is: \`${firstAccepted}\``,
+        placeholder: "e.g. " + (rawTokens[0] || "command") + " ...",
+        quickTokens,
+      },
+    };
+  }
+
+  // 7. Multi Select Questions
+  if (q.type === "multi_select") {
+    const rawOpts = (
+      (q.payload as { multiSelect?: Array<unknown> })?.multiSelect ??
+      (Array.isArray(q.options) ? q.options : [])
+    ) as Array<unknown>;
+
+    const acceptedAnswers = (q.correctAnswer ?? "")
+      .split("|")
+      .map(cleanForComparison)
+      .filter(Boolean);
+
+    const multiOptions = rawOpts.map((opt, i) => {
+      const text =
+        typeof opt === "string"
+          ? opt
+          : (opt as { text?: string })?.text ?? String(opt);
+
+      const isExplicitCorrect =
+        typeof opt === "object" && opt !== null
+          ? (opt as { isCorrect?: boolean }).isCorrect
+          : undefined;
+
+      const isCorrect =
+        isExplicitCorrect !== undefined
+          ? isExplicitCorrect
+          : acceptedAnswers.includes(cleanForComparison(text));
+
+      const isCode =
+        text.includes(" ") || text.startsWith("-") || text.includes("/") || text.includes(".");
+
+      return {
+        id: `multi-opt-${i}`,
+        text,
+        isCorrect,
+        code: isCode,
+      };
+    });
+
+    return {
+      id: q.id,
+      type: "multi_select",
+      prompt: q.question || "Select all options that apply:",
+      characterId,
+      hint: q.hint ?? "Select all correct choices.",
+      difficulty: q.difficulty ?? "intermediate",
+      payload: {
+        options: multiOptions,
+        explanation: q.explanation ?? "Review all valid options.",
+      },
+    };
+  }
+
+  // 8. Default: Multiple Choice (MCQ) & Flip Cards
   const rawOptions =
     (q.payload as { mcqOptions?: Array<unknown> })?.mcqOptions ??
     (q.payload as { multiSelect?: Array<unknown> })?.multiSelect ??
@@ -376,6 +460,27 @@ function adaptToDuolingoQuestion(q: QuizQuestion, index: number): DuolingoQuesti
       correctId = `opt-${subIdx}`;
       matched = true;
     }
+  }
+
+  // Safety guard: if an MCQ has no options, fallback to terminal/command input if correctAnswer exists
+  if (mcqOptions.length === 0 && q.correctAnswer) {
+    const acceptedAnswers = q.correctAnswer.split("|").map((s) => s.trim()).filter(Boolean);
+    const firstAccepted = acceptedAnswers[0] ?? "";
+    return {
+      id: q.id,
+      type: "command",
+      prompt: q.question,
+      characterId,
+      hint: q.hint ?? "Type your answer in the terminal:",
+      difficulty: q.difficulty ?? "beginner",
+      payload: {
+        correctAnswer: firstAccepted,
+        acceptedAnswers: acceptedAnswers.length > 0 ? acceptedAnswers : [firstAccepted],
+        explanation: q.explanation ?? `The correct answer is: \`${firstAccepted}\``,
+        placeholder: "Type your answer...",
+        quickTokens: firstAccepted.split(/\s+/).filter(Boolean).slice(0, 4),
+      },
+    };
   }
 
   return {
@@ -586,6 +691,30 @@ export function QuizExperience({
       } else if (activeQuestion.type === "match_pairs") {
         isCorrect = stagedAnswer === "all_matched" || stagedAnswer === "matched";
         answerToSendToServer = "all_matched";
+      } else if (activeQuestion.type === "command") {
+        const payload = activeQuestion.payload as import("./types").DuolingoCommandPayload;
+        correctAnswerStr = payload.correctAnswer;
+        explanation = payload.explanation;
+        const normUser = cleanForComparison(stagedAnswer ?? "");
+        const accepted = payload.acceptedAnswers.map(cleanForComparison);
+        isCorrect = accepted.includes(normUser) || cleanForComparison(payload.correctAnswer) === normUser;
+        answerToSendToServer = stagedAnswer ?? "";
+      } else if (activeQuestion.type === "multi_select") {
+        const payload = activeQuestion.payload as import("./types").DuolingoMultiSelectPayload;
+        const selectedIds = (stagedAnswer ?? "").split("|").filter(Boolean);
+        const correctOpts = payload.options.filter((o) => o.isCorrect);
+        const correctIds = correctOpts.map((o) => o.id);
+        correctAnswerStr = correctOpts.map((o) => o.text).join(", ");
+        explanation = payload.explanation;
+
+        const allSelectedAreCorrect = selectedIds.length > 0 && selectedIds.every((id) => correctIds.includes(id));
+        const allCorrectAreSelected = correctIds.every((id) => selectedIds.includes(id));
+        isCorrect = allSelectedAreCorrect && allCorrectAreSelected;
+
+        const selectedTexts = payload.options
+          .filter((o) => selectedIds.includes(o.id))
+          .map((o) => o.text);
+        answerToSendToServer = selectedTexts.join("|");
       }
 
       // If parent provided an async grading hook, sync with it
@@ -829,6 +958,37 @@ export function QuizExperience({
                     disabled={drawerState !== "neutral"}
                   />
                 )}
+
+                {activeQuestion.type === "command" && (
+                  <DuolingoTerminalInput
+                    key={activeQuestion.id}
+                    payload={activeQuestion.payload as import("./types").DuolingoCommandPayload}
+                    value={stagedAnswer ?? ""}
+                    onChange={(val) => setStagedAnswer(val)}
+                    onSubmit={() => {
+                      if (canCheck && drawerState === "neutral") {
+                        void handleCheckAnswer();
+                      }
+                    }}
+                    disabled={drawerState !== "neutral"}
+                  />
+                )}
+
+                {activeQuestion.type === "multi_select" && (
+                  <DuolingoMultiSelect
+                    key={activeQuestion.id}
+                    payload={activeQuestion.payload as import("./types").DuolingoMultiSelectPayload}
+                    selectedOptionIds={(stagedAnswer ?? "").split("|").filter(Boolean)}
+                    onToggleOption={(optId) => {
+                      const current = (stagedAnswer ?? "").split("|").filter(Boolean);
+                      const next = current.includes(optId)
+                        ? current.filter((id) => id !== optId)
+                        : [...current, optId];
+                      setStagedAnswer(next.length > 0 ? next.join("|") : null);
+                    }}
+                    disabled={drawerState !== "neutral"}
+                  />
+                )}
               </div>
             </motion.div>
           ) : (
@@ -859,7 +1019,14 @@ export function QuizExperience({
                 ? (activeQuestion.payload as import("./types").DuolingoWordBankPayload).targetSentence
                 : activeQuestion?.type === "fill_blank"
                   ? (activeQuestion.payload as import("./types").DuolingoFillBlankPayload).correctAnswer
-                  : undefined
+                  : activeQuestion?.type === "command"
+                    ? (activeQuestion.payload as import("./types").DuolingoCommandPayload).correctAnswer
+                    : activeQuestion?.type === "multi_select"
+                      ? (activeQuestion.payload as import("./types").DuolingoMultiSelectPayload).options
+                          .filter((o) => o.isCorrect)
+                          .map((o) => o.text)
+                          .join(", ")
+                      : undefined
         }
         explanation={
           activeQuestion ? (activeQuestion.payload as { explanation?: string })?.explanation : undefined

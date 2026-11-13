@@ -26,6 +26,8 @@ export const QUESTION_TYPE_META: Record<QuestionType, QuestionTypeLabel> = {
   code_completion: { label: "Complete the Code", color: "bg-xp/10 text-xp" },
   word_scramble: { label: "Unscramble", color: "bg-primary/10 text-primary" },
   flip_cards: { label: "Flip Cards", color: "bg-level/10 text-level" },
+  command: { label: "Terminal Command", color: "bg-emerald-500/10 text-emerald-400" },
+  terminal: { label: "Terminal", color: "bg-emerald-500/10 text-emerald-400" },
 };
 
 /**
