@@ -98,11 +98,11 @@ export function DuolingoWordBank({
 
 
   return (
-    <div className="flex flex-col gap-6 w-full select-none">
+    <div className="flex flex-col gap-3 sm:gap-4 w-full select-none">
       {/* ── 1. Upper Target Drop Area ── */}
-      <div className="min-h-[110px] sm:min-h-[120px] w-full p-4 rounded-2xl border-2 border-dashed border-white/20 bg-white/[0.02] flex flex-wrap items-center gap-2.5 content-start">
+      <div className="min-h-[72px] sm:min-h-[82px] w-full p-2.5 sm:p-3 rounded-xl border-2 border-dashed border-white/20 bg-white/[0.02] flex flex-wrap items-center gap-2 content-start">
         {placedIds.length === 0 ? (
-          <div className="w-full text-center py-6 text-sm text-white/30 font-medium">
+          <div className="w-full text-center py-3 text-xs sm:text-sm text-white/40 font-medium">
             Tap the command tokens below to assemble in order
           </div>
         ) : (
@@ -123,8 +123,8 @@ export function DuolingoWordBank({
                   disabled={disabled}
                   onClick={() => handleRecallToken(id)}
                   className={cn(
-                    "px-4 sm:px-6 py-2.5 sm:py-3 rounded-2xl font-mono text-base sm:text-lg font-black",
-                    "bg-cyan-500/25 border-2 border-b-[4px] border-cyan-400 border-b-cyan-500 text-cyan-100 shadow-lg shadow-cyan-500/25",
+                    "px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl font-mono text-sm sm:text-base font-black",
+                    "bg-cyan-500/25 border-2 border-b-[3px] border-cyan-400 border-b-cyan-500 text-cyan-100 shadow-md shadow-cyan-500/25",
                     "cursor-pointer hover:bg-cyan-500/35 active:translate-y-[1px] active:border-b-[2px] transition-all duration-75 select-none",
                     disabled && "cursor-not-allowed opacity-60",
                   )}
@@ -145,7 +145,7 @@ export function DuolingoWordBank({
       <div className="h-px w-full bg-white/10" />
 
       {/* ── 2. Lower Word Bank Area with Zero-CLS Silhouettes ── */}
-      <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3">
+      <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5">
         {allTokens.map((token) => {
           const isPlaced = placedIds.includes(token.id);
 
@@ -158,7 +158,7 @@ export function DuolingoWordBank({
                 onClick={() => handleRecallToken(token.id)}
                 title="Click to remove from sequence"
                 className={cn(
-                  "min-h-[50px] px-4 sm:px-6 py-2.5 sm:py-3 rounded-2xl font-mono text-base sm:text-lg font-black",
+                  "min-h-[42px] sm:min-h-[46px] px-3.5 sm:px-4 py-2 rounded-xl font-mono text-sm sm:text-base font-black",
                   "border-2 border-dashed border-cyan-500/30 bg-cyan-950/20 text-cyan-400/50 hover:text-cyan-300 hover:border-cyan-400/50 select-none flex items-center justify-center cursor-pointer transition-colors",
                   disabled && "cursor-not-allowed opacity-50",
                 )}
@@ -178,8 +178,8 @@ export function DuolingoWordBank({
               disabled={disabled}
               onClick={() => handlePlaceToken(token)}
               className={cn(
-                "min-h-[50px] px-5 sm:px-6 py-2.5 sm:py-3 rounded-2xl font-mono text-base sm:text-lg font-black",
-                "bg-[#0d1527] border-2 border-b-[5px] border-slate-700/80 border-b-slate-900 text-white/95 shadow-lg",
+                "min-h-[42px] sm:min-h-[46px] px-3.5 sm:px-4 py-2 rounded-xl font-mono text-sm sm:text-base font-black",
+                "bg-[#0d1527] border-2 border-b-[4px] border-slate-700/80 border-b-slate-900 text-white/95 shadow-md",
                 "hover:border-cyan-400 hover:border-b-cyan-500 hover:bg-[#111c35] hover:text-white cursor-pointer select-none",
                 "active:translate-y-[2px] active:border-b-[2px] transition-all duration-75 touch-manipulation",
                 disabled && "cursor-not-allowed opacity-60",

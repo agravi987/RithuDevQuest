@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 import { AuthStage } from "@/components/auth/auth-stage";
 import { SignupForm } from "@/components/auth/signup-form";
@@ -6,20 +7,21 @@ import { SignupForm } from "@/components/auth/signup-form";
 export default async function SignupPage() {
   return (
     <AuthStage
-      title="Create your account"
-      description="Start earning XP and mastering your craft with Rithu."
-      mascotMessage="Welcome, hero! Ready to level up? 🚀"
+      title="Begin Your Quest"
+      description="Join 1,000+ developers leveling up their craft through gamified daily missions."
+      mascotMessage="Welcome, hero! Ready to level up your code? 🌌"
     >
       <SignupForm />
-      <p className="mt-5 text-center text-sm text-muted-foreground">
-        Already have an account?{" "}
+      <div className="mt-6 pt-5 border-t border-white/10 text-center text-sm text-slate-300">
+        Already in orbit?{" "}
         <Link
           href="/login"
-          className="font-semibold text-primary transition-colors hover:text-primary/80 hover:underline"
+          className="inline-flex items-center gap-1 font-bold text-emerald-400 transition-colors hover:text-emerald-300 hover:underline"
         >
-          Log in
+          <span>Log into mission control</span>
+          <ArrowRight className="size-3.5" />
         </Link>
-      </p>
+      </div>
     </AuthStage>
   );
 }

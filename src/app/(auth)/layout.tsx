@@ -48,22 +48,21 @@ export default function AuthLayout({
         </p>
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 w-full max-w-sm">
-        <div className="glass-shimmer rounded-3xl border border-border/60 bg-card/70 backdrop-blur-xl p-6 sm:p-8 shadow-xl shadow-black/40">
-          {children}
-        </div>
+      {/* Content Container (Spacious, non-nested) */}
+      <div className="relative z-10 w-full max-w-md sm:max-w-xl">
+        {children}
 
-        {/* Social proof */}
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+        {/* Social proof & perks */}
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-2.5">
           {[
-            { label: "171+ Lessons", emoji: "📚" },
-            { label: "905+ Questions", emoji: "⚡" },
-            { label: "AI Mentor", emoji: "🤖" },
+            { label: "171+ Cosmic Lessons", emoji: "📚" },
+            { label: "900+ Interactive Quizzes", emoji: "⚡" },
+            { label: "AI Galactic Mentor", emoji: "🤖" },
+            { label: "Free Space Cadet Access", emoji: "🚀" },
           ].map((item) => (
             <span
               key={item.label}
-              className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-card/60 px-3 py-1.5 text-[10px] font-bold text-muted-foreground backdrop-blur-sm transition-colors hover:border-primary/30 hover:text-foreground"
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-[#0c1228]/80 px-3.5 py-1.5 text-xs font-bold text-slate-300 backdrop-blur-sm transition-colors hover:border-emerald-500/40 hover:text-white shadow-sm"
             >
               <span aria-hidden="true">{item.emoji}</span>
               {item.label}

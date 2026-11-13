@@ -42,12 +42,12 @@ export function DuolingoHeader({
   return (
     <header
       className={cn(
-        "fixed top-0 left-0 right-0 z-40 w-full select-none",
-        "bg-[#070913]/90 backdrop-blur-md border-b border-white/10",
-        "px-4 sm:px-8 py-3 sm:py-4",
+        "relative z-30 w-full select-none shrink-0",
+        "bg-[#070913]/95 backdrop-blur-md border-b border-white/10",
+        "px-4 sm:px-8 py-2.5 sm:py-3.5",
         className,
       )}
-      style={{ paddingTop: "max(env(safe-area-inset-top), 12px)" }}
+      style={{ paddingTop: "max(env(safe-area-inset-top), 8px)" }}
     >
       <div className="max-w-3xl mx-auto flex items-center justify-between gap-3 sm:gap-6">
         {/* Quit Button (✕) */}

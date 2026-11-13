@@ -19,6 +19,7 @@ export interface DuolingoBottomDrawerProps {
   xpEarned?: number;
   combo?: number;
   isEvaluating?: boolean;
+  className?: string;
 }
 
 const PRAISE_LIST = ["Nicely done!", "Spot on!", "Brilliant!", "Superb!", "Cosmic Genius!"];
@@ -34,6 +35,7 @@ export function DuolingoBottomDrawer({
   xpEarned = 10,
   combo = 0,
   isEvaluating = false,
+  className,
 }: DuolingoBottomDrawerProps) {
   // Pick random praise on correct state
   const praise = React.useMemo(() => {
@@ -72,18 +74,19 @@ export function DuolingoBottomDrawer({
   return (
     <div
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-40 w-full select-none transition-colors duration-200",
+        "relative z-30 w-full select-none shrink-0 transition-colors duration-200",
         state === "neutral" && "bg-[#070913]/95 backdrop-blur-md border-t border-white/10",
         state === "correct" &&
           "bg-[#064e3b]/95 backdrop-blur-xl border-t border-emerald-500/40 shadow-[0_-12px_36px_rgba(16,185,129,0.25)]",
         state === "incorrect" &&
           "bg-[#4c0519]/95 backdrop-blur-xl border-t border-rose-500/40 shadow-[0_-12px_36px_rgba(244,63,94,0.25)]",
+        className,
       )}
       style={{
-        paddingBottom: "max(env(safe-area-inset-bottom), 16px)",
+        paddingBottom: "max(env(safe-area-inset-bottom), 10px)",
       }}
     >
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-3.5 sm:py-5">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-2.5 sm:py-3.5">
         <AnimatePresence mode="wait">
           {/* ── 1. NEUTRAL STATE ── */}
           {state === "neutral" && (

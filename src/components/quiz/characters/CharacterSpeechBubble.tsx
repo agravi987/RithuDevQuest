@@ -76,7 +76,7 @@ export function CharacterSpeechBubble({
   return (
     <div
       className={cn(
-        "flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-5 w-full select-none",
+        "flex flex-row items-start gap-3 sm:gap-4 w-full select-none",
         className,
       )}
     >
@@ -84,8 +84,8 @@ export function CharacterSpeechBubble({
       <CosmicCharacter
         characterId={characterId}
         mood={mood}
-        size="md"
-        className="shrink-0"
+        size="sm"
+        className="shrink-0 mt-1"
       />
 
       {/* Speech Bubble Container with Pointer */}
@@ -93,36 +93,31 @@ export function CharacterSpeechBubble({
         initial={{ opacity: 0, scale: 0.96, y: 6 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 350, damping: 28 }}
-        className="relative flex-1 w-full"
+        className="relative flex-1 w-full min-w-0"
       >
-        {/* Responsive Speech Bubble Arrow */}
-        {/* Desktop Left-pointing Arrow */}
-        <div className="hidden sm:block absolute -left-2.5 top-5 w-0 h-0 border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent border-r-[10px] border-r-white/10" />
-        <div className="hidden sm:block absolute -left-2 top-5 w-0 h-0 border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent border-r-[10px] border-r-[#0c1022]" />
-
-        {/* Mobile Top-pointing Arrow */}
-        <div className="sm:hidden absolute left-1/2 -translate-x-1/2 -top-2.5 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-b-[10px] border-b-white/10" />
-        <div className="sm:hidden absolute left-1/2 -translate-x-1/2 -top-2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-b-[10px] border-b-[#0c1022]" />
+        {/* Left-pointing Speech Arrow */}
+        <div className="absolute -left-2 top-4 w-0 h-0 border-t-[7px] border-t-transparent border-b-[7px] border-b-transparent border-r-[8px] border-r-white/15" />
+        <div className="absolute -left-1.5 top-4 w-0 h-0 border-t-[7px] border-t-transparent border-b-[7px] border-b-transparent border-r-[8px] border-r-[#0b1022]" />
 
         {/* Bubble Box */}
-        <div className="rounded-3xl border-2 border-white/15 bg-[#0b1022]/95 backdrop-blur-md p-5 sm:p-6 shadow-2xl shadow-cyan-950/20 ring-1 ring-white/5">
+        <div className="rounded-2xl border-2 border-white/15 bg-[#0b1022]/95 backdrop-blur-md p-3.5 sm:p-4 shadow-xl shadow-cyan-950/20 ring-1 ring-white/5">
           {/* Character Name + Role Badge */}
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-1">
             <span
               className={cn(
-                "text-[11px] uppercase font-black px-2.5 py-0.5 rounded-full border tracking-wider",
+                "text-[10px] uppercase font-black px-2 py-0.5 rounded-full border tracking-wider",
                 meta.badgeBg,
               )}
             >
               {meta.name}
             </span>
-            <span className="text-xs text-white/50 font-semibold">
+            <span className="text-[11px] text-white/50 font-semibold truncate">
               {meta.title}
             </span>
           </div>
 
           {/* Prompt Message */}
-          <p className="text-lg sm:text-xl md:text-2xl font-black text-white tracking-tight leading-relaxed">
+          <p className="text-sm sm:text-base md:text-lg font-black text-white tracking-tight leading-snug">
             {message}
           </p>
         </div>

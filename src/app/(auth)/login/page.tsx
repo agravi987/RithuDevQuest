@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 import { AuthStage } from "@/components/auth/auth-stage";
 import { LoginForm } from "@/components/auth/login-form";
@@ -13,28 +14,29 @@ export default async function LoginPage({
 
   return (
     <AuthStage
-      title="Welcome back"
-      description="Log in to continue your quest with Rithu."
-      mascotMessage="Your streak is waiting! 🔥"
+      title="Welcome back, Cadet!"
+      description="Resume your cosmic coding voyage and keep your streak blazing."
+      mascotMessage="Cadet, your coding streak is counting on you! 🚀"
     >
       <Suspense
         fallback={
-          <p className="text-center text-sm text-muted-foreground">
-            Loading…
-          </p>
+          <div className="flex justify-center py-6 text-sm text-slate-400">
+            Connecting to Mission Control…
+          </div>
         }
       >
         <LoginForm callbackUrl={callbackUrl} />
       </Suspense>
-      <p className="mt-5 text-center text-sm text-muted-foreground">
-        New to RithuDevQuest?{" "}
+      <div className="mt-6 pt-5 border-t border-white/10 text-center text-sm text-slate-300">
+        New explorer?{" "}
         <Link
           href="/signup"
-          className="font-semibold text-primary transition-colors hover:text-primary/80 hover:underline"
+          className="inline-flex items-center gap-1 font-bold text-emerald-400 transition-colors hover:text-emerald-300 hover:underline"
         >
-          Create an account
+          <span>Create your free cadet account</span>
+          <ArrowRight className="size-3.5" />
         </Link>
-      </p>
+      </div>
     </AuthStage>
   );
 }

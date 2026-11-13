@@ -739,13 +739,9 @@ export function QuizExperience({
   return (
     <div
       className={cn(
-        "fixed inset-0 z-50 h-[100dvh] max-h-[100dvh] w-full overflow-y-auto select-none bg-[#070913]",
+        "fixed inset-0 z-50 h-[100dvh] max-h-[100dvh] w-full overflow-hidden select-none bg-[#070913]",
         "flex flex-col items-center justify-between",
       )}
-      style={{
-        paddingTop: "max(env(safe-area-inset-top), 12px)",
-        paddingBottom: "max(env(safe-area-inset-bottom), 16px)",
-      }}
     >
       {/* ── 1. FIXED TOP HEADER HUD ── */}
       <DuolingoHeader
@@ -761,7 +757,7 @@ export function QuizExperience({
       {/* ── 2. CENTER "DUOLINGO ZEN" QUESTION ARENA ── */}
       <section
         aria-label="Quiz Challenge"
-        className="w-full max-w-xl mx-auto flex-1 flex flex-col justify-center px-4 sm:px-6 pt-20 pb-32 sm:pb-36"
+        className="w-full max-w-2xl mx-auto flex-1 flex flex-col justify-center px-4 sm:px-6 py-2 sm:py-3.5 overflow-y-auto min-h-0"
       >
         <AnimatePresence mode="wait">
           {activeQuestion ? (
@@ -771,7 +767,7 @@ export function QuizExperience({
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -40, opacity: 0 }}
               transition={{ type: "spring", stiffness: 350, damping: 30 }}
-              className="flex flex-col gap-6 sm:gap-8 w-full"
+              className="flex flex-col gap-3 sm:gap-4 w-full my-auto"
             >
               {/* Character + Speech Bubble */}
               <CharacterSpeechBubble
