@@ -10,6 +10,7 @@ import type { QuizQuestion } from "@/components/quiz/types";
 import { CosmicCharacter } from "@/components/quiz/characters/CosmicCharacter";
 import { DuoButton } from "@/components/quiz/duo-button";
 import { MarkdownText } from "@/components/lesson/markdown";
+import { CosmicBackground } from "@/components/ui/cosmic-background";
 
 interface LessonPlayerClientProps {
   data: LessonPlayerData;
@@ -110,7 +111,8 @@ export function LessonPlayerClient({ data, heartsInfo }: LessonPlayerClientProps
     const isLastActivity = activityIndex === data.activities.length - 1;
 
     return (
-      <div className="fixed inset-0 z-50 flex flex-col bg-[#070b14] text-white">
+      <div className="fixed inset-0 z-50 flex flex-col bg-[#04060f]/90 text-white">
+        <CosmicBackground variant="arena" />
         {/* Top Header */}
         <header className="mx-auto flex h-16 w-full max-w-4xl items-center justify-between px-4 sm:px-6">
           <button

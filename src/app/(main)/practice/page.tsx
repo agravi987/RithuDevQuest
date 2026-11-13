@@ -55,10 +55,7 @@ export default async function PracticePage() {
     .sort((a, b) => a.mastery.score - b.mastery.score);
 
   return (
-    <GalaxySection
-      className="-mx-4 -mt-8 px-4 pt-8 pb-16 min-h-screen overflow-hidden text-white"
-      starCount={60}
-    >
+    <GalaxySection className="text-white pb-16">
       <div className="relative z-10 flex flex-col gap-8 max-w-5xl mx-auto pb-12">
         {/* ═══════════ 1. DUOLINGO PRACTICE ARENA HEADER ═══════════ */}
         <div className="duo-card-3d relative overflow-hidden rounded-3xl border-2 border-white/10 bg-[#0d1527] p-6 sm:p-8 shadow-xl">

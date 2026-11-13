@@ -109,10 +109,7 @@ export default async function LearnPage({
   const totalLessons = paths.reduce((s, p) => s + p.lessonCount, 0);
 
   return (
-    <GalaxySection
-      className="-mx-4 -mt-8 px-4 pt-8 pb-16 min-h-screen overflow-hidden"
-      starCount={100}
-    >
+    <GalaxySection className="pb-16">
       <div className="relative z-10 mx-auto max-w-6xl">
         {/* Duolingo Hero with Mascot */}
         <LearnHero
@@ -147,27 +144,26 @@ export default async function LearnPage({
           </div>
         </div>
 
-        {/* Section Header Banner */}
-        <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b-2 border-white/10 pb-4">
-          <div>
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-emerald-400 mb-1">
-              <Sparkles className="size-3 text-emerald-400" />
-              <span>Available Learning Worlds</span>
-            </div>
-            <h2 className="text-2xl font-black text-white tracking-tight">
-              Select Your Next Destination
-            </h2>
+        {/* Section Header Banner — Centered & Cohesive */}
+        <div className="mb-10 flex flex-col items-center text-center gap-2 max-w-2xl mx-auto">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-400">
+            <Sparkles className="size-3 text-emerald-400" />
+            <span>Available Learning Worlds</span>
           </div>
-          <p className="text-xs font-bold text-slate-400">
+          <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+            Select Your Next Destination
+          </h2>
+          <p className="text-xs sm:text-sm font-medium text-slate-400">
             Pick a sector to explore its step-by-step skill tree
           </p>
+          <div className="mt-1 h-1 w-16 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 opacity-60" />
         </div>
 
         {/* World Cards Grid */}
         <LearnPageClient paths={paths} />
 
         {/* Cadet Motivation Footer */}
-        <div className="mt-14 text-center select-none">
+        <div className="mt-14 text-center select-none max-w-2xl mx-auto">
           <div className="inline-flex items-center gap-2 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 px-5 py-3 text-xs font-bold text-slate-300 shadow-sm backdrop-blur-sm">
             <span className="text-base">🚀</span>
             <span>

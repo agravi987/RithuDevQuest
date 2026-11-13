@@ -30,10 +30,32 @@ export function DuolingoTerminalInput({
     }
   }, [disabled]);
 
+  // Compute ghost autocompletion suggestion
+  const ghostSuggestion = React.useMemo(() => {
+    if (!value || disabled) return "";
+    const trimmed = value.trim().toLowerCase();
+    const candidatePool = [
+      payload.correctAnswer,
+      ...(payload.acceptedAnswers ?? []),
+      ...(payload.quickTokens ?? []),
+    ].filter(Boolean);
+
+    for (const candidate of candidatePool) {
+      if (candidate.toLowerCase().startsWith(trimmed) && candidate.length > trimmed.length) {
+        return candidate.slice(value.length);
+      }
+    }
+    return "";
+  }, [value, disabled, payload]);
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && value.trim().length > 0 && onSubmit) {
       e.preventDefault();
       onSubmit();
+    } else if ((e.key === "Tab" || e.key === "ArrowRight") && ghostSuggestion) {
+      e.preventDefault();
+      playTapPopSound();
+      onChange(value + ghostSuggestion);
     }
   };
 
@@ -99,24 +121,38 @@ export function DuolingoTerminalInput({
             cadet@galaxy:<span className="text-cyan-400">~</span>$
           </span>
 
-          {/* Interactive typing field */}
-          <input
-            ref={inputRef}
-            type="text"
-            value={value}
-            disabled={disabled}
-            onChange={(e) => onChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={payload.placeholder ?? "type command here..."}
-            autoComplete="off"
-            autoCorrect="off"
-            autoCapitalize="off"
-            spellCheck="false"
-            className={cn(
-              "flex-1 bg-transparent border-none outline-none font-mono font-bold text-cyan-200 placeholder:text-slate-600 caret-cyan-400 tracking-tight",
-              disabled && "cursor-not-allowed opacity-60",
+          {/* Interactive typing field & ghost autocompletion preview */}
+          <div className="relative flex-1 flex items-center min-w-0">
+            <input
+              ref={inputRef}
+              type="text"
+              value={value}
+              disabled={disabled}
+              onChange={(e) => onChange(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={payload.placeholder ?? "type command here..."}
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck="false"
+              className={cn(
+                "relative z-10 w-full bg-transparent border-none outline-none font-mono font-bold text-cyan-200 placeholder:text-slate-600 caret-cyan-400 tracking-tight",
+                disabled && "cursor-not-allowed opacity-60",
+              )}
+            />
+            {ghostSuggestion && (
+              <div
+                className="absolute left-0 pointer-events-none font-mono font-bold text-slate-500/70 select-none whitespace-pre tracking-tight flex items-center gap-1.5 z-0"
+                aria-hidden="true"
+              >
+                <span className="invisible">{value}</span>
+                <span>{ghostSuggestion}</span>
+                <span className="hidden sm:inline-block text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-slate-800/90 text-cyan-400 border border-cyan-500/30">
+                  Tab ⇥
+                </span>
+              </div>
             )}
-          />
+          </div>
 
           {/* Hint icon */}
           <CornerDownLeft className="size-4 text-slate-600 shrink-0 select-none" />

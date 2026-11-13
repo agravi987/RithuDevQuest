@@ -77,7 +77,7 @@ export const DuoButton = React.forwardRef<HTMLButtonElement, DuoButtonProps>(
           sizeStyles[size],
           fullWidth && "w-full",
           disabled &&
-            "opacity-75 cursor-not-allowed bg-slate-850 text-slate-400 border-b-4 border-slate-950 shadow-none active:translate-y-0 font-black",
+            "cursor-not-allowed bg-white/10 text-white/50 border-b-4 border-white/5 shadow-none active:translate-y-0 font-black",
           className,
         )}
         {...props}

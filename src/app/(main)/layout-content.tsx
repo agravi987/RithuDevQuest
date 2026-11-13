@@ -8,6 +8,7 @@ import { ClientShell } from "@/app/(main)/client-shell";
 import { useSidebar } from "@/lib/sidebar-context";
 import { KeyboardShortcuts } from "@/components/shared/keyboard-shortcuts";
 import { RouteLoadingIndicator } from "@/components/shared/route-loading-indicator";
+import { CosmicBackground } from "@/components/ui/cosmic-background";
 
 type LayoutContentProps = {
   userName: string;
@@ -51,6 +52,7 @@ export function LayoutContent({
 
   return (
     <ClientShell>
+      <CosmicBackground />
       <KeyboardShortcuts />
       <RouteLoadingIndicator />
       {/* Skip to content for accessibility */}
@@ -76,7 +78,7 @@ export function LayoutContent({
         {/* Main content */}
         <main
           id="main-content"
-          className="flex-1 min-h-screen pt-14 pb-16 lg:pb-0 animate-page-fade"
+          className="flex-1 min-w-0 max-w-full overflow-x-clip min-h-screen pt-14 pb-16 lg:pb-0 animate-page-fade"
           style={{ marginLeft: "var(--sidebar-width, 0px)" }}
         >
           <div className="px-4 py-4 lg:px-6 lg:py-6">

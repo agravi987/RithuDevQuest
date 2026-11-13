@@ -33,6 +33,7 @@ import { DuolingoExitModal } from "./modals/DuolingoExitModal";
 import { DuolingoOutOfHeartsModal } from "./modals/DuolingoOutOfHeartsModal";
 import { DuolingoResults } from "./DuolingoResults";
 import type { DuolingoMistakeItem } from "./modals/DuolingoMistakesModal";
+import { CosmicBackground } from "@/components/ui/cosmic-background";
 
 /* ─── Question Conversion Adapter ─── */
 
@@ -386,7 +387,11 @@ function adaptToDuolingoQuestion(q: QuizQuestion, index: number): DuolingoQuesti
           (opt as { text?: string; answer?: string; front?: string; back?: string })?.back ??
           String(opt);
 
-    const isCode = text.includes(" ") || text.startsWith("-") || text.includes("/") || text.includes("$");
+    const isCode =
+      text.startsWith("-") ||
+      text.startsWith("$") ||
+      /^(curl|echo|grep|tail|cat|ls|cd|pwd|ssh|docker|git|aws|kubectl|chmod|chown)\b/.test(text) ||
+      /[{}();]/.test(text);
     const isExplicitCorrect =
       typeof opt === "object" && opt !== null ? (opt as { isCorrect?: boolean }).isCorrect : undefined;
 
@@ -462,8 +467,8 @@ function adaptToDuolingoQuestion(q: QuizQuestion, index: number): DuolingoQuesti
     }
   }
 
-  // Safety guard: if an MCQ has no options, fallback to terminal/command input if correctAnswer exists
-  if (mcqOptions.length === 0 && q.correctAnswer) {
+  // Safety guard: if an MCQ has fewer than 2 options, fallback to terminal/command input if correctAnswer exists
+  if (mcqOptions.length < 2 && q.correctAnswer) {
     const acceptedAnswers = q.correctAnswer.split("|").map((s) => s.trim()).filter(Boolean);
     const firstAccepted = acceptedAnswers[0] ?? "";
     return {
@@ -868,10 +873,13 @@ export function QuizExperience({
   return (
     <div
       className={cn(
-        "fixed inset-0 z-50 h-[100dvh] max-h-[100dvh] w-full overflow-hidden select-none bg-[#070913]",
+        "fixed inset-0 z-50 h-[100dvh] max-h-[100dvh] w-full overflow-hidden select-none bg-[#050713]/90",
         "flex flex-col items-center justify-between",
       )}
     >
+      {/* ── Ambient Triple-Layer Deep Orbit Cosmic Atmosphere ── */}
+      <CosmicBackground variant="arena" streakActive={combo >= 3} lowHearts={hearts === 1} />
+
       {/* ── 1. FIXED TOP HEADER HUD ── */}
       <DuolingoHeader
         progressPercentage={progressPercentage}
@@ -886,7 +894,7 @@ export function QuizExperience({
       {/* ── 2. CENTER "DUOLINGO ZEN" QUESTION ARENA ── */}
       <section
         aria-label="Quiz Challenge"
-        className="w-full max-w-2xl mx-auto flex-1 flex flex-col justify-center px-4 sm:px-6 py-2 sm:py-3.5 overflow-y-auto min-h-0"
+        className="w-full max-w-3xl mx-auto flex-1 flex flex-col justify-center px-4 sm:px-6 py-2 sm:py-3.5 overflow-y-auto min-h-0"
       >
         <AnimatePresence mode="wait">
           {activeQuestion ? (
@@ -896,8 +904,26 @@ export function QuizExperience({
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -40, opacity: 0 }}
               transition={{ type: "spring", stiffness: 350, damping: 30 }}
-              className="flex flex-col gap-3 sm:gap-4 w-full my-auto"
+              className={cn(
+                "flex flex-col gap-3 sm:gap-4 w-full my-auto transition-all duration-300",
+                combo >= 3 && "drop-shadow-[0_0_24px_rgba(245,158,11,0.25)]",
+              )}
             >
+              {/* Supernova Streak Heat Shimmer Badge */}
+              {combo >= 3 && (
+                <motion.div
+                  initial={{ scale: 0.85, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="flex items-center justify-center gap-1.5 py-1 px-3.5 mx-auto rounded-full bg-gradient-to-r from-amber-500/20 via-orange-500/25 to-rose-500/20 border border-amber-400/50 shadow-[0_0_20px_rgba(245,158,11,0.3)] select-none"
+                >
+                  <span className="text-[11px] font-black tracking-wider uppercase text-amber-300 font-mono flex items-center gap-1.5">
+                    <span className="animate-bounce">🔥</span>
+                    <span>SUPERNOVA STREAK: {combo}X COMBO ACTIVE</span>
+                    <span className="animate-bounce">⚡</span>
+                  </span>
+                </motion.div>
+              )}
+
               {/* Character + Speech Bubble */}
               <CharacterSpeechBubble
                 characterId={currentCharacterId}

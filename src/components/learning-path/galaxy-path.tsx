@@ -94,7 +94,7 @@ function ModuleBanner({
       initial={{ opacity: 0, y: 20, scale: 0.98 }}
       animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
       transition={{ delay: idx * 0.05, duration: 0.5 }}
-      className="relative rounded-3xl overflow-hidden mb-6 group/banner shadow-xl border-b-[6px]"
+      className="relative rounded-3xl overflow-hidden mb-6 group/banner shadow-xl border-b-[6px] max-w-2xl mx-auto"
       style={{
         background: `linear-gradient(135deg, ${theme.primary}25, ${theme.primary}10)`,
         borderColor: `${theme.primary}55`,
@@ -733,20 +733,17 @@ export function GalaxyPath({ modules, streak }: GalaxyPathProps) {
                 </div>
               )}
 
-              {/* Collapse/expand controls */}
-              <div className="flex items-center justify-center gap-2 mb-4 mt-3">
-                <button onClick={() => toggleModule(mi)}
-                  className="flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold transition-all"
-                  style={{ background: `${theme.primary}08`, border: `1px solid ${theme.primary}12`, color: `${theme.primary}50` }}>
-                  {expanded.has(mi) ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />}
-                  {expanded.has(mi) ? "Collapse" : "Expand"}
-                </button>
-                {!expanded.has(mi) && (
-                  <span className="text-[10px]" style={{ color: `${theme.primary}25` }}>
-                    {mod.lessons.length} planets · {comp}/{mod.lessons.length} explored
-                  </span>
-                )}
-              </div>
+              {/* Collapsed state indicator */}
+              {!expanded.has(mi) && (
+                <div className="flex items-center justify-center gap-2 mb-4 mt-2">
+                  <button onClick={() => toggleModule(mi)}
+                    className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11px] font-bold transition-all shadow-sm"
+                    style={{ background: `${theme.primary}15`, border: `1px solid ${theme.primary}30`, color: `${theme.primary}` }}>
+                    <ChevronDown className="size-3.5" />
+                    <span>Expand {mod.lessons.length} Missions ({comp} explored)</span>
+                  </button>
+                </div>
+              )}
 
               {/* Snake path — animated collapse */}
               <AnimatePresence initial={false}>
@@ -756,9 +753,9 @@ export function GalaxyPath({ modules, streak }: GalaxyPathProps) {
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-                    className="overflow-hidden relative"
+                    className="overflow-hidden relative w-full"
                   >
-              <div className="relative" style={{ height: pts.length * nodeH + 90 }}>
+              <div className="relative w-full max-w-[560px] mx-auto" style={{ height: pts.length * nodeH + 90 }}>
                 {snakeD && (
                   <svg viewBox={`0 0 ${snakeW} ${pts.length * nodeH + 90}`}
                     className="absolute inset-0 w-full h-full pointer-events-none"

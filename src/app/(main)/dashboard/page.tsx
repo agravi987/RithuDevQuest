@@ -7,6 +7,7 @@ import {
   DashboardHeroSection,
   DashboardCareersSection,
   DashboardRailSection,
+  DashboardHeatmapSection,
 } from "./dashboard-sections";
 import {
   HeroSkeleton,
@@ -32,7 +33,7 @@ export default async function DashboardPage() {
       </Suspense>
 
       {/* Main grid: current mission (left) + daily quests (right) */}
-      <div className="flex flex-1 gap-5 min-h-0 flex-col lg:flex-row">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 w-full min-w-0 items-start">
         <Suspense fallback={<CareersSkeleton />}>
           <DashboardCareersSection userId={session.user.id} />
         </Suspense>
@@ -40,6 +41,11 @@ export default async function DashboardPage() {
           <DashboardRailSection userId={session.user.id} />
         </Suspense>
       </div>
+
+      {/* Full-width Cadet Orbit Activity Heatmap */}
+      <Suspense fallback={<div className="h-36 rounded-3xl bg-white/5 animate-pulse" />}>
+        <DashboardHeatmapSection userId={session.user.id} />
+      </Suspense>
     </div>
   );
 }

@@ -20,12 +20,12 @@ export function DashboardRail({
   dailyChallengeStatus: DailyChallengeStatus;
 }) {
   return (
-    <div className="flex w-full flex-col gap-4 lg:w-80">
+    <div className="flex w-full flex-col gap-4 min-w-0">
       {/* Cosmic Mentor Motivation (Duolingo Style) */}
       <div className="duo-card-3d relative overflow-hidden rounded-3xl border-2 border-emerald-500/30 bg-[#0d1527] p-4 shadow-xl">
         <div className="flex items-center gap-3">
           <div className="size-12 shrink-0 flex items-center justify-center rounded-2xl bg-emerald-500/15 border border-emerald-500/30 p-1">
-            <CosmicCharacter characterId="rithu" mood="happy_jump" size="xs" className="size-full" />
+            <CosmicCharacter characterId="rithu" mood="happy_jump" size="custom" className="size-9 sm:size-10" />
           </div>
           <div>
             <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">

@@ -37,10 +37,7 @@ export default async function MockInterviewPage({
   }
 
   return (
-    <GalaxySection
-      className="-mx-4 -mt-8 px-4 pt-8 pb-16 min-h-screen overflow-hidden"
-      starCount={60}
-    >
+    <GalaxySection className="pb-16">
       <div className="relative z-10 mx-auto max-w-5xl space-y-6 pb-8">
         <Breadcrumbs
           items={[

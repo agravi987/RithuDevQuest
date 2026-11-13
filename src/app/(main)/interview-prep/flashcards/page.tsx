@@ -43,10 +43,7 @@ export default async function FlashcardsPage({
   const cards = await getInterviewFlashcards(career.slug, 30);
 
   return (
-    <GalaxySection
-      className="-mx-4 -mt-8 px-4 pt-8 pb-28 min-h-screen overflow-hidden"
-      starCount={60}
-    >
+    <GalaxySection className="pb-28">
       <div className="relative z-10 mx-auto max-w-4xl space-y-6 pb-24 lg:pb-8">
         <Breadcrumbs
           items={[

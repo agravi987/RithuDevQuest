@@ -114,9 +114,14 @@ export function DuolingoBottomDrawer({
                 size="lg"
                 disabled={!canCheck || isEvaluating}
                 onClick={onCheck}
-                className="w-full sm:w-auto sm:min-w-[160px]"
+                className="w-full sm:w-auto sm:min-w-[160px] flex items-center justify-center gap-2"
               >
-                {isEvaluating ? "Checking..." : "Check"}
+                <span>{isEvaluating ? "Checking..." : "Check"}</span>
+                {canCheck && (
+                  <span className="hidden sm:inline-block rounded-md bg-emerald-900/40 px-1.5 py-0.5 text-[10px] font-mono font-black text-emerald-950 opacity-80">
+                    ↵ Enter
+                  </span>
+                )}
               </DuoButton>
             </motion.div>
           )}

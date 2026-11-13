@@ -59,6 +59,14 @@ export function DuolingoMCQ({
   const isShortOptions = options.every((o) => (o.text?.length ?? 0) <= 65);
   const useGrid = isShortOptions && options.length >= 4;
 
+  if (options.length === 0) {
+    return (
+      <div className="w-full rounded-2xl border-2 border-white/10 bg-white/[0.03] p-6 text-center text-slate-400">
+        <p className="text-sm font-medium">No options available for this challenge.</p>
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
@@ -91,31 +99,44 @@ export function DuolingoMCQ({
           >
             {/* Left Content: Option Text / Code with Space Grotesk */}
             <div className="flex items-center gap-2.5 sm:gap-3 flex-1 pr-2 min-w-0">
-              {option.code ? (
-                <code className="font-mono text-xs sm:text-sm font-bold text-cyan-200 bg-black/60 px-2.5 py-1 rounded-lg border border-cyan-500/40 tracking-tight break-all shadow-inner">
-                  {option.text}
-                </code>
-              ) : (
-                <span className="font-display font-bold text-sm sm:text-base leading-snug line-clamp-2 text-white group-hover:text-cyan-100 transition-colors">
-                  <FormattedText text={option.text} />
-                </span>
-              )}
+              <span
+                className={cn(
+                  "text-sm sm:text-base leading-snug line-clamp-2 transition-colors",
+                  option.code
+                    ? "font-mono font-bold text-cyan-200"
+                    : "font-display font-bold text-white group-hover:text-cyan-100"
+                )}
+              >
+                <FormattedText text={option.text} />
+              </span>
             </div>
 
-            {/* Right Badge: Keyboard Hotkey / Selected State */}
-            <div
+            {/* Right Badge: Tactile Mechanical Keycap / Selected State */}
+            <kbd
               className={cn(
-                "grid size-7 sm:size-8 shrink-0 place-items-center rounded-xl border-2 font-mono text-xs font-black transition-all shadow-sm",
+                "grid size-7 sm:size-8 shrink-0 place-items-center rounded-lg border-2 font-mono text-xs font-black transition-all shadow-sm select-none",
                 isSelected
-                  ? "border-cyan-400 bg-cyan-400 text-slate-950 shadow-md shadow-cyan-400/30 scale-105"
-                  : "border-slate-700/80 bg-slate-800/80 text-slate-400 group-hover:border-cyan-500/50 group-hover:text-cyan-200 group-hover:bg-slate-800",
+                  ? "border-cyan-300 bg-cyan-400 text-slate-950 shadow-[0_0_12px_rgba(6,182,212,0.5)] scale-105"
+                  : "border-slate-700 bg-gradient-to-b from-slate-800 to-slate-900 text-slate-300 group-hover:border-cyan-400/60 group-hover:text-cyan-200",
               )}
             >
               {isSelected ? "✓" : hotkey}
-            </div>
+            </kbd>
           </button>
         );
       })}
+
+      {/* Subtle Bottom Keyboard Navigation Hint */}
+      <div className="flex items-center justify-center gap-1.5 pt-1 text-[11px] font-mono text-slate-500 select-none">
+        <span>Press</span>
+        <kbd className="px-1.5 py-0.5 rounded bg-slate-800/90 border border-slate-700/80 text-cyan-300 font-bold text-[10px]">1</kbd>
+        <span>–</span>
+        <kbd className="px-1.5 py-0.5 rounded bg-slate-800/90 border border-slate-700/80 text-cyan-300 font-bold text-[10px]">{options.length}</kbd>
+        <span>to select</span>
+        <span className="text-slate-600">•</span>
+        <kbd className="px-1.5 py-0.5 rounded bg-slate-800/90 border border-slate-700/80 text-emerald-400 font-bold text-[10px]">↵ Enter</kbd>
+        <span>to check</span>
+      </div>
     </div>
   );
 }

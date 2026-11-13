@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
-import { Sparkles, Crown, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Sparkles, Crown, ArrowRight, CheckCircle2, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getPathVisual } from "@/lib/career-metadata";
+import { playTapPopSound } from "@/lib/sounds";
 
 export type PlanetCardProps = {
   slug: string;
@@ -30,80 +31,84 @@ export function PlanetCard({
   const style = getPathVisual(slug);
   const isStarted = progress > 0;
   const isComplete = progress === 100;
+  const xpReward = lessonCount * 10;
 
   return (
     <Link
       href={href}
+      onClick={() => playTapPopSound()}
       className="block group select-none"
-      aria-label={`${title}: ${moduleCount} modules, ${lessonCount} lessons`}
+      aria-label={`${title}: ${moduleCount} modules, ${lessonCount} lessons, ${progress}% mastered`}
     >
       <div
         className={cn(
-          "relative overflow-hidden rounded-3xl border-2 border-b-[6px] p-5 sm:p-7 transition-all duration-150",
-          "duo-card-3d bg-[#0d1424]/95 backdrop-blur-md",
+          "relative overflow-hidden rounded-3xl border-2 border-b-[6px] p-6 sm:p-7",
+          "transition-all duration-200 ease-out touch-manipulation",
+          "bg-gradient-to-br from-[#0c1326]/95 via-[#090e1d]/90 to-[#0e162b]/95 backdrop-blur-xl",
+          "group-hover:-translate-y-1.5",
           isRecommended
-            ? "border-emerald-500/70 shadow-[0_12px_32px_rgba(16,185,129,0.22)] ring-1 ring-emerald-500/30"
+            ? "border-emerald-500/80 shadow-[0_16px_36px_rgba(16,185,129,0.22)] ring-1 ring-emerald-400/40"
             : isComplete
-              ? "border-emerald-500/30 hover:border-emerald-500/60 shadow-lg shadow-emerald-950/20"
-              : "border-white/10 hover:border-white/20 hover:bg-[#111a30] shadow-lg shadow-black/40",
+              ? "border-amber-500/50 hover:border-amber-400/80 shadow-xl shadow-amber-950/20"
+              : "border-white/10 hover:border-cyan-500/50 hover:shadow-xl hover:shadow-cyan-950/30 shadow-lg shadow-black/50"
         )}
       >
-        {/* Subtle Ambient Background Flare */}
+        {/* Dynamic Themed Ambient Radial Flare */}
         <div
-          className={cn(
-            "pointer-events-none absolute -right-16 -top-16 size-44 rounded-full blur-3xl opacity-20 transition-opacity duration-300 group-hover:opacity-40",
-            style.glow,
-          )}
+          className="pointer-events-none absolute -right-20 -top-20 size-56 rounded-full blur-3xl opacity-25 transition-opacity duration-300 group-hover:opacity-50"
+          style={{ backgroundColor: style.color || "#06b6d4" }}
         />
 
-        {/* Top Header Row */}
-        <div className="flex items-start justify-between gap-3 mb-4">
+        {/* Top Header Badges */}
+        <div className="flex items-start justify-between gap-3 mb-5 relative z-10">
           <div className="flex items-center gap-2 flex-wrap">
             {isRecommended && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/40 bg-emerald-500/20 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-300 shadow-sm animate-pulse">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/50 bg-emerald-500/20 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-300 shadow-sm animate-pulse">
                 <span className="size-1.5 rounded-full bg-emerald-400" />
                 Active Mission 🚀
               </span>
             )}
             {isComplete && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/40 bg-amber-500/20 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-amber-300 shadow-sm">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/50 bg-amber-500/20 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-amber-300 shadow-sm">
                 <Crown className="size-3 text-amber-400" />
                 Mastered
               </span>
             )}
             {!isComplete && isStarted && !isRecommended && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-cyan-400/30 bg-cyan-500/15 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-cyan-300">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-400/40 bg-cyan-500/15 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-cyan-300">
                 <Sparkles className="size-3 text-cyan-400" />
                 In Progress
               </span>
             )}
-            <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-bold text-slate-300">
-              {lessonCount} lessons
+            <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-bold text-slate-300">
+              <Zap className="size-3 text-amber-400" />
+              +{xpReward} XP
             </span>
           </div>
 
-          <span className="text-xs font-black tracking-wider text-slate-400">
+          <span className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-black tracking-wider text-slate-300 uppercase">
             {moduleCount} {moduleCount === 1 ? "Module" : "Modules"}
           </span>
         </div>
 
-        {/* Center: Sector Visual & Info */}
-        <div className="flex items-start gap-4 sm:gap-5 mb-5">
-          {/* Planet Sphere Icon */}
+        {/* Center: Planet Visual & Sector Info */}
+        <div className="flex items-start gap-4 sm:gap-5 mb-5 relative z-10">
+          {/* Planet Visual Rig */}
           <div className="relative shrink-0 mt-0.5">
             <div
               className={cn(
-                "relative grid size-16 sm:size-18 place-items-center rounded-2xl border-2 border-b-4 bg-gradient-to-br shadow-xl transition-transform duration-200 group-hover:scale-105",
+                "relative grid size-16 sm:size-20 place-items-center rounded-2xl border-2 border-b-4 bg-gradient-to-br shadow-xl",
+                "transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3",
                 style.planet,
-                isRecommended ? "border-emerald-400/50" : "border-white/20",
+                isRecommended ? "border-emerald-400/60" : "border-white/20"
               )}
             >
-              <span className="text-3xl drop-shadow-md select-none">{style.emoji}</span>
+              <span className="text-3xl sm:text-4xl drop-shadow-lg select-none">{style.emoji}</span>
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-black/40 via-transparent to-white/20 pointer-events-none" />
             </div>
 
             {isComplete && (
-              <div className="absolute -bottom-1 -right-1 grid size-6 place-items-center rounded-full bg-emerald-500 text-white shadow-md border-2 border-slate-900">
+              <div className="absolute -bottom-1 -right-1 grid size-6 place-items-center rounded-full bg-emerald-500 text-slate-950 shadow-md border-2 border-slate-900 font-black">
                 <CheckCircle2 className="size-3.5" />
               </div>
             )}
@@ -111,14 +116,23 @@ export function PlanetCard({
 
           {/* Sector Details */}
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-wider text-emerald-400/90 mb-1">
-              {style.subtitle}
-            </p>
-            <h3 className="text-lg sm:text-xl font-black text-white tracking-tight leading-snug group-hover:text-emerald-300 transition-colors">
+            <div className="flex items-center gap-2 mb-1">
+              <span
+                className="text-[10px] font-black uppercase tracking-widest"
+                style={{ color: style.color || "#34d399" }}
+              >
+                {style.subtitle || "Sector World"}
+              </span>
+              <span className="text-slate-600">•</span>
+              <span className="text-[10px] font-bold text-slate-400">
+                {lessonCount} interactive missions
+              </span>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-snug group-hover:text-emerald-300 transition-colors">
               {title}
             </h3>
             {description && (
-              <p className="text-xs text-slate-300/80 mt-1.5 line-clamp-2 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-300/80 mt-1.5 line-clamp-2 leading-relaxed font-medium">
                 {description}
               </p>
             )}
@@ -126,12 +140,12 @@ export function PlanetCard({
         </div>
 
         {/* Duolingo 3D Progress Bar */}
-        <div className="mb-5 rounded-2xl border border-white/10 bg-black/40 p-3.5">
+        <div className="mb-5 rounded-2xl border border-white/10 bg-black/50 p-3.5 relative z-10 backdrop-blur-sm">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
               Sector Mastery
             </span>
-            <span className="text-xs font-black text-emerald-400">
+            <span className="text-xs font-black text-emerald-400 tabular-nums">
               {progress}%
             </span>
           </div>
@@ -145,8 +159,8 @@ export function PlanetCard({
               className={cn(
                 "relative h-full rounded-full transition-all",
                 isComplete
-                  ? "bg-gradient-to-r from-emerald-500 to-emerald-400"
-                  : "bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400",
+                  ? "bg-gradient-to-r from-emerald-500 to-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.5)]"
+                  : "bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.5)]"
               )}
             >
               {/* Glossy top shine highlight strip */}
@@ -156,26 +170,26 @@ export function PlanetCard({
         </div>
 
         {/* Duolingo 3D Bottom Action Button */}
-        <div className="pt-1">
+        <div className="pt-1 relative z-10">
           <div
             className={cn(
-              "flex items-center justify-center gap-2 w-full py-3 px-4 rounded-2xl font-black text-xs uppercase tracking-wider",
-              "border-2 border-b-4 transition-all duration-75 select-none",
+              "flex items-center justify-center gap-2 w-full py-3.5 px-5 rounded-2xl font-black text-xs uppercase tracking-wider",
+              "border-2 border-b-4 transition-all duration-75 select-none shadow-lg",
               isComplete
                 ? "border-emerald-700 bg-emerald-600 text-white shadow-[0_4px_0_0_#047857] group-hover:bg-emerald-500"
                 : isRecommended || isStarted
                   ? "border-cyan-600 bg-cyan-500 text-slate-950 shadow-[0_4px_0_0_#0891b2] group-hover:bg-cyan-400"
-                  : "border-emerald-700 bg-emerald-600 text-white shadow-[0_4px_0_0_#047857] group-hover:bg-emerald-500",
+                  : "border-emerald-700 bg-emerald-600 text-white shadow-[0_4px_0_0_#047857] group-hover:bg-emerald-500"
             )}
           >
             <span>
               {isComplete
-                ? "Review Sector"
+                ? "Review Sector 👑"
                 : isRecommended
                   ? "Continue Mission (+10 XP)"
                   : isStarted
-                    ? "Resume Journey"
-                    : "Enter World"}
+                    ? "Resume Journey 🚀"
+                    : "Enter World 🪐"}
             </span>
             <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
           </div>
@@ -184,4 +198,3 @@ export function PlanetCard({
     </Link>
   );
 }
-

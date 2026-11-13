@@ -116,10 +116,7 @@ export default async function PathPage({
   });
 
   return (
-    <GalaxySection
-      className="-mx-4 -mt-8 px-4 pt-8 pb-16 min-h-screen overflow-hidden"
-      starCount={100}
-    >
+    <GalaxySection className="pb-16">
       <div className="relative z-10 max-w-6xl mx-auto">
         {/* Breadcrumbs */}
         <Breadcrumbs

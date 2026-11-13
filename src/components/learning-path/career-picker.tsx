@@ -6,6 +6,7 @@ import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PlanetVisual } from "@/components/galaxy/planet-visual";
 import { getPlanetForCareer } from "@/lib/galaxy-assets";
+import { playTapPopSound } from "@/lib/sounds";
 
 type CareerOption = {
   slug: string;
@@ -36,13 +37,14 @@ export function CareerPicker({ careers, activeSlug }: CareerPickerProps) {
           >
             <Link
               href={`/learn?career=${career.slug}`}
+              onClick={() => playTapPopSound()}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "group relative flex items-center gap-3 rounded-2xl px-4 sm:px-5 py-2.5 sm:py-3 transition-all duration-100",
-                "duo-card-3d border-2 border-b-4",
+                "group relative flex items-center gap-3 rounded-2xl px-4 sm:px-5 py-2.5 sm:py-3.5 transition-all duration-150 touch-manipulation",
+                "border-2 border-b-4 hover:scale-[1.03] active:translate-y-1 active:border-b-2",
                 active
-                  ? "border-emerald-500 bg-emerald-500/15 text-white shadow-[0_4px_16px_rgba(16,185,129,0.2)]"
-                  : "border-white/10 bg-[#0d1424]/90 text-slate-300 hover:border-white/20 hover:bg-[#121c33] hover:text-white shadow-md shadow-black/30",
+                  ? "border-emerald-400 border-b-emerald-600 bg-gradient-to-r from-emerald-500/25 to-teal-500/20 text-white shadow-[0_6px_20px_rgba(16,185,129,0.3)] ring-1 ring-emerald-400/40"
+                  : "border-white/10 border-b-slate-900 bg-[#0c1326]/90 text-slate-300 hover:border-emerald-500/50 hover:bg-[#111c38] hover:text-white shadow-lg shadow-black/40",
               )}
             >
               {/* Mini Planet Visual */}

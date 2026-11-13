@@ -35,7 +35,7 @@ export function Sidebar() {
           aria-label="RithuDevQuest Home"
         >
           <div className="relative size-9 shrink-0 flex items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-0.5 transition-transform duration-300 group-hover:scale-110">
-            <CosmicCharacter characterId="rithu" mood="idle" size="xs" className="size-full" />
+            <CosmicCharacter characterId="rithu" mood="idle" size="custom" className="size-8" />
           </div>
           <AnimatePresence>
             {!collapsed && (

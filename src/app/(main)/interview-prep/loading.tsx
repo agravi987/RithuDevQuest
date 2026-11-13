@@ -2,10 +2,7 @@ import { GalaxySection } from "@/components/galaxy/galaxy-section";
 
 export default function InterviewPrepLoading() {
   return (
-    <GalaxySection
-      className="-mx-4 -mt-8 px-4 pt-8 pb-16 min-h-screen overflow-hidden"
-      starCount={60}
-    >
+    <GalaxySection className="pb-16">
       <div className="relative z-10 mx-auto max-w-5xl space-y-10 pb-8">
         <div className="flex gap-2">
           <div className="h-5 w-14 animate-pulse rounded bg-muted" />

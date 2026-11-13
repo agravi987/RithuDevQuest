@@ -108,7 +108,7 @@ const CAREER_TRACKS = [
 export default function Home() {
   return (
     <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-[#070b14] text-white">
-      <CosmicBackground variant="deep" className="z-0" />
+      <CosmicBackground variant="orbit" className="z-0" />
       <StarsCanvas density={70} shootingStars speed={0.15} className="z-0" />
 
       {/* ═══════════ TOP NAVIGATION ═══════════ */}
